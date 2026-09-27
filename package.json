@@ -1,0 +1,1 @@
+{"name":"history-explorer","version":"1.0.0","type":"module","scripts":{"predev":"npm run build","dev":"vite --config vite.config.js","build":"node scripts/build-worker.mjs && node scripts/verify-worker.mjs","build:pages":"node scripts/build-pages.mjs && node scripts/verify-pages.mjs","verify:worker":"node scripts/verify-worker.mjs"},"devDependencies":{"vite":"6.1.0"}}

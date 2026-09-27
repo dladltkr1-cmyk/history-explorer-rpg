@@ -1,0 +1,2 @@
+[functions.history-save]
+verify_jwt = false
