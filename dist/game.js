@@ -20,7 +20,7 @@ import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=27.1';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl } from "./cloud-save.js";
-import { avatarSource, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=25.1";
+import { avatarSource, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=25.2";
 import {
   rollDrop,
   salePrice,
