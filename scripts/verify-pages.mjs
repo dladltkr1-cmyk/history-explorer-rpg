@@ -8,6 +8,9 @@ assert.match(html, /src="\.\/pages-config\.js"/);
 assert.match(html, /src="\.\/game\.js/);
 const config = await readFile(join(root, 'pages-config.js'), 'utf8');
 assert.match(config, /https:\/\/.*\/functions\/v1\/history-save/);
+const avatar = await readFile(join(root, 'avatar.js'), 'utf8');
+assert.match(avatar, /new URL\(`\.\/assets\/player\/custom\/\$\{name\}\.png/);
+assert.doesNotMatch(avatar, /\.\.\/assets\/player\/custom\//);
 let count = 0;
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
