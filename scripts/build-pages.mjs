@@ -20,7 +20,9 @@ async function rewrite(dir) {
     if (!/\.(?:html|css|js)$/.test(entry.name)) continue;
     let content = await readFile(path, 'utf8');
     // Document relative URLs work under /repository/ as well as a local preview.
-    content = content.replaceAll('/assets/', './assets/');
+    // Only root-relative asset URLs need rewriting. Replacing the slash inside
+    // ./assets/ would turn the avatar atlas URL into ../assets/ on Pages.
+    content = content.replace(/(?<!\.)\/assets\//g, './assets/');
     if (entry.name === 'index.html') {
       content = content.replace(/(href|src)="\/(style\.css|revision\.css|game\.js)/g, '$1="./$2');
       content = content.replace('<script type="module"', '<script src="./pages-config.js"></script>\n    <script type="module"');
