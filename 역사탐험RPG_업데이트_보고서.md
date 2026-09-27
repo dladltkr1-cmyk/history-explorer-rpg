@@ -1,11 +1,11 @@
 # 역사 탐험 RPG 업데이트 보고서
 
-## 버전 30 연결 진행 — 2026년 9월 27일
+## 버전 30 배포 — 2026년 9월 27일
 
-- GitHub 공개 저장소 `dladltkr1-cmyk/history-explorer-rpg`를 만들고 README 초기 커밋을 확인했다. 로컬 소스에는 Pages 빌드와 클라우드 저장 코드가 커밋돼 있으나, **전체 프로젝트 트리의 GitHub 업로드는 자동 승인 심사가 차단했다.** 저장소에 게임이 배포됐다고 표시하지 않는다. 에셋 블롭은 전송됐지만 브랜치에 연결되지 않았다.
-- Supabase 프로젝트 `mugyakivaniptcfrrvez`(서울)를 만들고 `game_saves` 테이블, 저장 RPC, `history-save` Edge Function을 배포했다. 함수 상태 ACTIVE 버전 1, RPC는 호출자 권한 실행으로 확인했다. Pages origin과 기존 공개 사이트 주소를 함수 기본 설정으로 넣었다.
-- 실제 Pages 주소를 넣은 로컬 정적 빌드는 114개 파일 검증을 통과했다. GitHub Pages 변수/활성화 및 배포, 클라우드 API 실제 왕복 호출, 두 기기 이어하기는 **미완료**다. 이 환경의 공개 Supabase URL 접근이 차단되어 API 호출 결과를 검증하지 못했다.
-- 기존 `chatgpt.site` 버전 29는 변경하지 않았다. 지도·빠른 이동·관리자 QA·말·퀴즈의 기존 기록은 아래에 유지한다. 새 배포가 검증되기 전에는 학생에게 새 주소를 안내하지 않는다.
+- GitHub 공개 저장소 `dladltkr1-cmyk/history-explorer-rpg`의 `main` 브랜치에 게임 소스·정적 에셋·Pages 배포 설정을 업로드했다. 생성된 옛 Worker 묶음 `dist/server/index.js`는 Pages 배포에 쓰이지 않아 저장소에서 제외했다. 공개 주소: https://dladltkr1-cmyk.github.io/history-explorer-rpg/ . GitHub Actions 재실행 #2가 성공했고 배포 산출물은 12.2MB다.
+- Supabase 프로젝트 `mugyakivaniptcfrrvez`(서울)의 `game_saves` 테이블, 저장 RPC, `history-save` Edge Function을 배포했다. 함수 상태 ACTIVE 버전 1, RPC는 호출자 권한 실행으로 확인했다. GitHub Actions 변수 `HISTORY_SAVE_API`를 설정했고 Pages origin과 기존 공개 사이트 주소를 함수 기본 설정으로 넣었다.
+- 로컬 Pages 빌드는 114개 파일을 검증했다. 새 공개 주소의 브라우저에서 시작 화면, 꾸미기 화면, 필드 캐릭터·NPC·건물 에셋을 확인했다. 시험 캐릭터의 HE6 개인 코드를 발급하고 `코드 저장됨 ✓` 표시, DB 행 저장, 별도 탭에서 같은 코드 조회·서버 저장 시각 표시·이어하기 복원을 확인했다. 시험에 사용한 탭은 같은 브라우저의 저장 공간을 공유하므로 **독립 기기 간 복원 검사는 아직 수행하지 않았다.** 기존 HE4 코드의 실데이터 이전, 실제 학생 태블릿도 미검사다.
+- 기존 `chatgpt.site` 버전 29는 변경하지 않았다. 지도·빠른 이동·관리자 QA·말·퀴즈의 기존 검사 기록은 아래에 유지한다. 새 Pages에서 관리자 코드 입력 화면은 열렸으나 관리자 모드와 일곱 지역의 실제 이동 재검사는 이 배포 검수 범위에 포함하지 않았다.
 
 ---
 
