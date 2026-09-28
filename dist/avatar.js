@@ -15,7 +15,7 @@ export function validAppearance(v) {
 // All renderers share these aligned PNG layers, including every walking frame.
 const cache = new Map();
 const atlases = Object.fromEntries(['bodies','heads','eyes','hair-rear','hair-front'].map(name=>{
-  const img=new Image(); img.src=new URL(`./assets/player/custom/${name}.png?v=25.2`,import.meta.url).href;
+  const img=new Image(); img.src=new URL(`./assets/player/custom/${name}.png?v=31.1`,import.meta.url).href;
   return [name,img];
 }));
 const ready=Promise.all(Object.values(atlases).map(img=>new Promise((resolve,reject)=>{

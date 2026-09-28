@@ -99,6 +99,34 @@ const maps=[
 ];
 
 export const growth={id:'nations',name:'여러 나라의 성장',subtitle:'철의 길을 따라서',start:'nation-iron-village',village:'nation-iron-village',unlock:null,shop:['hardknife','trainingblade','thickleather','woven','berries','food','cookedfish','rice'],artifacts:[],requests:[],quests,maps};
+// Rooms live in the same era and use the existing opened-ID save field.
+const enterable=[
+ ['nation-iron-village','iron-workshop','작업장','growthShed'],
+ ['nation-buyeo-village','buyeo-house-a','마을집','growthHouse'],
+ ['nation-buyeo-village','buyeo-house-b','마을집','growthHouse'],
+ ['nation-buyeo-village','buyeo-store','곡식 저장 공간','growthGranary'],
+ ['nation-goguryeo-village','goguryeo-mainhouse','큰 집','growthHall'],
+ ['nation-goguryeo-village','goguryeo-house-b','마을집','growthHouse'],
+ ['nation-goguryeo-village','goguryeo-store','저장 공간','growthGranary'],
+ ['nation-goguryeo-homes','goguryeo-family','신부의 집','growthHall'],
+ ['nation-okjeo-village','okjeo-house-a','마을집','growthHouse'],
+ ['nation-okjeo-village','okjeo-house-b','마을집','growthHouse'],
+ ['nation-okjeo-homes','okjeo-home','생활할 집','growthHouse'],
+ ['nation-dongye-village','dongye-house-a','마을집','growthHouse'],
+ ['nation-dongye-village','dongye-house-b','마을집','growthHouse']
+];
+for(const [outside,id,name,art] of enterable){
+ const parent=maps.find(m=>m.id===outside),building=parent.entities.find(e=>e.id===id);
+ const roomId='room-'+id;
+ Object.assign(building,{type:'house',to:roomId,art,solid:true});
+ const store=art==='growthGranary',work=art==='growthShed';
+ const props=store?['곡식 자루','항아리']:work?['재료 상자','작업대']:['항아리','작은 상자'];
+ maps.push({id:roomId,name:name+' 안',theme:'room',nationVisual:null,w:10,h:8,start:{x:5,y:5.35},returnTo:{map:outside,x:building.x,y:building.y+1.55},obstacles:[{x:2.3,y:2.3,art:'rock'},{x:7.7,y:2.3,art:'rock'}],entities:[
+  entity(roomId+'-door','roomDoor',5,6.65,'밖으로 나가기',{to:outside,art:'roomDoor'}),
+  entity(roomId+'-loot-a','roomLoot',3.35,3.5,props[0],{art:store?'ricecrop':work?'chest':'pottery'}),
+  entity(roomId+'-loot-b','roomLoot',6.65,3.5,props[1],{art:work?'storage':'chest'})
+ ]});
+}
 maps.find(m=>m.id==='nation-dongye-border').start={x:3,y:12};
 for (const m of maps) {
   m.nationVisual = m.id.split('-')[1];

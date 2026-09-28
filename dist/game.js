@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=27.1";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=31.1";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,12 +15,12 @@ import {
   readSave,
   validate,
 } from "./state.js?v=27.1";
-import { ASSETS } from "./assets.js?v=27.4";
+import { ASSETS } from "./assets.js?v=31.1";
 import { QUIZZES } from "./regions/expansion.js";
-import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=27.1';
+import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.1';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl } from "./cloud-save.js";
-import { avatarSource, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=25.2";
+import { avatarSource, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=31.1";
 import {
   rollDrop,
   salePrice,
@@ -762,13 +762,14 @@ function travel(id, from = s.map, {fast=false} = {}) {
     const nation = NATIONS.find(n=>n.map===id);
     if (nation) discovery='새로운 지역을 발견했다. ' + nation.name;
   }
+  const roomReturn = MAPS[from]?.returnTo?.map === id ? MAPS[from].returnTo : null;
   const back = MAPS[id].entities.find(
     (e) => e.type === "exit" && e.to === from,
   );
-  s.x = !fast && back
+  s.x = roomReturn ? roomReturn.x : !fast && back
     ? back.x + (back.x < 5 ? 1 : back.x > 19 ? -1 : 0)
     : MAPS[id].start.x;
-  s.y = !fast && back
+  s.y = roomReturn ? roomReturn.y : !fast && back
     ? back.y + (back.y < 4 ? 1 : back.y > 13 ? -1 : 0)
     : MAPS[id].start.y;
   if (blocked(s.x, s.y)) {
@@ -968,7 +969,10 @@ function feedback(text, kind = "xp", sound = kind) {
   }
   const el = document.createElement("div");
   el.className = "number " + kind;
-  el.textContent = text;
+  if(kind==='coin') {
+    const coin=document.createElement('img');coin.src=ASSETS.coin;coin.alt='';coin.className='coin-icon';el.append(coin);
+  }
+  el.append(document.createTextNode(text));
   host.append(el);
   setTimeout(() => el.remove(), 3000);
 }
@@ -1349,6 +1353,9 @@ function nearby() {
     .filter(
       (e) =>
         e.type !== "scenery" &&
+        e.type !== "roomProp" &&
+        !(e.type==='roomLoot' && s.opened.includes(e.id)) &&
+        !(e.type==='story' && !e.collect && activeQuest(s)?.target!==e.id && e.id!=='dongye-sign') &&
         (!['berry','loot','chest'].includes(e.type) || resourceReady(s,e)) &&
         !(e.type==='story' && e.collect && s.opened.includes(e.id)) &&
         !(e.type === "enemy" && !enemyVisible(e)) &&
@@ -1367,6 +1374,16 @@ function interact() {
     return;
   }
   const q = activeQuest(s);
+  if(e.type==='roomDoor') { travel(e.to); return; }
+  if(e.type==='roomLoot') {
+    s.opened.push(e.id);
+    const roll=Math.random();
+    if(roll<.08){const coins=1+Math.floor(Math.random()*4);s.coins+=coins;feedback('+'+coins+' 엽전','coin');}
+    else if(roll<.78){const pool=['berries','rawmeat','food','fish','grain'];const id=pool[Math.floor(Math.random()*pool.length)];
+      if(ITEMS[id]) {s.inventory[id]=(s.inventory[id]||0)+1;feedback(ITEMS[id].name+' +1','item');}
+    }else toast('비어 있다.');
+    save();hud();return;
+  }
   if (e.type==='horse') {
     if (s.horseUnlocked) { dialogue('말',['이 말은 이미 길들였다. 말 타기 버튼으로 탈 수 있다.'],'horseFrontIdle'); return; }
     panel('들판의 말', '<p>놀라지 않게 천천히 다가가 보자.</p><button class="primary full" id="tame-horse">천천히 다가가기</button>');
@@ -1412,7 +1429,7 @@ function interact() {
   else if (e.type === "house") {
     panel(
       e.name,
-      `<p>${e.description || e.name + "이다."}</p><button id="enter-house" class="primary full">들어가기</button>`,
+      `<button id="enter-house" class="primary full">들어가기</button>`,
     );
     $("#enter-house").onclick = () => travel(e.to);
   } else if (e.type === "artifact") {
@@ -1475,7 +1492,7 @@ function interactNation(e,q) {
     } else if(e.id==='goguryeo-smallhouse')
       dialogue(e.name,[s.completedQuests.includes('goguryeo-build')?'작은 집이 완성되었다.':'재료가 아직 모이지 않았다.'],e.art);
     else if(e.id==='dongye-sign') dialogue(e.name,['낮은 돌을 따라 경계가 이어진다.','남쪽 길로 돌아가자.'],e.art);
-    else dialogue(e.name,['주변을 살펴보자.'],e.art);
+    else return false;
     return true;
   }
   if(e.type!=='npc') return false;
@@ -1988,7 +2005,7 @@ function checkRandomEncounter(distance) {
 }
 function blocked(x, y) {
   let m = MAPS[s.map];
-  if (x < 1 || x > 22 || y < 1 || y > 16) return true;
+  if (x < 1 || x > m.w-2 || y < 1 || y > m.h-2) return true;
   if (m.river && x > 17.5 && x < 19.5 && !(y > 8.25 && y < 9.75)) return true;
   if (
     m.obstacles.some((o) => Math.abs(o.x - x) < 0.65 && Math.abs(o.y - y) < 0.6)
@@ -2104,12 +2121,8 @@ function drawPlayer(x, y, w, h) {
 }
 function drawMountedPlayer(x,y) {
   const dir=s.direction==='up'?'back':s.direction==='down'?'front':s.direction;
-  const gait=moving && Math.floor(clock*6)%2 ? 'Walk' : 'Idle';
-  const horse='horse'+dir[0].toUpperCase()+dir.slice(1)+gait;
-  drawSprite(horse,x,y,92,93);
-  // Keep the torso above the neck in front view; the legs meet the saddle.
-  if(dir==='front') drawPlayer(x,y-60,40,50);
-  else drawPlayer(x+(dir==='left'?-4:dir==='right'?4:0),y-37,42,53);
+  const gait=moving?'walk-'+(1+Math.floor(clock*7)%2):'idle';
+  drawSprite('mounted-'+dir+'-'+gait,x,y,105,105);
 }
 function roundRect(x, y, w, h, r, fill) {
   ctx.fillStyle = fill;
@@ -2119,11 +2132,11 @@ function roundRect(x, y, w, h, r, fill) {
 }
 function drawObjectShadow(e, x, y, w, h) {
   const tree = ["tree", "pine", "goTree"].includes(e.art),
-    building = ["prehut", "goHouse", "shelter", "storage", "palisade", "caveEntrance"].includes(e.art),
+    building = ["prehut", "goHouse", "shelter", "storage", "palisade", "caveEntrance", "growthHouse", "growthHall", "growthGranary", "growthShed", "growthFestival"].includes(e.art),
     rock = e.art === "rock" || e.art === "dolmen";
   if (!["player", "npc", "quiz", "shop", "enemy", "horse", "obstacle", "house", "scenery"].includes(e.type) && !rock && !building) return;
   ctx.fillStyle = tree ? "#263f2b3a" : building ? "#2c3e2d27" : "#263f2b2e";
-  const rx = tree ? 11 : building ? w * .31 : rock ? w * .21 : 10;
+  const rx = tree ? 11 : building ? w * .22 : rock ? w * .21 : 10;
   const ry = building ? 4 : tree ? 5 : rock ? 5 : 4;
   ctx.beginPath();
   ctx.ellipse(x, y + 2, rx, ry, 0, 0, Math.PI * 2);
@@ -2204,10 +2217,10 @@ function drawNationTerrain(m,T) {
       track([[2,12],[7,12],[12,12.6],[17,12],[21,9]],38);
       // Scattered low stones, earth and worn grass show the narrow edge without a wall.
       for(const y of [5,5.75,6.4,7.1,7.8,8.45,9.2,9.8,10.3]){
-        const x=dongyeBoundaryX(y),px=x*T,py=y*T;
-        ctx.fillStyle='#a99b76';ctx.beginPath();ctx.ellipse(px-5,py+8,14,4,-.3,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#777c6a';ctx.beginPath();ctx.ellipse(px,py,7,4,-.25,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle='#c4c1a8';ctx.fillRect(px-3,py-3,5,2);
+        const x=dongyeBoundaryX(y)+.16,px=x*T,py=y*T;
+        ctx.fillStyle='#a99b76';ctx.beginPath();ctx.ellipse(px-4,py+6,12,4,-.3,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#838574';ctx.beginPath();ctx.ellipse(px,py,8,5,-.25,0,Math.PI*2);ctx.fill();
+        ctx.fillStyle='#d0cbb4';ctx.fillRect(px-3,py-3,5,2);
       }
       ctx.fillStyle='#6e704c';for(const [x,y] of [[10.3,4.5],[12.4,5.4],[10.1,8.8],[13.3,10.5]])ctx.fillRect(x*T,y*T,17,4);
     }
@@ -2255,7 +2268,7 @@ function draw() {
   ctx.translate(-cam.x, -cam.y);
   ctx.fillStyle = ground;
   ctx.fillRect(0, 0, m.w*T, m.h*T);
-  const cave = m.theme === "cave" || m.theme === "interior",
+  const cave = m.theme === "cave" || m.theme === "interior" || m.theme === 'room',
     bronze = m.id.startsWith("go-") || m.id.startsWith("bronze-") || m.id.startsWith('nation-'),
     natural =
       m.id.startsWith("pre-") ||
@@ -2290,6 +2303,11 @@ function draw() {
         }
       }
     }
+  if(m.theme==='room'){
+    ctx.fillStyle='#5a5144';ctx.fillRect(0,0,m.w*T,1.2*T);ctx.fillRect(0,0,1*T,m.h*T);ctx.fillRect((m.w-1)*T,0,T,m.h*T);
+    ctx.fillStyle='#a58c64';ctx.fillRect(T,1.1*T,(m.w-2)*T,8);ctx.fillRect(T,(m.h-1)*T,(m.w-2)*T,8);
+    ctx.fillStyle='#76664f';ctx.fillRect(2*T,2*T,2*T,32);ctx.fillRect(6*T,2*T,2*T,32);
+  }
   if (!natural && !cave && !["go-field","go-dolmen","bronze-hill"].includes(m.id)) {
     ctx.fillStyle = cave ? "#b4ad94" : "#c8b487";
     ctx.fillRect(1 * T, 8.4 * T, 22 * T, 1.3 * T);
@@ -2394,6 +2412,8 @@ function draw() {
         isPlayer || ["npc", "quiz", "shop", "enemy"].includes(e.type) ? 58 : 64,
       h = isPlayer || ["npc", "shop", "enemy"].includes(e.type) ? 72 : 66;
     if (e.type === 'horse') { w=88; h=88; }
+    if (e.type==='roomLoot') {w=52;h=54;}
+    if (e.type==='roomDoor') {w=55;h=57;}
     if (e.id === 'dongye-sign') { w=30; h=25; }
     if (e.type === "obstacle") {
       w = e.art === "rock" ? 78 : 110;
@@ -2580,7 +2600,7 @@ function tick(t) {
     if (dx || dy) {
       moving = true;
       s.direction = dx < 0 ? "left" : dx > 0 ? "right" : dy < 0 ? "up" : "down";
-      let speed = ((s.mounted && s.map.startsWith('nation-') ? 5.15 : 3.5) * (adminMode && s.adminSpeed ? 1.5 : 1) * dt) / (dx && dy ? Math.SQRT2 : 1);
+      let speed = ((s.mounted && s.map.startsWith('nation-') ? 5.6 : 3.5) * (adminMode && s.adminSpeed ? 1.5 : 1) * dt) / (dx && dy ? Math.SQRT2 : 1);
       if (!blocked(s.x + dx * speed, s.y)) s.x += dx * speed;
       if (!blocked(s.x, s.y + dy * speed)) s.y += dy * speed;
       saveClock += dt;

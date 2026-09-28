@@ -19,10 +19,18 @@ function recolor(c,skin,hair=null){const p=pixels(c),a=p.data;for(let i=0;i<a.le
 function splitHead(c,skin,color,onlySkin){const original=pixels(c),painted=pixels(recolor(c,skin,color));for(let i=0;i<painted.data.length;i+=4){const isSkin=skinPixel(...original.data.slice(i,i+3));if(isSkin!==onlySkin)painted.data[i+3]=0;}return put(painted)}
 // Continuous inverse deformation keeps cloth and limbs connected in every walk frame.
 function walk(c,dir,pose){if(!pose)return c;const p=pixels(c),src=p.data,out=canvas(),q=out.getContext('2d').createImageData(SIZE,SIZE),dst=q.data,sign=pose===1?-1:1;for(let y=0;y<SIZE;y++)for(let x=0;x<SIZE;x++){
-const leg=Math.max(0,Math.min(1,(y-171)/61));const side=x<128?-1:1;const arm=Math.max(0,1-Math.abs(y-150)/40)*Math.max(0,Math.min(1,(Math.abs(x-128)-26)/17));
-const sy=y-sign*(side*leg*4+side*arm*2),sx=x-(dir===1?sign*leg*side*3:sign*leg*1.2);const xi=Math.floor(sx),yi=Math.floor(sy),fx=sx-xi,fy=sy-yi;
-for(let channel=0;channel<4;channel++){let value=0;for(let a=0;a<2;a++)for(let b=0;b<2;b++){const xx=xi+a,yy=yi+b;if(xx>=0&&xx<SIZE&&yy>=0&&yy<SIZE)value+=src[(yy*SIZE+xx)*4+channel]*(a?fx:1-fx)*(b?fy:1-fy)}dst[(y*SIZE+x)*4+channel]=value;}}
-out.getContext('2d').putImageData(q,0,0);return out;}
+  const side=x<128?-1:1;
+  // Shoulder to hand and hip to boot move as a unit; opposite limbs counter-swing.
+  const shoulder=Math.max(0,Math.min(1,(y-111)/72));
+  const arm=shoulder*Math.max(0,Math.min(1,(Math.abs(x-128)-26)/18));
+  const hip=Math.max(0,Math.min(1,(y-151)/77));
+  const leg=hip*Math.max(0,Math.min(1,(45-Math.abs(x-128))/28));
+  const phase=sign*side;
+  const sx=x-(dir===1?phase*(arm*10-leg*13):phase*(arm*8-leg*11));
+  const sy=y-phase*(arm*3+leg*5);
+  const xi=Math.floor(sx),yi=Math.floor(sy),fx=sx-xi,fy=sy-yi;
+  for(let channel=0;channel<4;channel++){let value=0;for(let a=0;a<2;a++)for(let b=0;b<2;b++){const xx=xi+a,yy=yi+b;if(xx>=0&&xx<SIZE&&yy>=0&&yy<SIZE)value+=src[(yy*SIZE+xx)*4+channel]*(a?fx:1-fx)*(b?fy:1-fy)}dst[(y*SIZE+x)*4+channel]=value;}}
+ out.getContext('2d').putImageData(q,0,0);return out;}
 const config=JSON.parse(readFileSync(new URL('./art/source-v25/layout.json',import.meta.url)));
 const bodiesImage=await loadImage(new URL('./art/source-v25/bodies-source.png',import.meta.url).pathname);
 const headsImage=await loadImage(new URL('./art/source-v25/heads-source.png',import.meta.url).pathname);

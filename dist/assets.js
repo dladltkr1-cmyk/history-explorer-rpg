@@ -10,4 +10,7 @@ Object.assign(ASSETS,{
   growthFestival:'/assets/maps/growth-festival.png',growthShed:'/assets/maps/growth-farm-shed.png',growthFish:'/assets/maps/growth-fish-rack.png',
   growthElder:'/assets/maps/growth-npc-elder.png',growthBuilder:'/assets/maps/growth-npc-builder.png',growthResident:'/assets/maps/growth-npc-resident.png',growthGuard:'/assets/maps/growth-npc-guard.png'
 });
-for(const direction of ['front','left','back','right'])for(const pose of ['Idle','Walk'])ASSETS['horse'+direction[0].toUpperCase()+direction.slice(1)+pose]='/assets/maps/horse-'+direction+'-'+pose.toLowerCase()+'.png?v=27.4';
+for(const direction of ['front','left','back','right'])for(const pose of ['Idle','Walk'])ASSETS['horse'+direction[0].toUpperCase()+direction.slice(1)+pose]='/assets/maps/horse-'+direction+'-'+pose.toLowerCase()+'.png?v=31.1';
+for(const direction of ['front','back','left','right'])for(const pose of ['idle','walk-1','walk-2'])ASSETS['mounted-'+direction+'-'+pose]='/assets/player/mounted/'+direction+'-'+pose+'.png?v=31.1';
+ASSETS.coin='/assets/items/coin.svg?v=31.1';
+ASSETS.roomDoor='/assets/maps/room-door.svg?v=31.1';

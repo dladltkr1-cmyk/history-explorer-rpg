@@ -112,6 +112,7 @@
 .number.coin {
   color: #ffda70;
 }
+.number .coin-icon {width:20px;height:20px;vertical-align:-4px;margin-right:5px;image-rendering:pixelated}
 .number.xp {
   color: #b6d4ff;
 }
