@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=31.1";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=31.2";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,9 +15,9 @@ import {
   readSave,
   validate,
 } from "./state.js?v=27.1";
-import { ASSETS } from "./assets.js?v=31.1";
+import { ASSETS } from "./assets.js?v=31.2";
 import { QUIZZES } from "./regions/expansion.js";
-import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.1';
+import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.2';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl } from "./cloud-save.js";
 import { avatarSource, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=31.1";
@@ -2252,7 +2252,7 @@ function draw() {
   // Allow the camera, but never the player, past map bounds when HUD overlaps an edge.
   cam.x = Math.max(s.x*T-safe.right, Math.min(s.x*T-safe.left, usualX));
   cam.y = Math.max(s.y*T-safe.bottom, Math.min(s.y*T-safe.top, usualY));
-  const ground = m.theme === "cave" || m.theme === "interior" ? "#8d907d"
+  const ground = m.theme === 'room' ? '#b69a71' : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
     : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id) ? "#748664"
     : m.id.startsWith("paleo-") ? "#a89e77"
     : m.id.startsWith('nation-buyeo') ? '#a5b482'
@@ -2277,7 +2277,7 @@ function draw() {
   for (let y = 0; y < m.h; y++)
     for (let x = 0; x < m.w; x++) {
       let hash = (x * 17 + y * 31) % 11;
-      ctx.fillStyle = cave
+      ctx.fillStyle = m.theme==='room' ? ['#b69a71','#b99e76','#b19870'][hash%3] : cave
         ? ["#92947f", "#8b8f7b", "#888c78"][hash % 3]
         : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id)
           ? ["#687f61", "#708863", "#778b63", "#827f5d"][hash % 4]
@@ -2304,9 +2304,11 @@ function draw() {
       }
     }
   if(m.theme==='room'){
-    ctx.fillStyle='#5a5144';ctx.fillRect(0,0,m.w*T,1.2*T);ctx.fillRect(0,0,1*T,m.h*T);ctx.fillRect((m.w-1)*T,0,T,m.h*T);
-    ctx.fillStyle='#a58c64';ctx.fillRect(T,1.1*T,(m.w-2)*T,8);ctx.fillRect(T,(m.h-1)*T,(m.w-2)*T,8);
-    ctx.fillStyle='#76664f';ctx.fillRect(2*T,2*T,2*T,32);ctx.fillRect(6*T,2*T,2*T,32);
+    ctx.fillStyle='#604635';ctx.fillRect(0,0,m.w*T,1.2*T);ctx.fillRect(0,0,1*T,m.h*T);ctx.fillRect((m.w-1)*T,0,T,m.h*T);
+    ctx.fillStyle='#896849';ctx.fillRect(T,1.1*T,(m.w-2)*T,10);ctx.fillRect(T,(m.h-1)*T,(m.w-2)*T,9);
+    ctx.strokeStyle='#9b7b55';ctx.lineWidth=2;for(let y=2;y<m.h-1;y++){
+      ctx.beginPath();ctx.moveTo(T,y*T);ctx.lineTo((m.w-1)*T,y*T);ctx.stroke();
+    }
   }
   if (!natural && !cave && !["go-field","go-dolmen","bronze-hill"].includes(m.id)) {
     ctx.fillStyle = cave ? "#b4ad94" : "#c8b487";
@@ -2413,6 +2415,7 @@ function draw() {
       h = isPlayer || ["npc", "shop", "enemy"].includes(e.type) ? 72 : 66;
     if (e.type === 'horse') { w=88; h=88; }
     if (e.type==='roomLoot') {w=52;h=54;}
+    if (e.type==='roomProp') {w=78;h=66;}
     if (e.type==='roomDoor') {w=55;h=57;}
     if (e.id === 'dongye-sign') { w=30; h=25; }
     if (e.type === "obstacle") {
@@ -2555,10 +2558,13 @@ function draw() {
   if (playing) drawMini(m, target);
 }
 function drawMini(m, target) {
-  mini.fillStyle = m.theme === "cave" ? "#919782" : "#95b47c";
+  mini.fillStyle = m.theme==='room' ? '#b69a71' : m.theme === "cave" ? "#919782" : "#95b47c";
   mini.fillRect(0, 0, 144, 108);
+  if(m.theme==='room'){
+    mini.fillStyle='#604635';mini.fillRect(0,0,144,10);mini.fillRect(0,0,10,108);mini.fillRect(134,0,10,108);
+  }
   mini.fillStyle = "#d6cba2";
-  if (!m.id.startsWith("pre-") && !m.id.startsWith("paleo-") && !["neo-river","go-outskirts","bronze-outskirts","bronze-grove","go-field","go-dolmen","bronze-hill"].includes(m.id)) {
+  if (m.theme!=='room' && !m.id.startsWith("pre-") && !m.id.startsWith("paleo-") && !["neo-river","go-outskirts","bronze-outskirts","bronze-grove","go-field","go-dolmen","bronze-hill"].includes(m.id)) {
     mini.fillRect(6, 50, 132, 10);
     mini.fillRect(64, 12, 9, 84);
   }

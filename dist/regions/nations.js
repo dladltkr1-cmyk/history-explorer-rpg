@@ -121,10 +121,12 @@ for(const [outside,id,name,art] of enterable){
  Object.assign(building,{type:'house',to:roomId,art,solid:true});
  const store=art==='growthGranary',work=art==='growthShed';
  const props=store?['곡식 자루','항아리']:work?['재료 상자','작업대']:['항아리','작은 상자'];
- maps.push({id:roomId,name:name+' 안',theme:'room',nationVisual:null,w:10,h:8,start:{x:5,y:5.35},returnTo:{map:outside,x:building.x,y:building.y+1.55},obstacles:[{x:2.3,y:2.3,art:'rock'},{x:7.7,y:2.3,art:'rock'}],entities:[
-  entity(roomId+'-door','roomDoor',5,6.65,'밖으로 나가기',{to:outside,art:'roomDoor'}),
-  entity(roomId+'-loot-a','roomLoot',3.35,3.5,props[0],{art:store?'ricecrop':work?'chest':'pottery'}),
-  entity(roomId+'-loot-b','roomLoot',6.65,3.5,props[1],{art:work?'storage':'chest'})
+ maps.push({id:roomId,name:name+' 안',theme:'room',nationVisual:null,w:10,h:8,start:{x:5,y:5.1},returnTo:{map:outside,x:building.x,y:building.y+1.55},obstacles:[],entities:[
+  entity(roomId+'-bed','roomProp',2.5,2.7,work?'작업 공간':store?'곡식 선반':'침구',{art:work?'roomBench':store?'roomShelf':'roomBed',solid:true}),
+  entity(roomId+'-shelf','roomProp',7.4,2.7,'선반',{art:'roomShelf',solid:true}),
+  entity(roomId+'-door','roomDoor',5,6.7,'밖으로 나가기',{to:outside,art:'roomDoor'}),
+  entity(roomId+'-loot-a','roomLoot',3.35,3.65,props[0],{art:store?'roomSack':work?'chest':'roomJar'}),
+  entity(roomId+'-loot-b','roomLoot',6.65,3.65,props[1],{art:work?'roomBench':store?'roomJar':'chest'})
  ]});
 }
 maps.find(m=>m.id==='nation-dongye-border').start={x:3,y:12};

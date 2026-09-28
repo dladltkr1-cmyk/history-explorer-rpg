@@ -14,3 +14,4 @@ for(const direction of ['front','left','back','right'])for(const pose of ['Idle'
 for(const direction of ['front','back','left','right'])for(const pose of ['idle','walk-1','walk-2'])ASSETS['mounted-'+direction+'-'+pose]='/assets/player/mounted/'+direction+'-'+pose+'.png?v=31.1';
 ASSETS.coin='/assets/items/coin.svg?v=31.1';
 ASSETS.roomDoor='/assets/maps/room-door.svg?v=31.1';
+for(const kind of ['Bed','Shelf','Bench','Sack','Jar'])ASSETS['room'+kind]='/assets/maps/room-'+kind.toLowerCase()+'.svg?v=31.2';
