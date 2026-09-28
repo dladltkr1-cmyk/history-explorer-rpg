@@ -15,12 +15,12 @@ import {
   readSave,
   validate,
 } from "./state.js?v=27.1";
-import { ASSETS } from "./assets.js?v=31.2";
+import { ASSETS } from "./assets.js?v=32";
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.3';
 import { music } from "./audio.js";
-import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl } from "./cloud-save.js";
-import { avatarSource, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=31.1";
+import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl, verifyAdminCode } from "./cloud-save.js?v=32";
+import { avatarSource, mountedSource, prepareMounted, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=32";
 import {
   rollDrop,
   salePrice,
@@ -172,8 +172,12 @@ window.addEventListener("pagehide", () => {
 function setAvatarImage(el, direction = "front", pose = "idle") {
   if (!el) return;
   const img = avatarSource(s.appearance, direction, pose);
-  el.src = img.src || ASSETS[s.avatar];
-  if (!img.complete || !img.src) img.addEventListener("load", () => { if (el.isConnected) el.src = img.src; }, { once: true });
+  const token=JSON.stringify(s.appearance)+direction+pose;
+  if(el.dataset.token===token && el.src) return;
+  el.dataset.token=token;
+  if(!el.src)el.style.visibility='hidden';
+  const show=()=>{ if(el.isConnected && el.dataset.token===token){el.src=img.src;el.style.visibility='visible';} };
+  if(img.complete && img.naturalWidth)show();else img.addEventListener('load',show,{once:true});
 }
 function close() {
   overlay.hidden = true;
@@ -372,10 +376,12 @@ function customize(name) {
   panel("캐릭터 꾸미기", `<div class="creator-layout"><div class="creator-preview"><div><img id="preview-front" alt="정면" /><small>정면</small></div><div class="creator-directions"><div><img id="preview-side" alt="옆면" /><small>옆면</small></div><div><img id="preview-back" alt="뒷면" /><small>뒷면</small></div></div></div><div class="creator-options">${groups.map(([key,label,values]) => `<section class="creator-group"><strong>${label}</strong><div class="option-row">${values.map((value,i) => `<button type="button" data-option="${key}" data-index="${i}" class="${i === appearance[key] ? "selected" : ""}" aria-pressed="${i === appearance[key]}"><span class="creator-thumb ${key}"><img alt="" data-thumb="${key}-${i}"></span><span>${value}</span></button>`).join("")}</div></section>`).join("")}</div></div><button id="appearance-done" class="primary full creator-start">이 모습으로 시작!</button>`, {wide:true});
   const setSprite=(el,a,dir)=>{
     const token=JSON.stringify(a)+dir;
+    if(el.dataset.token===token && el.src)return;
     el.dataset.token=token;
+    if(!el.src)el.style.visibility='hidden';
     const img=avatarSource(a,dir);
-    el.src=img.src || ASSETS[a.hair>=3?'girl':'boy'];
-    if(!img.src)img.addEventListener('load',()=>{if(el.isConnected&&el.dataset.token===token)el.src=img.src;},{once:true});
+    const show=()=>{if(el.isConnected&&el.dataset.token===token){el.src=img.src;el.style.visibility='visible';}};
+    if(img.complete&&img.naturalWidth)show();else img.addEventListener('load',show,{once:true});
   };
   const show = () => {
     for (const [id,dir] of [["preview-front","front"],["preview-side","left"],["preview-back","back"]]) {
@@ -450,15 +456,21 @@ $("#code-form").onsubmit = loadByCode;
 $("#code-load-open").onclick = () => $("#code-input").focus();
 if (saved) {
   $("#continue").textContent = "이어하기 · " + saved.nickname;
-  const img = avatarSource(saved.appearance);
-  $("#title-avatar").src = img.src || ASSETS[saved.avatar];
-  if (!img.src) img.addEventListener("load", () => $("#title-avatar").src = img.src, {once:true});
+  if(saved.horseUnlocked)prepareMounted(saved.appearance).catch(()=>{});
 }
+const titleImage=avatarSource(saved?.appearance || defaultAppearance());
+const titleAvatar=$("#title-avatar");
+const showTitleAvatar=()=>{titleAvatar.src=titleImage.src;titleAvatar.style.visibility='visible';};
+if(titleImage.complete&&titleImage.naturalWidth)showTitleAvatar();
+else titleImage.addEventListener('load',showTitleAvatar,{once:true});
 if (saveError) toast("저장 기록을 읽지 못했다. 새로 시작하기에서 백업할 수 있다.");
 function adminLogin() {
   panel("관리자 모드", `<label for="admin-pass">관리자 코드</label><input id="admin-pass" type="password" inputmode="numeric" maxlength="8" autocomplete="off"><button class="primary full" id="admin-enter">확인</button>`);
-  $("#admin-enter").onclick = () => {
-    if ($("#admin-pass").value !== "1023") { toast("코드가 다르다."); return; }
+  $("#admin-enter").onclick = async () => {
+    const button=$("#admin-enter");button.disabled=true;
+    try {if(!await verifyAdminCode($("#admin-pass").value)){toast("코드가 다르다.");return;}}
+    catch {toast("관리자 코드를 확인할 수 없다. 인터넷 연결을 확인해 줘.");return;}
+    finally {button.disabled=false;}
     clearTimeout(syncTimer);
     adminOriginal = saved ? structuredClone(saved) : null;
     qaCloudCode = null;
@@ -865,8 +877,13 @@ function nationMap() {
   });
 }
 $('#map-btn').onclick=()=>safeMenu(nationMap);
-$('#mount-btn').onclick=()=>{
+$('#mount-btn').onclick=async()=>{
   if(!s.horseUnlocked || !s.map.startsWith('nation-')) return;
+  if(!s.mounted){
+    const button=$('#mount-btn');button.disabled=true;
+    try {await prepareMounted(s.appearance);} catch {toast('말 그림을 불러오지 못했다. 다시 시도해 줘.');button.disabled=false;return;}
+    button.disabled=false;
+  }
   s.mounted=!s.mounted;save();hud();toast(s.mounted?'말에 탔다.':'말에서 내렸다.');
 };
 function inventory(tab = "food") {
@@ -2099,30 +2116,21 @@ function drawPlayer(x, y, w, h) {
     s.direction === "up"
       ? "back"
       : s.direction === "left" || s.direction === "right"
-        ? "left"
+        ? s.direction
         : "front";
-  const pose = moving ? "walk-" + ((Math.floor(clock * 7) % 2) + 1) : "idle",
-    key =
-      direction === "front" && pose === "idle"
-        ? s.avatar
-        : s.avatar + "-" + direction + "-" + pose;
+  const pose = moving ? "walk-" + ((Math.floor(clock * 7) % 2) + 1) : "idle";
   const custom = avatarSource(s.appearance, direction, pose);
-  const draw = () => {
-    if (custom.complete && custom.naturalWidth) { ctx.save(); ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality='high'; ctx.drawImage(custom, x - w / 2, y - h, w, h); ctx.restore(); }
-    else drawSprite(images[key] ? key : s.avatar, x, y, w, h);
-  };
-  if (s.direction === "right") {
-    ctx.save();
-    ctx.translate(x * 2, 0);
-    ctx.scale(-1, 1);
-    draw();
-    ctx.restore();
-  } else draw();
+  const stable=avatarSource(s.appearance,direction,'idle');
+  const shown=custom.complete&&custom.naturalWidth?custom:stable;
+  if(shown.complete&&shown.naturalWidth){ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(shown,x-w/2,y-h,w,h);ctx.restore();}
 }
 function drawMountedPlayer(x,y) {
   const dir=s.direction==='up'?'back':s.direction==='down'?'front':s.direction;
   const gait=moving?'walk-'+(1+Math.floor(clock*7)%2):'idle';
-  drawSprite('mounted-'+dir+'-'+gait,x,y,105,105);
+  const frame=mountedSource(s.appearance,dir,gait);
+  const shown=frame.ready?frame:mountedSource(s.appearance,dir,'idle');
+  if(shown.ready){const h=shown.canvas.height*105/320;ctx.drawImage(shown.canvas,x-52.5,y-h,105,h);}
+  else drawPlayer(x,y,53,53);
 }
 function roundRect(x, y, w, h, r, fill) {
   ctx.fillStyle = fill;

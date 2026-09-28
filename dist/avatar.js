@@ -14,6 +14,7 @@ export function validAppearance(v) {
 
 // All renderers share these aligned PNG layers, including every walking frame.
 const cache = new Map();
+const mountedCache = new Map();
 const atlases = Object.fromEntries(['bodies','heads','eyes','hair-rear','hair-front'].map(name=>{
   const img=new Image(); img.src=new URL(`./assets/player/custom/${name}.png?v=31.1`,import.meta.url).href;
   return [name,img];
@@ -23,6 +24,16 @@ const ready=Promise.all(Object.values(atlases).map(img=>new Promise((resolve,rej
   img.onload=resolve; img.onerror=()=>reject(new Error('캐릭터 그림을 불러오지 못했다.'));
 })));
 ready.catch(()=>{});
+const horseFrames=Object.fromEntries(['front','back','left','right'].flatMap(direction=>['idle','walk'].map(pose=>{
+  const img=new Image();
+  img.src=new URL(`./assets/maps/horse-${direction}-${pose}.png?v=31.1`,import.meta.url).href;
+  return [`${direction}-${pose}`,img];
+})));
+const imageReady=img=>img.complete&&img.naturalWidth ? Promise.resolve(img) : new Promise((resolve,reject)=>{
+  img.addEventListener('load',()=>resolve(img),{once:true});
+  img.addEventListener('error',()=>reject(new Error('탑승 그림을 불러오지 못했다.')),{once:true});
+});
+export const avatarReady=ready;
 export function avatarSource(appearance,direction='front',pose='idle'){
   const a=validAppearance(appearance),d=direction==='back'?2:['left','right'].includes(direction)?1:0;
   const p=pose==='walk-1'?1:pose==='walk-2'?2:0;
@@ -46,4 +57,49 @@ export function avatarSource(appearance,direction='front',pose='idle'){
   };
   if(Object.values(atlases).every(i=>i.complete&&i.naturalWidth))render();else ready.then(render).catch(()=>{});
   return result;
+}
+
+// Each final frame is a single cached canvas, assembled from the same five
+// customization layers as the walking character. The horse never supplies a rider.
+export function mountedSource(appearance,direction='front',pose='idle'){
+  const a=validAppearance(appearance);
+  const id=[a.hair,a.eyes,a.skin,a.hairColor,a.outfit,direction,pose].join('-');
+  if(mountedCache.has(id))return mountedCache.get(id);
+  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=direction==='front'?450:400;
+  const rider=avatarSource(a,direction,pose);
+  const horse=horseFrames[`${direction}-${pose==='idle'?'idle':'walk'}`];
+  const promise=Promise.all([imageReady(rider),imageReady(horse)]).then(()=>{
+    const c=canvas.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
+    const horseY=direction==='front'?100:50;
+    c.drawImage(horse,0,horseY,320,320);
+    const side=direction==='left'||direction==='right';
+    if(side){
+      const center=direction==='left'?162:155;
+      // Pelvis rests on the saddle; the near thigh turns toward the stirrup.
+      c.save();c.translate(center+(direction==='left'?9:-9),189);c.rotate(direction==='left'?0.47:-0.47);
+      c.drawImage(rider,126,130,35,80,-17,0,34,69);c.restore();
+      c.drawImage(rider,80,18,100,127,center-56,54,112,143);
+      c.save();c.translate(center,190);c.rotate(direction==='left'?0.43:-0.43);
+      c.drawImage(rider,98,130,34,80,-17,0,35,69);c.restore();
+      const sign=direction==='left'?-1:1;
+      c.strokeStyle='#422c21';c.lineWidth=2;c.lineCap='round';
+      c.beginPath();c.moveTo(center+sign*18,170);c.quadraticCurveTo(center+sign*50,176,center+sign*88,177);c.stroke();
+    }else{
+      c.drawImage(rider,90,132,76,83,110,direction==='front'?219:169,100,90);
+      c.drawImage(rider,78,18,100,127,105,5,110,179);
+      if(direction==='front'){
+        // The whole horse silhouette covers the seated rider's middle, without a cut line.
+        c.drawImage(horse,0,horseY,320,320);
+      }
+    }
+    return canvas;
+  });
+  const entry={canvas,promise,ready:false};
+  promise.then(()=>{entry.ready=true;}).catch(()=>{});
+  mountedCache.set(id,entry);
+  return entry;
+}
+export function prepareMounted(appearance){
+  return Promise.all(['front','back','left','right'].flatMap(direction=>
+    ['idle','walk-1','walk-2'].map(pose=>mountedSource(appearance,direction,pose).promise)));
 }
