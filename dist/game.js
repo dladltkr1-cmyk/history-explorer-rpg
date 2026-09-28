@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=31.2";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=31.3";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -17,7 +17,7 @@ import {
 } from "./state.js?v=27.1";
 import { ASSETS } from "./assets.js?v=31.2";
 import { QUIZZES } from "./regions/expansion.js";
-import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.2';
+import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.3';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl } from "./cloud-save.js";
 import { avatarSource, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=31.1";
@@ -2252,7 +2252,7 @@ function draw() {
   // Allow the camera, but never the player, past map bounds when HUD overlaps an edge.
   cam.x = Math.max(s.x*T-safe.right, Math.min(s.x*T-safe.left, usualX));
   cam.y = Math.max(s.y*T-safe.bottom, Math.min(s.y*T-safe.top, usualY));
-  const ground = m.theme === 'room' ? '#b69a71' : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
+  const ground = m.theme === 'room' ? '#514337' : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
     : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id) ? "#748664"
     : m.id.startsWith("paleo-") ? "#a89e77"
     : m.id.startsWith('nation-buyeo') ? '#a5b482'
@@ -2268,6 +2268,9 @@ function draw() {
   ctx.translate(-cam.x, -cam.y);
   ctx.fillStyle = ground;
   ctx.fillRect(0, 0, m.w*T, m.h*T);
+  if(m.theme==='room'){
+    ctx.fillStyle='#b69a71';ctx.fillRect(T,1.2*T,(m.w-2)*T,(m.h-2.2)*T);
+  }
   const cave = m.theme === "cave" || m.theme === "interior" || m.theme === 'room',
     bronze = m.id.startsWith("go-") || m.id.startsWith("bronze-") || m.id.startsWith('nation-'),
     natural =
@@ -2276,6 +2279,7 @@ function draw() {
       ["neo-river","bronze-outskirts","bronze-grove","go-outskirts"].includes(m.id) || m.id.startsWith('nation-');
   for (let y = 0; y < m.h; y++)
     for (let x = 0; x < m.w; x++) {
+      if(m.theme==='room' && (x<1 || x>=m.w-1 || y<2 || y>=m.h-1))continue;
       let hash = (x * 17 + y * 31) % 11;
       ctx.fillStyle = m.theme==='room' ? ['#b69a71','#b99e76','#b19870'][hash%3] : cave
         ? ["#92947f", "#8b8f7b", "#888c78"][hash % 3]

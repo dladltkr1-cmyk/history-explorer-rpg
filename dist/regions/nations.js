@@ -119,9 +119,10 @@ for(const [outside,id,name,art] of enterable){
  const parent=maps.find(m=>m.id===outside),building=parent.entities.find(e=>e.id===id);
  const roomId='room-'+id;
  Object.assign(building,{type:'house',to:roomId,art,solid:true});
+ const crowdedDoor=parent.entities.some(e=>e.type==='npc' && Math.hypot(e.x-building.x,e.y-building.y-1.55)<1.35);
  const store=art==='growthGranary',work=art==='growthShed';
  const props=store?['곡식 자루','항아리']:work?['재료 상자','작업대']:['항아리','작은 상자'];
- maps.push({id:roomId,name:name+' 안',theme:'room',nationVisual:null,w:10,h:8,start:{x:5,y:5.1},returnTo:{map:outside,x:building.x,y:building.y+1.55},obstacles:[],entities:[
+ maps.push({id:roomId,name:name+' 안',theme:'room',nationVisual:null,w:10,h:8,start:{x:5,y:5.1},returnTo:{map:outside,x:building.x,y:building.y+(crowdedDoor ? .85 : 1.55)},obstacles:[],entities:[
   entity(roomId+'-bed','roomProp',2.5,2.7,work?'작업 공간':store?'곡식 선반':'침구',{art:work?'roomBench':store?'roomShelf':'roomBed',solid:true}),
   entity(roomId+'-shelf','roomProp',7.4,2.7,'선반',{art:'roomShelf',solid:true}),
   entity(roomId+'-door','roomDoor',5,6.7,'밖으로 나가기',{to:outside,art:'roomDoor'}),
