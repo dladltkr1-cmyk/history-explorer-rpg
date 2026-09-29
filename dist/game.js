@@ -15,7 +15,7 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=37.1";
+} from "./state.js?v=37.2";
 import { ASSETS } from "./assets.js?v=37";
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -757,6 +757,7 @@ function finishEvent(event) {
       rewards.reduce((n, q) => n + q.coins, 0),
     );
     if (rewards.some((q) => q.levels)) toast("레벨 " + s.level + "이 되었다.");
+    if (rewards.some((q) => q.id === 'bronze-grain')) feedback('청동 장신구 +1', 'item');
   }
   if (r?.id==='nations' && (s.progress.nations||0)===8 && !s.tutorials.nationMap) {
     s.tutorials.nationMap=true;save();toast('지도에서 발견한 지역을 확인할 수 있다.');

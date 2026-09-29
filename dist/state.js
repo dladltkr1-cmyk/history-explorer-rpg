@@ -243,6 +243,7 @@ export function advance(s, event) {
     }
     if (q.mark && !s.nationMarks.includes(q.mark)) s.nationMarks.push(q.mark);
     if (q.id==='iron-smith') s.inventory.ironhoe++;
+    if (q.id==='bronze-grain' && !s.inventory.gear.includes('bronzeCharm')) s.inventory.gear.push('bronzeCharm');
     if (q.id==='dongye-start') s.inventory.dongyepackage++;
     if (q.id==='samhan-jinhan') s.inventory.samhansack++;
     s.completedQuests.push(q.id);
