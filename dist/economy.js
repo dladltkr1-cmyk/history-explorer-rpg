@@ -1,5 +1,11 @@
 // Drop rules are independent of era and combat calculations.
 export const DROPS={boar:{item:'rawmeat',doubleChance:.15},wolf:{item:'hide'},snake:{item:'rawmeat'},bear:{item:'rawmeat',doubleChance:.22,extraItem:'hide',extraChance:.12},tiger:{item:'hide',doubleChance:.25},bandit:{berriesChance:.4,coinsChance:.25,minCoins:5,maxCoins:15}};
+export function rollRoomReward(random=Math.random){
+  const roll=random();
+  if(roll<.08)return {coins:10+Math.floor(random()*11)};
+  if(roll<.78)return {item:['berries','rawmeat','food','fish','grain'][Math.floor(random()*5)]};
+  return {};
+}
 export function rollDrop(enemy,random=Math.random){
   const rule=DROPS[enemy];if(!rule)return {items:{},coins:0};
   if(rule.item){const items={[rule.item]:rule.doubleChance&&random()<rule.doubleChance?2:1};if(rule.extraItem&&random()<rule.extraChance)items[rule.extraItem]=1;return {items,coins:0};}

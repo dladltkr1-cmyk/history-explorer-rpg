@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=31.3";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=37";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,15 +15,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=36";
-import { ASSETS } from "./assets.js?v=32";
+} from "./state.js?v=37";
+import { ASSETS } from "./assets.js?v=37";
 import { QUIZZES } from "./regions/expansion.js";
-import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.3';
+import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl, verifyAdminCode } from "./cloud-save.js?v=32";
 import { avatarSource, mountedSource, prepareMounted, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=35";
 import {
   rollDrop,
+  rollRoomReward,
   salePrice,
   sellItem,
   gearSalePrice,
@@ -1439,11 +1440,10 @@ function interact() {
   if(e.type==='roomDoor') { travel(e.to); return; }
   if(e.type==='roomLoot') {
     s.opened.push(e.id);
-    const roll=Math.random();
-    if(roll<.08){const coins=1+Math.floor(Math.random()*4);s.coins+=coins;feedback('+'+coins+' 엽전','coin');}
-    else if(roll<.78){const pool=['berries','rawmeat','food','fish','grain'];const id=pool[Math.floor(Math.random()*pool.length)];
-      if(ITEMS[id]) {s.inventory[id]=(s.inventory[id]||0)+1;feedback(ITEMS[id].name+' +1','item');}
-    }else toast('비어 있다.');
+    const reward=rollRoomReward();
+    if(reward.coins){s.coins+=reward.coins;feedback('+'+reward.coins+' 엽전','coin');}
+    else if(reward.item){const id=reward.item;s.inventory[id]=(s.inventory[id]||0)+1;feedback(ITEMS[id].name+' +1','item');}
+    else toast('비어 있다.');
     save();hud();return;
   }
   if (e.type==='horse') {
@@ -2306,7 +2306,7 @@ function draw() {
   // Allow the camera, but never the player, past map bounds when HUD overlaps an edge.
   cam.x = Math.max(s.x*T-safe.right, Math.min(s.x*T-safe.left, usualX));
   cam.y = Math.max(s.y*T-safe.bottom, Math.min(s.y*T-safe.top, usualY));
-  const ground = m.theme === 'room' ? '#514337' : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
+  const ground = m.theme === 'room' ? (m.roomPalette?.border || '#514337') : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
     : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id) ? "#748664"
     : m.id.startsWith("paleo-") ? "#a89e77"
     : m.id.startsWith('nation-buyeo') ? '#a5b482'
@@ -2323,7 +2323,7 @@ function draw() {
   ctx.fillStyle = ground;
   ctx.fillRect(0, 0, m.w*T, m.h*T);
   if(m.theme==='room'){
-    ctx.fillStyle='#b69a71';ctx.fillRect(T,1.2*T,(m.w-2)*T,(m.h-2.2)*T);
+    ctx.fillStyle=m.roomPalette?.floor?.[0] || '#b69a71';ctx.fillRect(T,1.2*T,(m.w-2)*T,(m.h-2.2)*T);
   }
   const cave = m.theme === "cave" || m.theme === "interior" || m.theme === 'room',
     bronze = m.id.startsWith("go-") || m.id.startsWith("bronze-") || m.id.startsWith('nation-'),
@@ -2335,7 +2335,7 @@ function draw() {
     for (let x = 0; x < m.w; x++) {
       if(m.theme==='room' && (x<1 || x>=m.w-1 || y<2 || y>=m.h-1))continue;
       let hash = (x * 17 + y * 31) % 11;
-      ctx.fillStyle = m.theme==='room' ? ['#b69a71','#b99e76','#b19870'][hash%3] : cave
+      ctx.fillStyle = m.theme==='room' ? (m.roomPalette?.floor || ['#b69a71','#b99e76','#b19870'])[hash%3] : cave
         ? ["#92947f", "#8b8f7b", "#888c78"][hash % 3]
         : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id)
           ? ["#687f61", "#708863", "#778b63", "#827f5d"][hash % 4]

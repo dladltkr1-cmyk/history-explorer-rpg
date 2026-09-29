@@ -14,3 +14,7 @@ for(const direction of ['front','left','back','right'])for(const pose of ['Idle'
 ASSETS.coin='/assets/items/coin.svg?v=31.1';
 ASSETS.roomDoor='/assets/maps/room-door.svg?v=31.1';
 for(const kind of ['Bed','Shelf','Bench','Sack','Jar'])ASSETS['room'+kind]='/assets/maps/room-'+kind.toLowerCase()+'.svg?v=31.2';
+Object.assign(ASSETS,{
+  bronzeKnifeIcon:'/assets/items/gear/bronze-knife.svg', bronzeArmorIcon:'/assets/items/gear/bronze-armor.svg', bronzeCharmIcon:'/assets/items/gear/bronze-charm.svg',
+  ironSwordIcon:'/assets/items/gear/iron-sword.svg', ironArmorIcon:'/assets/items/gear/iron-armor.svg', ironCharmIcon:'/assets/items/gear/iron-charm.svg'
+});

@@ -1,6 +1,6 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=20";
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=37";
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
-import { NATION_ITEM_NAMES } from "./regions/nations.js?v=27.1";
+import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37";
 export const MAX_LEVEL = 10,
   KEY = "history-explorer-save-v1";
 export const ITEMS = {
@@ -94,6 +94,12 @@ export const ITEMS = {
     tier: 1,
     text: "최대 HP +15",
   },
+  bronzeKnife: { name: "청동 칼", price: 195, kind: "weapon", attack: 5, art: "bronzeKnifeIcon", tier: 2, text: "공격 +5" },
+  bronzeArmor: { name: "청동 방어구", price: 205, kind: "clothes", defense: 5, art: "bronzeArmorIcon", tier: 2, text: "방어 +5" },
+  bronzeCharm: { name: "청동 장신구", price: 170, kind: "accessory", hp: 20, art: "bronzeCharmIcon", tier: 2, text: "최대 HP +20" },
+  ironSword: { name: "철제 칼", price: 450, kind: "weapon", attack: 8, art: "ironSwordIcon", tier: 3, text: "공격 +8" },
+  ironArmor: { name: "철제 갑옷", price: 470, kind: "clothes", defense: 8, art: "ironArmorIcon", tier: 3, text: "방어 +8" },
+  ironCharm: { name: "철제 장신구", price: 300, kind: "accessory", hp: 30, art: "ironCharmIcon", tier: 3, text: "최대 HP +30" },
 };
 const extraFoods = {
   rawmeat: ["생고기", 10, "rawmeat", 14],

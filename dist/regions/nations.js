@@ -45,13 +45,13 @@ const quests=[
  q('buyeo-food','축제 음식을 전달하자.','nation-buyeo-village','buyeo-cook','talk:buyeo-cook','열매 2개 또는 고기 1개가 필요하다.',25,0,{anyFood:true}),
  q('buyeo-bundle','길에서 준비 물건을 찾자.','nation-buyeo-road','buyeo-bundle','collect:buyeobundle','부여로 가는 길을 다시 살펴보자.',20,0,{items:{buyeobundle:1}}),
  q('buyeo-carrier','준비 물건을 돌려주자.','nation-buyeo-village','buyeo-carrier','talk:buyeo-carrier','잃어버린 물건을 가져가자.',15,0,{items:{buyeobundle:1},consume:true}),
- q('buyeo-festival','영고 행사터에서 마무리 문제를 풀자.','nation-buyeo-festival','buyeo-ceremony','quiz:buyeo-final','모인 사람들과 축제터를 보자.',45,20,{mark:'buyeo'}),
+ q('buyeo-festival','마을 큰마당에서 마무리 문제를 풀자.','nation-buyeo-festival','buyeo-ceremony','quiz:buyeo-final','모인 사람들과 축제터를 보자.',45,20,{mark:'buyeo'}),
  q('goguryeo-start','집 짓는 사람을 만나자.','nation-goguryeo-homes','goguryeo-builder','talk:goguryeo-builder','마을 뒤의 집으로 가자.',0),
  q('goguryeo-wood','목재를 3개 모으자.','nation-goguryeo-forest','goguryeo-wood-c','collect:wood','깊은 숲에서 목재를 찾자.',25,0,{items:{wood:3}}),
  q('goguryeo-hide','가죽을 1개 구하자.','nation-goguryeo-forest','goguryeo-wolf','win:goguryeo-wolf','숲의 늑대를 찾아보자.',25,0,{items:{hide:1}}),
  q('goguryeo-build','집 재료를 전달하자.','nation-goguryeo-homes','goguryeo-builder','talk:goguryeo-builder','목재 3개와 가죽 1개를 가져가자.',40,0,{items:{wood:3,hide:1},consume:true}),
- q('goguryeo-items','동맹 준비 물건을 2개 찾자.','nation-goguryeo-forest','goguryeo-feast-b','collect:festivalitem','숲 가장자리를 살펴보자.',25,0,{items:{festivalitem:2}}),
- q('goguryeo-festival','동맹터에서 마무리 문제를 풀자.','nation-goguryeo-festival','goguryeo-ceremony','quiz:goguryeo-final','마을 밖 동맹터로 가자.',45,20,{items:{festivalitem:2},consume:true,mark:'goguryeo'}),
+ q('goguryeo-items','행사 준비 물건을 2개 찾자.','nation-goguryeo-forest','goguryeo-feast-b','collect:festivalitem','숲 가장자리를 살펴보자.',25,0,{items:{festivalitem:2}}),
+ q('goguryeo-festival','마을 모임터에서 마무리 문제를 풀자.','nation-goguryeo-festival','goguryeo-ceremony','quiz:goguryeo-final','마을 밖 모임터로 가자.',45,20,{items:{festivalitem:2},consume:true,mark:'goguryeo'}),
  q('okjeo-start','새 살림을 준비하는 사람을 만나자.','nation-okjeo-homes','okjeo-resident','talk:okjeo-resident','옥저 마을의 집을 찾아보자.',0),
  q('okjeo-supplies','생활 물건 3개를 모으자.','nation-okjeo-river','okjeo-bowl','collect:okjeobowl','장작·곡식 자루·그릇을 찾아보자.',35,0,{items:{okjeowood:1,okjeograin:1,okjeobowl:1}}),
  q('okjeo-return','생활 물건을 전하고 마무리 문제를 풀자.','nation-okjeo-homes','okjeo-resident','quiz:okjeo-final','준비한 물건을 가져가자.',45,15,{items:{okjeowood:1,okjeograin:1,okjeobowl:1},consume:true,mark:'okjeo'}),
@@ -75,15 +75,15 @@ const maps=[
  scene('nation-iron-field','달라지는 농경지','field',[n('iron-farmer',11,7,'농부',['철로 만든 도구가 필요해.','수확량이 늘고 사람이 모였다.']),path('field-return',21,9,'철기 마을','nation-iron-village'),foe('iron-boar',6,12,'boar')],[[4,4,'tree'],[18,4,'rock']]),
  scene('nation-iron-outskirts','철기 마을 외곽','deep-wild',[path('iron-out-return',2,9,'철기 마을','nation-iron-village'),task('iron-piece-a',7,5,'바위의 철 조각','rock',{collect:'ironpiece'}),task('iron-piece-b',18,5,'길가의 철 조각','rock',{collect:'ironpiece'}),task('iron-piece-c',17,13,'수풀의 철 조각','rock',{collect:'ironpiece'}),task('iron-target',9,13,'훈련 표적','palisade'),foe('iron-bandit',13,9,'bandit'),foe('iron-wolf',19,8,'wolf')],woods),
  scene('nation-buyeo-road','부여로 가는 길','deep-wild',[path('buyeo-road-back',2,9,'철기 마을','nation-iron-village'),path('buyeo-road-next',21,9,'부여 마을','nation-buyeo-village'),task('buyeo-bundle',16,12,'잃어버린 꾸러미','chest',{collect:'buyeobundle'}),foe('buyeo-road-boar',9,7,'boar'),entity('horse-buyeo','horse',19,14,'들판의 말',{art:'horseLeftIdle'})],stones),
- scene('nation-buyeo-village','부여 마을','ancient',[n('buyeo-leader',11,6,'마을 대표',['아직 몇 사람이 돌아오지 않았어.\n찾아봐 줄래?'],'elder'),n('buyeo-cook',7,12,'음식을 준비하는 사람',['축제 음식이 모자라.']),n('buyeo-carrier',17,11,'꾸러미 주인',['길에서 꾸러미를 잃어버렸어.']),task('buyeo-gather',13,12,'사람들이 모이는 자리','growthFestival'),entity('buyeo-house-a','scenery',6,5,'마을집',{art:'growthHouse',solid:true}),entity('buyeo-house-b','scenery',19,5,'마을집',{art:'growthHouse',solid:true}),entity('buyeo-store','scenery',19,14,'곡식 저장 공간',{art:'growthGranary',solid:true}),path('buyeo-v-back',2,9,'부여로 가는 길','nation-buyeo-road'),path('buyeo-v-forest',21,9,'북쪽 숲','nation-buyeo-forest'),path('buyeo-v-feast',11,2,'영고 준비터','nation-buyeo-festival',14)],village),
+ scene('nation-buyeo-village','부여 마을','ancient',[n('buyeo-leader',11,6,'마을 대표',['아직 몇 사람이 돌아오지 않았어.\n찾아봐 줄래?'],'elder'),n('buyeo-cook',7,12,'음식을 준비하는 사람',['축제 음식이 모자라.']),n('buyeo-carrier',17,11,'꾸러미 주인',['길에서 꾸러미를 잃어버렸어.']),task('buyeo-gather',13,12,'사람들이 모이는 자리','growthFestival'),entity('buyeo-house-a','scenery',6,5,'마을집',{art:'growthHouse',solid:true}),entity('buyeo-house-b','scenery',19,5,'마을집',{art:'growthHouse',solid:true}),entity('buyeo-store','scenery',19,14,'곡식 저장 공간',{art:'growthGranary',solid:true}),path('buyeo-v-back',2,9,'부여로 가는 길','nation-buyeo-road'),path('buyeo-v-forest',21,9,'북쪽 숲','nation-buyeo-forest'),path('buyeo-v-feast',11,2,'마을 큰마당','nation-buyeo-festival',14)],village),
  scene('nation-buyeo-forest','부여 북쪽 숲','deep-wild',[path('buyeo-f-back',2,9,'부여 마을','nation-buyeo-village'),n('buyeo-lost',18,6,'숲에 남은 사람',['늑대가 지나가기를 기다렸어.']),foe('buyeo-wolf',13,8,'wolf'),foe('buyeo-boar',7,12,'boar'),entity('buyeo-berries','berry',19,12,'열매',{art:'berries'})],woods),
- scene('nation-buyeo-festival','영고 준비터','ancient',[path('buyeo-feast-back',11,15,'부여 마을','nation-buyeo-village'),task('buyeo-ceremony',11,7,'영고 행사터','growthFestival'),path('buyeo-feast-next',21,9,'고구려 산길','nation-goguryeo-road',15)],[[5,5,'tree'],[18,5,'tree'],[5,12,'rock']]),
- scene('nation-goguryeo-road','고구려 산길','deep-wild',[path('goguryeo-road-back',2,9,'영고 준비터','nation-buyeo-festival'),path('goguryeo-road-next',21,9,'고구려 마을','nation-goguryeo-village'),foe('goguryeo-road-boar',10,11,'boar'),entity('horse-goguryeo','horse',18,13,'산길의 말',{art:'horseLeftIdle'})],stones),
- scene('nation-goguryeo-village','고구려 마을','ancient',[path('goguryeo-v-back',2,9,'산길','nation-goguryeo-road'),path('goguryeo-v-homes',21,9,'집 뒤쪽','nation-goguryeo-homes'),path('goguryeo-v-forest',11,2,'깊은 숲','nation-goguryeo-forest'),path('goguryeo-v-feast',11,15,'동맹터','nation-goguryeo-festival',20),task('goguryeo-mainhouse',6,5,'큰 집','growthHall',{solid:true}),entity('goguryeo-house-b','scenery',18,6,'마을집',{art:'growthHouse',solid:true}),entity('goguryeo-store','scenery',6,13,'저장 공간',{art:'growthGranary',solid:true})],village),
+ scene('nation-buyeo-festival','마을 큰마당','ancient',[path('buyeo-feast-back',11,15,'부여 마을','nation-buyeo-village'),task('buyeo-ceremony',11,7,'마을 제사터','growthFestival'),path('buyeo-feast-next',21,9,'고구려 산길','nation-goguryeo-road',15)],[[5,5,'tree'],[18,5,'tree'],[5,12,'rock']]),
+ scene('nation-goguryeo-road','고구려 산길','deep-wild',[path('goguryeo-road-back',2,9,'마을 큰마당','nation-buyeo-festival'),path('goguryeo-road-next',21,9,'고구려 마을','nation-goguryeo-village'),foe('goguryeo-road-boar',10,11,'boar'),entity('horse-goguryeo','horse',18,13,'산길의 말',{art:'horseLeftIdle'})],stones),
+ scene('nation-goguryeo-village','고구려 마을','ancient',[path('goguryeo-v-back',2,9,'산길','nation-goguryeo-road'),path('goguryeo-v-homes',21,9,'집 뒤쪽','nation-goguryeo-homes'),path('goguryeo-v-forest',11,2,'깊은 숲','nation-goguryeo-forest'),path('goguryeo-v-feast',11,15,'마을 모임터','nation-goguryeo-festival',20),task('goguryeo-mainhouse',6,5,'큰 집','growthHall',{solid:true}),entity('goguryeo-house-b','scenery',18,6,'마을집',{art:'growthHouse',solid:true}),entity('goguryeo-store','scenery',6,13,'저장 공간',{art:'growthGranary',solid:true})],village),
  scene('nation-goguryeo-homes','집 뒤쪽','ancient',[path('goguryeo-home-back',2,9,'마을','nation-goguryeo-village'),n('goguryeo-builder',15,10,'집 짓는 사람',['집을 완성하려는데 재료가 부족해.'],'growthBuilder'),task('goguryeo-smallhouse',15,7,'집 뒤의 작은 집','growthHouse'),task('goguryeo-family',15,4,'신부의 집','growthHall')],[[4,12,'tree'],[20,4,'pine'],[8,5,'rock'],[8,12,'pine']]),
- scene('nation-goguryeo-forest','고구려 깊은 숲','deep-wild',[path('goguryeo-forest-back',11,15,'마을','nation-goguryeo-village'),task('goguryeo-wood-a',6,5,'목재','tree',{collect:'wood'}),task('goguryeo-wood-b',18,5,'목재','tree',{collect:'wood'}),task('goguryeo-wood-c',18,13,'목재','tree',{collect:'wood'}),task('goguryeo-feast-a',5,13,'동맹 준비 물건','chest',{collect:'festivalitem'}),task('goguryeo-feast-b',14,3,'동맹 준비 물건','chest',{collect:'festivalitem'}),foe('goguryeo-wolf',12,8,'wolf'),foe('goguryeo-boar',20,10,'boar')],woods),
- scene('nation-goguryeo-festival','동맹터','ancient',[path('goguryeo-feast-back',11,2,'마을','nation-goguryeo-village'),task('goguryeo-ceremony',11,8,'동맹 행사터','growthFestival'),path('goguryeo-feast-next',21,9,'옥저 동쪽 길','nation-okjeo-road',21)],[[4,4,'pine'],[19,4,'pine']]),
- scene('nation-okjeo-road','옥저 동쪽 길','deep-wild',[path('okjeo-road-back',2,9,'동맹터','nation-goguryeo-festival'),path('okjeo-road-next',21,9,'옥저 마을','nation-okjeo-village'),foe('okjeo-road-snake',14,7,'snake')],stones),
+ scene('nation-goguryeo-forest','고구려 깊은 숲','deep-wild',[path('goguryeo-forest-back',11,15,'마을','nation-goguryeo-village'),task('goguryeo-wood-a',6,5,'목재','tree',{collect:'wood'}),task('goguryeo-wood-b',18,5,'목재','tree',{collect:'wood'}),task('goguryeo-wood-c',18,13,'목재','tree',{collect:'wood'}),task('goguryeo-feast-a',5,13,'행사 준비 물건','chest',{collect:'festivalitem'}),task('goguryeo-feast-b',14,3,'행사 준비 물건','chest',{collect:'festivalitem'}),foe('goguryeo-wolf',12,8,'wolf'),foe('goguryeo-boar',20,10,'boar')],woods),
+ scene('nation-goguryeo-festival','마을 모임터','ancient',[path('goguryeo-feast-back',11,2,'마을','nation-goguryeo-village'),task('goguryeo-ceremony',11,8,'마을 제사터','growthFestival'),path('goguryeo-feast-next',21,9,'옥저 동쪽 길','nation-okjeo-road',21)],[[4,4,'pine'],[19,4,'pine']]),
+ scene('nation-okjeo-road','옥저 동쪽 길','deep-wild',[path('okjeo-road-back',2,9,'마을 모임터','nation-goguryeo-festival'),path('okjeo-road-next',21,9,'옥저 마을','nation-okjeo-village'),foe('okjeo-road-snake',14,7,'snake')],stones),
  scene('nation-okjeo-village','옥저 마을','ancient',[path('okjeo-v-back',2,9,'동쪽 길','nation-okjeo-road'),path('okjeo-v-homes',21,9,'주거 지역','nation-okjeo-homes'),path('okjeo-v-river',11,15,'강가','nation-okjeo-river'),task('okjeo-grain',16,6,'곡식 자루','grain',{collect:'okjeograin'}),entity('okjeo-house-a','scenery',7,5,'마을집',{art:'growthHouse',solid:true}),entity('okjeo-house-b','scenery',11,5,'마을집',{art:'growthHouse',solid:true}),entity('okjeo-net','scenery',18,12,'고기잡이 도구',{art:'growthFish'})],[[4,4,'tree'],[5,13,'rock'],[18,4,'tree']]),
  scene('nation-okjeo-homes','옥저 주거 지역','ancient',[path('okjeo-home-back',2,9,'마을','nation-okjeo-village'),n('okjeo-resident',16,8,'새 살림을 준비하는 사람',['새 살림에 필요한 물건을 찾아 줄래?'],'growthResident'),task('okjeo-home',16,5,'생활할 집','growthHouse'),path('okjeo-home-next',11,15,'동예 마을','nation-dongye-village',24)],[[4,4,'tree'],[5,13,'rock']]),
  scene('nation-okjeo-river','옥저 강가','field',[path('okjeo-river-back',11,2,'옥저 마을','nation-okjeo-village'),task('okjeo-firewood',6,12,'장작','tree',{collect:'okjeowood'}),task('okjeo-bowl',19,11,'그릇','pottery',{collect:'okjeobowl'}),foe('okjeo-river-boar',13,8,'boar')],[[4,4,'tree'],[18,5,'rock']]),
@@ -98,7 +98,7 @@ const maps=[
  scene('nation-samhan-festival','삼한 축제터','ancient',[path('samhan-feast-back',2,9,'평야 입구','nation-samhan-field'),task('samhan-ceremony',11,8,'삼한 축제터','growthFestival'),path('samhan-feast-home',21,9,'철기 마을','nation-iron-village',36)],[[5,5,'tree'],[18,5,'tree']])
 ];
 
-export const growth={id:'nations',name:'여러 나라의 성장',subtitle:'철의 길을 따라서',start:'nation-iron-village',village:'nation-iron-village',unlock:null,shop:['hardknife','trainingblade','thickleather','woven','berries','food','cookedfish','rice'],artifacts:[],requests:[],quests,maps};
+export const growth={id:'nations',name:'여러 나라의 성장',subtitle:'철의 길을 따라서',start:'nation-iron-village',village:'nation-iron-village',unlock:null,shop:['hardknife','trainingblade','thickleather','woven','bronzeKnife','bronzeArmor','bronzeCharm','ironSword','ironArmor','ironCharm','berries','food','cookedfish','rice'],artifacts:[],requests:[],quests,maps};
 // Rooms live in the same era and use the existing opened-ID save field.
 const enterable=[
  ['nation-iron-village','iron-workshop','작업장','growthShed'],
@@ -115,19 +115,35 @@ const enterable=[
  ['nation-dongye-village','dongye-house-a','마을집','growthHouse'],
  ['nation-dongye-village','dongye-house-b','마을집','growthHouse']
 ];
-for(const [outside,id,name,art] of enterable){
+const roomLayouts=[
+ {furniture:[[2.5,2.7],[7.4,2.7]],loot:[[3.35,3.65],[6.65,3.65]]},
+ {furniture:[[3.0,2.5],[7.5,3.25]],loot:[[7.1,2.35],[2.75,4.45]]},
+ {furniture:[[6.7,2.6],[2.5,3.35]],loot:[[3.15,2.35],[7.15,4.4]]},
+ {furniture:[[2.65,4.0],[7.35,2.55]],loot:[[7.1,3.8],[3.65,2.45]]}
+];
+const roomPalettes={
+ iron:{border:'#514337',floor:['#b69a71','#b99e76','#b19870']},
+ buyeo:{border:'#514438',floor:['#b89c75','#bba078','#b49a72']},
+ goguryeo:{border:'#4b4037',floor:['#a99473','#ad9877','#a59070']},
+ okjeo:{border:'#4c453b',floor:['#b1a07e','#b4a382','#ad9c79']},
+ dongye:{border:'#504438',floor:['#ac9674','#af9977','#a79170']},
+ samhan:{border:'#554638',floor:['#baa17b','#bda57f','#b69d76']}
+};
+for(const [index,[outside,id,name,art]] of enterable.entries()){
  const parent=maps.find(m=>m.id===outside),building=parent.entities.find(e=>e.id===id);
  const roomId='room-'+id;
  Object.assign(building,{type:'house',to:roomId,art,solid:true});
  const crowdedDoor=parent.entities.some(e=>e.type==='npc' && Math.hypot(e.x-building.x,e.y-building.y-1.55)<1.35);
  const store=art==='growthGranary',work=art==='growthShed';
  const props=store?['곡식 자루','항아리']:work?['재료 상자','작업대']:['항아리','작은 상자'];
- maps.push({id:roomId,name:name+' 안',theme:'room',nationVisual:null,w:10,h:8,start:{x:5,y:5.1},returnTo:{map:outside,x:building.x,y:building.y+(crowdedDoor ? .85 : 1.55)},obstacles:[],entities:[
-  entity(roomId+'-bed','roomProp',2.5,2.7,work?'작업 공간':store?'곡식 선반':'침구',{art:work?'roomBench':store?'roomShelf':'roomBed',solid:true}),
-  entity(roomId+'-shelf','roomProp',7.4,2.7,'선반',{art:'roomShelf',solid:true}),
+ const layout=roomLayouts[index%roomLayouts.length];
+ const [[f1x,f1y],[f2x,f2y]]=layout.furniture,[[l1x,l1y],[l2x,l2y]]=layout.loot;
+ maps.push({id:roomId,name:name+' 안',theme:'room',nationVisual:null,roomPalette:roomPalettes[outside.split('-')[1]],w:10,h:8,start:{x:5,y:5.1},returnTo:{map:outside,x:building.x,y:building.y+(crowdedDoor ? .85 : 1.55)},obstacles:[],entities:[
+  entity(roomId+'-bed','roomProp',f1x,f1y,work?'작업 공간':store?'곡식 선반':'침구',{art:work?'roomBench':store?'roomShelf':'roomBed',solid:true}),
+  entity(roomId+'-shelf','roomProp',f2x,f2y,work?'도구 선반':store?'저장 선반':'생활 선반',{art:work?'roomBench':'roomShelf',solid:true}),
   entity(roomId+'-door','roomDoor',5,6.7,'밖으로 나가기',{to:outside,art:'roomDoor'}),
-  entity(roomId+'-loot-a','roomLoot',3.35,3.65,props[0],{art:store?'roomSack':work?'chest':'roomJar'}),
-  entity(roomId+'-loot-b','roomLoot',6.65,3.65,props[1],{art:work?'roomBench':store?'roomJar':'chest'})
+  entity(roomId+'-loot-a','roomLoot',l1x,l1y,props[0],{art:store?'roomSack':work?'chest':'roomJar'}),
+  entity(roomId+'-loot-b','roomLoot',l2x,l2y,props[1],{art:work?'roomBench':store?'roomJar':'chest'})
  ]});
 }
 maps.find(m=>m.id==='nation-dongye-border').start={x:3,y:12};
@@ -136,13 +152,13 @@ for (const m of maps) {
   // Shared art stays consistent; natural features and clearings distinguish the settlements.
   if (m.id==='nation-goguryeo-road') m.obstacles.push(...[[5,4,'rock'],[8,6,'rock'],[17,11,'pine'],[20,13,'rock']].map(([x,y,art])=>({x,y,art})));
 }
-export const NATION_ITEM_NAMES={ironpiece:'철 조각',ironhoe:'철제 농기구',buyeobundle:'준비 꾸러미',wood:'목재',festivalitem:'동맹 준비 물건',okjeowood:'장작',okjeograin:'곡식 자루',okjeobowl:'그릇',dongyepackage:'전할 물건',samhansack:'곡식 자루',samhantool:'농사 도구'};
+export const NATION_ITEM_NAMES={ironpiece:'철 조각',ironhoe:'철제 농기구',buyeobundle:'준비 꾸러미',wood:'목재',festivalitem:'행사 준비 물건',okjeowood:'장작',okjeograin:'곡식 자루',okjeobowl:'그릇',dongyepackage:'전할 물건',samhansack:'곡식 자루',samhantool:'농사 도구'};
 export const NATION_STORY={
   'iron-target':['철기는 전투에도 유리했다.','전쟁에서 이긴 부족이 다른 부족을 흡수하며 커지기도 했다.'],
-  'buyeo-ceremony':['부여에서는 여러 부족이 힘을 합쳐 나라를 이끌었다.','왕은 부족의 대표였다. 12월에는 영고를 열었다.'],
-  'goguryeo-ceremony':['고구려에서는 신랑이 신부 집 뒤에 집을 지어 살았다.','자녀가 다 클 때까지 집안일을 도왔다. 10월에는 동맹을 열었다.'],
-  'dongye-ceremony':['동예에서는 마을끼리 영역을 침범하지 않았다.','침범하면 보상했다. 10월에는 하늘에 제사를 지냈다.'],
-  'samhan-ceremony':['마한·변한·진한을 합쳐 삼한이라고 불렀다.','평야가 많아 벼농사가 발달했다. 5월과 10월에 축제를 열었다.']
+  'buyeo-ceremony':['부여에서는 여러 부족이 힘을 합쳐 나라를 이끌었다.','왕은 부족의 대표였다. 12월에는 사람들이 모여 하늘에 제사를 지냈다.'],
+  'goguryeo-ceremony':['고구려에서는 신랑이 신부 집 뒤에 집을 지어 살았다.','자녀가 다 클 때까지 집안일을 도왔다. 10월에는 함께 모여 제사를 지냈다.'],
+  'dongye-ceremony':['동예에서는 마을마다 자기 영역을 중요하게 여겼다.','마을 사이의 약속을 떠올려 보자.'],
+  'samhan-ceremony':['평야가 많아 벼농사가 발달했다.','사람들이 5월과 10월에 모여 축제를 열었다.']
 };
 export const NATION_GATES={};
 for(const m of maps)for(const e of m.entities)if(e.type==='exit'&&e.unlockAt)NATION_GATES[e.id]=e.unlockAt;
