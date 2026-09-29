@@ -2129,7 +2129,7 @@ function drawMountedPlayer(x,y) {
   const gait=moving?'walk-'+(1+Math.floor(clock*7)%2):'idle';
   const frame=mountedSource(s.appearance,dir,gait);
   const shown=frame.ready?frame:mountedSource(s.appearance,dir,'idle');
-  if(shown.ready){const w=55,h=82.5;ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(shown.canvas,x-w/2,y-h,w,h);ctx.restore();}
+  if(shown.ready){const w=70,h=105;ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(shown.canvas,x-w/2,y-h,w,h);ctx.restore();}
   else drawPlayer(x,y,53,53);
 }
 function roundRect(x, y, w, h, r, fill) {
