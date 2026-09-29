@@ -24,11 +24,10 @@ const ready=Promise.all(Object.values(atlases).map(img=>new Promise((resolve,rej
   img.onload=resolve; img.onerror=()=>reject(new Error('캐릭터 그림을 불러오지 못했다.'));
 })));
 ready.catch(()=>{});
-const horseFrames=Object.fromEntries(['front','back','left','right'].flatMap(direction=>['idle','walk'].map(pose=>{
-  const img=new Image();
-  img.src=new URL(`./assets/maps/horse-${direction}-${pose}.png?v=31.1`,import.meta.url).href;
-  return [`${direction}-${pose}`,img];
-})));
+const mountLayers=Object.fromEntries(['horse','far','body','near'].map(name=>{
+  const img=new Image();img.src=new URL(`./assets/player/mounted/${name}.png?v=33`,import.meta.url).href;
+  return [name,img];
+}));
 const imageReady=img=>img.complete&&img.naturalWidth ? Promise.resolve(img) : new Promise((resolve,reject)=>{
   img.addEventListener('load',()=>resolve(img),{once:true});
   img.addEventListener('error',()=>reject(new Error('탑승 그림을 불러오지 못했다.')),{once:true});
@@ -59,38 +58,39 @@ export function avatarSource(appearance,direction='front',pose='idle'){
   return result;
 }
 
-// Each final frame is a single cached canvas, assembled from the same five
-// customization layers as the walking character. The horse never supplies a rider.
+// Reusable pixel horse + purpose-drawn seated body + the existing selectable
+// head/eyes/hair layers. No completed character PNGs or walking-body fragments.
 export function mountedSource(appearance,direction='front',pose='idle'){
   const a=validAppearance(appearance);
   const id=[a.hair,a.eyes,a.skin,a.hairColor,a.outfit,direction,pose].join('-');
   if(mountedCache.has(id))return mountedCache.get(id);
-  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=direction==='front'?450:400;
-  const rider=avatarSource(a,direction,pose);
-  const horse=horseFrames[`${direction}-${pose==='idle'?'idle':'walk'}`];
-  const promise=Promise.all([imageReady(rider),imageReady(horse)]).then(()=>{
-    const c=canvas.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
-    const horseY=direction==='front'?100:50;
-    c.drawImage(horse,0,horseY,320,320);
-    const side=direction==='left'||direction==='right';
+  const canvas=document.createElement('canvas');canvas.width=80;canvas.height=120;
+  const promise=Promise.all([...Object.values(mountLayers),...Object.values(atlases)].map(imageReady)).then(()=>{
+    const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
+    const side=direction==='left'||direction==='right', d=direction==='back'?2:side?1:0;
+    const gait=pose==='walk-1'?1:pose==='walk-2'?2:0;
+    const index=a.outfit*36+a.skin*9+d*3+gait;
+    const mountPart=name=>c.drawImage(mountLayers[name],index%12*80,Math.floor(index/12)*120,80,120,0,0,80,120);
+    const headPart=(name,index)=>c.drawImage(atlases[name],index%12*256,Math.floor(index/12)*256,256,256,0,0,80,80);
+    const riderPart=fn=>{c.save();if(direction==='right'){c.translate(80,0);c.scale(-1,1);}fn();c.restore();};
+    riderPart(()=>mountPart('far'));
+    const horseIndex=['front','back','left','right'].indexOf(direction);
+    c.drawImage(mountLayers.horse,horseIndex*80,gait*80,80,80,0,36,80,80);
+    riderPart(()=>{
+      const hair=a.hair*12+a.hairColor*3+d;
+      headPart('hair-rear',hair);
+      mountPart('body');
+      headPart('heads',a.hair*12+a.skin*3+d);
+      headPart('eyes',a.eyes*3+d);
+      headPart('hair-front',hair);
+      mountPart('near');
+    });
     if(side){
-      const center=direction==='left'?162:155;
-      // Pelvis rests on the saddle; the near thigh turns toward the stirrup.
-      c.save();c.translate(center+(direction==='left'?9:-9),189);c.rotate(direction==='left'?0.47:-0.47);
-      c.drawImage(rider,126,130,35,80,-17,0,34,69);c.restore();
-      c.drawImage(rider,80,18,100,127,center-56,54,112,143);
-      c.save();c.translate(center,190);c.rotate(direction==='left'?0.43:-0.43);
-      c.drawImage(rider,98,130,34,80,-17,0,35,69);c.restore();
-      const sign=direction==='left'?-1:1;
-      c.strokeStyle='#422c21';c.lineWidth=2;c.lineCap='round';
-      c.beginPath();c.moveTo(center+sign*18,170);c.quadraticCurveTo(center+sign*50,176,center+sign*88,177);c.stroke();
-    }else{
-      c.drawImage(rider,90,132,76,83,110,direction==='front'?219:169,100,90);
-      c.drawImage(rider,78,18,100,127,105,5,110,179);
-      if(direction==='front'){
-        // The whole horse silhouette covers the seated rider's middle, without a cut line.
-        c.drawImage(horse,0,horseY,320,320);
-      }
+      // Rein passes in front of the horse; hand and shin occupy separate layers.
+      c.strokeStyle='#342c27';c.lineWidth=1;
+      c.beginPath();
+      if(direction==='left'){c.moveTo(20,56);c.lineTo(9,67);}else{c.moveTo(60,56);c.lineTo(71,67);}
+      c.stroke();
     }
     return canvas;
   });

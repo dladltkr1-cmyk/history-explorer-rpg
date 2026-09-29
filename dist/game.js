@@ -20,7 +20,7 @@ import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.3';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl, verifyAdminCode } from "./cloud-save.js?v=32";
-import { avatarSource, mountedSource, prepareMounted, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=32";
+import { avatarSource, mountedSource, prepareMounted, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=33";
 import {
   rollDrop,
   salePrice,
@@ -2129,7 +2129,7 @@ function drawMountedPlayer(x,y) {
   const gait=moving?'walk-'+(1+Math.floor(clock*7)%2):'idle';
   const frame=mountedSource(s.appearance,dir,gait);
   const shown=frame.ready?frame:mountedSource(s.appearance,dir,'idle');
-  if(shown.ready){const h=shown.canvas.height*105/320;ctx.drawImage(shown.canvas,x-52.5,y-h,105,h);}
+  if(shown.ready){const w=105,h=157.5;ctx.save();ctx.imageSmoothingEnabled=false;ctx.drawImage(shown.canvas,Math.round(x-w/2),Math.round(y-h),w,h);ctx.restore();}
   else drawPlayer(x,y,53,53);
 }
 function roundRect(x, y, w, h, r, fill) {
