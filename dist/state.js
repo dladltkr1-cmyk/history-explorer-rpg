@@ -432,3 +432,13 @@ export function readSave() {
   const raw = localStorage.getItem(KEY);
   return raw ? validate(JSON.parse(raw)) : null;
 }
+export function writeAppearanceOnly(appearance) {
+  const raw = localStorage.getItem(KEY);
+  if (!raw) return null;
+  const state = JSON.parse(raw);
+  validate(state);
+  state.appearance = validAppearance(appearance);
+  state.updatedAt = Math.max(Date.now(), (state.updatedAt || 0) + 1);
+  localStorage.setItem(KEY, JSON.stringify(state));
+  return state;
+}

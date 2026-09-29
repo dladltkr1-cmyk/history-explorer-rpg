@@ -12,9 +12,10 @@ import {
   activeQuest,
   advance,
   writeSave,
+  writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=27.1";
+} from "./state.js?v=36";
 import { ASSETS } from "./assets.js?v=32";
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.3';
@@ -371,9 +372,20 @@ function create() {
   } else nameForm();
 }
 function customize(name) {
-  const appearance = defaultAppearance();
+  appearanceEditor(defaultAppearance(), async (appearance, button) => {
+    button.textContent = "코드 만드는 중...";
+    const state = fresh(name, appearance.hair >= 3 ? "girl" : "boy");
+    state.appearance = { ...appearance };
+    const { code } = await issueCode(state);
+    state.personalCode = code;
+    panel("개인 코드", `<div class="code-reveal"><p>개인 코드가 만들어졌다.</p><strong>${code}</strong><p>이 코드를 기억해 두면 다른 기기에서도 이어할 수 있다.</p><button id="code-start" class="primary full">게임 시작</button></div>`, {closable:false});
+    $("#code-start").onclick = () => { adminMode = false; start(state); playIntro(); };
+  });
+}
+function appearanceEditor(initial, onApply, { admin = false, onSaveCurrent = null } = {}) {
+  const appearance = { ...initial };
   const groups = [["hair", "머리", HAIR], ["eyes", "눈", EYES], ["skin", "피부색", SKIN], ["hairColor", "머리색", HAIR_COLOR], ["outfit", "옷", OUTFIT]];
-  panel("캐릭터 꾸미기", `<div class="creator-layout"><div class="creator-preview"><div><img id="preview-front" alt="정면" /><small>정면</small></div><div class="creator-directions"><div><img id="preview-side" alt="옆면" /><small>옆면</small></div><div><img id="preview-back" alt="뒷면" /><small>뒷면</small></div></div></div><div class="creator-options">${groups.map(([key,label,values]) => `<section class="creator-group"><strong>${label}</strong><div class="option-row">${values.map((value,i) => `<button type="button" data-option="${key}" data-index="${i}" class="${i === appearance[key] ? "selected" : ""}" aria-pressed="${i === appearance[key]}"><span class="creator-thumb ${key}"><img alt="" data-thumb="${key}-${i}"></span><span>${value}</span></button>`).join("")}</div></section>`).join("")}</div></div><button id="appearance-done" class="primary full creator-start">이 모습으로 시작!</button>`, {wide:true});
+  panel("캐릭터 꾸미기", `<div class="creator-layout"><div class="creator-preview"><div><img id="preview-front" alt="정면" /><small>정면</small></div><div class="creator-directions"><div><img id="preview-side" alt="옆면" /><small>옆면</small></div><div><img id="preview-back" alt="뒷면" /><small>뒷면</small></div></div></div><div class="creator-options">${groups.map(([key,label,values]) => `<section class="creator-group"><strong>${label}</strong><div class="option-row">${values.map((value,i) => `<button type="button" data-option="${key}" data-index="${i}" class="${i === appearance[key] ? "selected" : ""}" aria-pressed="${i === appearance[key]}"><span class="creator-thumb ${key}"><img alt="" data-thumb="${key}-${i}"></span><span>${value}</span></button>`).join("")}</div></section>`).join("")}</div></div><button id="appearance-done" class="primary full creator-start">${admin ? '적용' : '이 모습으로 시작!'}</button>${admin ? `<button id="appearance-save-current" class="full" ${onSaveCurrent ? '' : 'disabled'}>현재 저장에 외형 적용</button><button id="appearance-back" class="full">플레이어 설정</button>` : ''}`, {wide:true});
   const setSprite=(el,a,dir)=>{
     const token=JSON.stringify(a)+dir;
     if(el.dataset.token===token && el.src)return;
@@ -402,20 +414,24 @@ function customize(name) {
   $("#appearance-done").onclick = async () => {
     const button = $("#appearance-done");
     button.disabled = true;
-    button.textContent = "코드 만드는 중...";
-    const state = fresh(name, appearance.hair >= 3 ? "girl" : "boy");
-    state.appearance = { ...appearance };
     try {
-      const { code } = await issueCode(state);
-      state.personalCode = code;
-      panel("개인 코드", `<div class="code-reveal"><p>개인 코드가 만들어졌다.</p><strong>${code}</strong><p>이 코드를 기억해 두면 다른 기기에서도 이어할 수 있다.</p><button id="code-start" class="primary full">게임 시작</button></div>`, {closable:false});
-      $("#code-start").onclick = () => { adminMode = false; start(state); playIntro(); };
+      await onApply({ ...appearance }, button);
     } catch (error) {
       button.disabled = false;
-      button.textContent = "이 모습으로 시작!";
+      button.textContent = admin ? "적용" : "이 모습으로 시작!";
       toast(error.message);
     }
   };
+  if (admin) {
+    $("#appearance-back").onclick = adminPlayer;
+    if (onSaveCurrent) $("#appearance-save-current").onclick = async () => {
+      const button = $("#appearance-save-current");
+      button.disabled = true;
+      try { await onSaveCurrent({ ...appearance }); }
+      catch (error) { toast(error.message); }
+      finally { if (button.isConnected) button.disabled = false; }
+    };
+  }
 }
 $("#new").onclick = create;
 $("#continue").disabled = !saved;
@@ -587,9 +603,38 @@ function adminTravel(era='all') {
   adminBack();
 }
 function adminPlayer() {
-  panel('플레이어 설정',`<p>레벨 ${s.level} · 엽전 ${s.coins} · HP ${s.hp} · 기력 ${s.energy}</p><div class="admin-grid">${[['heal','HP 완전 회복'],['energy','기력 완전 회복'],['invulnerable',`무적 ${s.adminInvulnerable?'끄기':'켜기'}`],['xp','경험치 +50'],['coin','엽전 +100'],['speed',`이동속도 ${s.adminSpeed?'원래대로':'빠르게'}`]].map(([id,label])=>`<button data-qa-player="${id}">${label}</button>`).join('')}</div><label>레벨<select id="qa-level">${Array.from({length:MAX_LEVEL},(_,i)=>`<option value="${i+1}" ${s.level===i+1?'selected':''}>${i+1}</option>`).join('')}</select></label><button id="qa-level-set">레벨 적용</button><button id="admin-back">관리자 메뉴</button>`);
+  panel('플레이어 설정',`<p>레벨 ${s.level} · 엽전 ${s.coins} · HP ${s.hp} · 기력 ${s.energy}</p><div class="admin-grid">${[['heal','HP 완전 회복'],['energy','기력 완전 회복'],['invulnerable',`무적 ${s.adminInvulnerable?'끄기':'켜기'}`],['xp','경험치 +50'],['coin','엽전 +100'],['speed',`이동속도 ${s.adminSpeed?'원래대로':'빠르게'}`]].map(([id,label])=>`<button data-qa-player="${id}">${label}</button>`).join('')}</div><label>레벨<select id="qa-level">${Array.from({length:MAX_LEVEL},(_,i)=>`<option value="${i+1}" ${s.level===i+1?'selected':''}>${i+1}</option>`).join('')}</select></label><button id="qa-level-set">레벨 적용</button><button id="qa-appearance" class="full">캐릭터 외형 변경</button><button id="admin-back">관리자 메뉴</button>`);
   document.querySelectorAll('[data-qa-player]').forEach(b=>b.onclick=()=>{const a=b.dataset.qaPlayer;if(a==='heal')s.hp=abilities(s).hp;if(a==='energy')s.energy=20;if(a==='invulnerable')s.adminInvulnerable=!s.adminInvulnerable;if(a==='xp')gain(s,50,0);if(a==='coin')s.coins+=100;if(a==='speed')s.adminSpeed=!s.adminSpeed;hud();adminPlayer();});
-  $('#qa-level-set').onclick=()=>{s.level=Number($('#qa-level').value);s.hp=Math.min(s.hp,abilities(s).hp);hud();adminPlayer();};adminBack();
+  $('#qa-level-set').onclick=()=>{s.level=Number($('#qa-level').value);s.hp=Math.min(s.hp,abilities(s).hp);hud();adminPlayer();};
+  $('#qa-appearance').onclick=adminAppearance;
+  adminBack();
+}
+function adminAppearance() {
+  const apply = async appearance => {
+    if (s.horseUnlocked) await prepareMounted(appearance);
+    s.appearance = { ...appearance };
+    hud();
+    close();
+    toast('시험 세션에 외형을 적용했다.');
+  };
+  const saveCurrent = saved ? async appearance => {
+    if (s.horseUnlocked) await prepareMounted(appearance);
+    const record = writeAppearanceOnly(appearance);
+    if (!record) throw Error('현재 저장 기록이 없다.');
+    saved = validate(record);
+    adminOriginal = structuredClone(saved);
+    s.appearance = { ...appearance };
+    hud();
+    close();
+    toast('현재 저장에 외형만 적용했다.');
+    if (record.personalCode) {
+      try {
+        const result = await pushCode(record.personalCode, record);
+        if (result.stale) toast('기기 외형은 저장했다. 서버 기록은 더 새로워서 바꾸지 않았다.');
+      } catch { toast('기기 외형은 저장했다. 서버 연결 후 기록을 확인해 줘.'); }
+    }
+  } : null;
+  appearanceEditor(s.appearance, apply, { admin: true, onSaveCurrent: saveCurrent });
 }
 function adminItems(category='food') {
   const categories=[['food','음식'],['material','재료'],['weapon','무기'],['clothes','방어구'],['quest','퀘스트 아이템']];
