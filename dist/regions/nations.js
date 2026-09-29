@@ -113,7 +113,8 @@ const enterable=[
  ['nation-okjeo-village','okjeo-house-b','마을집','growthHouse'],
  ['nation-okjeo-homes','okjeo-home','생활할 집','growthHouse'],
  ['nation-dongye-village','dongye-house-a','마을집','growthHouse'],
- ['nation-dongye-village','dongye-house-b','마을집','growthHouse']
+ ['nation-dongye-village','dongye-house-b','마을집','growthHouse'],
+ ['nation-samhan-field','samhan-grainstack','곡식 창고','growthGranary']
 ];
 const roomLayouts=[
  {furniture:[[2.5,2.7],[7.4,2.7]],loot:[[3.35,3.65],[6.65,3.65]]},
@@ -148,7 +149,7 @@ for(const [index,[outside,id,name,art]] of enterable.entries()){
 }
 maps.find(m=>m.id==='nation-dongye-border').start={x:3,y:12};
 for (const m of maps) {
-  m.nationVisual = m.id.split('-')[1];
+  m.nationVisual = m.theme==='room' ? null : m.id.split('-')[1];
   // Shared art stays consistent; natural features and clearings distinguish the settlements.
   if (m.id==='nation-goguryeo-road') m.obstacles.push(...[[5,4,'rock'],[8,6,'rock'],[17,11,'pine'],[20,13,'rock']].map(([x,y,art])=>({x,y,art})));
 }

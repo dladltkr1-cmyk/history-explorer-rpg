@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=37";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=37.1";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,10 +15,10 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=37";
+} from "./state.js?v=37.1";
 import { ASSETS } from "./assets.js?v=37";
 import { QUIZZES } from "./regions/expansion.js";
-import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37';
+import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl, verifyAdminCode } from "./cloud-save.js?v=32";
 import { avatarSource, mountedSource, prepareMounted, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=35";
