@@ -20,7 +20,7 @@ import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=31.3';
 import { music } from "./audio.js";
 import { issueCode, loadCode, pushCode, normalizedCode, cloudSaveUrl, verifyAdminCode } from "./cloud-save.js?v=32";
-import { avatarSource, mountedSource, prepareMounted, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=34";
+import { avatarSource, mountedSource, prepareMounted, HAIR, EYES, SKIN, HAIR_COLOR, OUTFIT, defaultAppearance } from "./avatar.js?v=35";
 import {
   rollDrop,
   salePrice,
@@ -2126,7 +2126,7 @@ function drawPlayer(x, y, w, h) {
 }
 function drawMountedPlayer(x,y) {
   const dir=s.direction==='up'?'back':s.direction==='down'?'front':s.direction;
-  const gait=moving?'walk-'+(1+Math.floor(clock*7)%2):'idle';
+  const gait=moving?'walk-'+(1+Math.floor(clock*4)%2):'idle';
   const frame=mountedSource(s.appearance,dir,gait);
   const shown=frame.ready?frame:mountedSource(s.appearance,dir,'idle');
   if(shown.ready){const w=70,h=105;ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(shown.canvas,x-w/2,y-h,w,h);ctx.restore();}

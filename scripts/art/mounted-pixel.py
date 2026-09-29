@@ -93,23 +93,30 @@ for layer in range(3):
                     tile=rider(outfit,skin,'side' if direction==1 else 'back' if direction==2 else 'front',gait)[layer]
                     tile=tile.resize((CELL,RIDER_HEIGHT),Image.Resampling.LANCZOS)
                     atlas.alpha_composite(tile,((index%12)*CELL,(index//12)*RIDER_HEIGHT))
-    atlas.save(OUT / ('far.png','body.png','near.png')[layer],optimize=True)
+    # Avoid PIL's optimizer leaving an incomplete large atlas on some builds.
+    target=OUT / ('far.png','body.png','near.png')[layer]
+    temporary=target.with_suffix('.png.tmp')
+    atlas.save(temporary,format='PNG',optimize=False)
+    temporary.replace(target)
 
 # Preserve the full horse drawing so it reduces as smoothly as the walking avatar.
 horse_atlas=Image.new('RGBA',(4*CELL,3*CELL))
 for di,direction in enumerate(('front','back','left','right')):
     idle_raw=Image.open(ROOT/'maps'/f'horse-{direction}-idle.png').convert('RGBA').resize((CELL,CELL),Image.Resampling.LANCZOS)
     idle_box=idle_raw.getchannel('A').point(lambda p:255 if p>=16 else 0).getbbox()
+    walk_frame=None
     for gait in range(3):
-        pose = 'idle' if gait == 0 else 'walk'
+        # The supplied horse art has one asymmetric walk pose. Alternate it
+        # with the balanced planted pose to create a readable two-phase stride.
+        pose = 'walk' if gait == 1 else 'idle'
         original=Image.open(ROOT/'maps'/f'horse-{direction}-{pose}.png').convert('RGBA')
         colors=original.resize((CELL,CELL),Image.Resampling.LANCZOS)
         if gait:
             box=colors.getchannel('A').point(lambda p:255 if p>=16 else 0).getbbox()
             fitted=colors.crop(box).resize((idle_box[2]-idle_box[0],idle_box[3]-idle_box[1]),Image.Resampling.LANCZOS)
             aligned=Image.new('RGBA',(CELL,CELL));aligned.alpha_composite(fitted,idle_box[:2]);colors=aligned
-        if gait==2:
-            # A second stride with the weight shifted and a slight body bob.
-            shifted=Image.new('RGBA',(CELL,CELL)); shifted.alpha_composite(colors,(0,-3));colors=shifted
         horse_atlas.alpha_composite(colors,(di*CELL,gait*CELL))
-horse_atlas.save(OUT/'horse.png',optimize=True)
+target=OUT/'horse.png'
+temporary=target.with_suffix('.png.tmp')
+horse_atlas.save(temporary,format='PNG',optimize=False)
+temporary.replace(target)

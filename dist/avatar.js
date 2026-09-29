@@ -25,7 +25,7 @@ const ready=Promise.all(Object.values(atlases).map(img=>new Promise((resolve,rej
 })));
 ready.catch(()=>{});
 const mountLayers=Object.fromEntries(['horse','far','body','near'].map(name=>{
-  const img=new Image();img.src=new URL(`./assets/player/mounted/${name}.png?v=34`,import.meta.url).href;
+  const img=new Image();img.src=new URL(`./assets/player/mounted/${name}.png?v=35`,import.meta.url).href;
   return [name,img];
 }));
 const imageReady=img=>img.complete&&img.naturalWidth ? Promise.resolve(img) : new Promise((resolve,reject)=>{
