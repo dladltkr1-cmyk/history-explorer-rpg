@@ -6,6 +6,9 @@ OUT = ROOT / 'player' / 'mounted'
 OUT.mkdir(parents=True, exist_ok=True)
 W = 80
 H = 120
+S = 4
+CELL = 256
+RIDER_HEIGHT = 384
 
 # Outfit palette follows the six existing avatar outfits, in saved-ID order.
 OUTFITS = [
@@ -20,15 +23,16 @@ SKINS = [('#f3ceac','#d59d75'),('#e3b78a','#b87b52'),('#bd8760','#925b3a'),('#80
 INK = '#292725'
 
 def poly(d, points, fill, outline=INK):
+    points=[(x*S,y*S) for x,y in points]
     d.polygon(points, fill=fill)
-    if outline: d.line(points + [points[0]], fill=outline, width=1, joint='curve')
+    if outline: d.line(points + [points[0]], fill=outline, width=S, joint='curve')
 
-def line(d, points, fill, width=2): d.line(points, fill=fill, width=width, joint='curve')
+def line(d, points, fill, width=2): d.line([(x*S,y*S) for x,y in points], fill=fill, width=width*S, joint='curve')
 
 def rider(outfit, skin, direction, gait):
     main, shade, accent, pants, boots = OUTFITS[outfit]
     flesh, flesh_shade = SKINS[skin]
-    far = Image.new('RGBA',(W,H)); core = Image.new('RGBA',(W,H)); near = Image.new('RGBA',(W,H))
+    far = Image.new('RGBA',(W*S,H*S)); core = Image.new('RGBA',(W*S,H*S)); near = Image.new('RGBA',(W*S,H*S))
     f,c,n = (ImageDraw.Draw(i) for i in (far,core,near))
     bob = 1 if gait == 1 else 0
     # A seated figure is drawn from fresh shapes, never extracted from walking bodies.
@@ -80,36 +84,32 @@ def rider(outfit, skin, direction, gait):
 
 # 6 outfits × 4 skins × 3 directions (front, side, back) × 3 poses.
 for layer in range(3):
-    atlas=Image.new('RGBA',(12*W,18*H))
+    atlas=Image.new('RGBA',(12*CELL,18*RIDER_HEIGHT))
     for outfit in range(6):
         for skin in range(4):
             for direction in range(3):
                 for gait in range(3):
                     index=outfit*36+skin*9+direction*3+gait
                     tile=rider(outfit,skin,'side' if direction==1 else 'back' if direction==2 else 'front',gait)[layer]
-                    atlas.alpha_composite(tile,((index%12)*W,(index//12)*H))
+                    tile=tile.resize((CELL,RIDER_HEIGHT),Image.Resampling.LANCZOS)
+                    atlas.alpha_composite(tile,((index%12)*CELL,(index//12)*RIDER_HEIGHT))
     atlas.save(OUT / ('far.png','body.png','near.png')[layer],optimize=True)
 
-# Preserve the horse silhouette, saddle, and directional anatomy while reducing
-# the painterly original to the same 80-pixel cell and restrained pixel palette.
-horse_atlas=Image.new('RGBA',(4*W,3*W))
+# Preserve the full horse drawing so it reduces as smoothly as the walking avatar.
+horse_atlas=Image.new('RGBA',(4*CELL,3*CELL))
 for di,direction in enumerate(('front','back','left','right')):
-    idle_raw=Image.open(ROOT/'maps'/f'horse-{direction}-idle.png').convert('RGBA').resize((W,W),Image.Resampling.LANCZOS)
-    idle_box=idle_raw.getchannel('A').point(lambda p:255 if p>=90 else 0).getbbox()
+    idle_raw=Image.open(ROOT/'maps'/f'horse-{direction}-idle.png').convert('RGBA').resize((CELL,CELL),Image.Resampling.LANCZOS)
+    idle_box=idle_raw.getchannel('A').point(lambda p:255 if p>=16 else 0).getbbox()
     for gait in range(3):
         pose = 'idle' if gait == 0 else 'walk'
         original=Image.open(ROOT/'maps'/f'horse-{direction}-{pose}.png').convert('RGBA')
-        small=original.resize((W,W),Image.Resampling.LANCZOS)
-        alpha=small.getchannel('A').point(lambda p:255 if p>=90 else 0)
-        opaque=Image.new('RGB',(W,W),'#81775f');opaque.paste(small,mask=alpha)
-        colors=opaque.quantize(colors=16,method=Image.Quantize.MEDIANCUT,dither=Image.Dither.NONE).convert('RGBA')
-        colors.putalpha(alpha)
+        colors=original.resize((CELL,CELL),Image.Resampling.LANCZOS)
         if gait:
-            box=alpha.getbbox()
-            fitted=colors.crop(box).resize((idle_box[2]-idle_box[0],idle_box[3]-idle_box[1]),Image.Resampling.NEAREST)
-            aligned=Image.new('RGBA',(W,W));aligned.alpha_composite(fitted,idle_box[:2]);colors=aligned
+            box=colors.getchannel('A').point(lambda p:255 if p>=16 else 0).getbbox()
+            fitted=colors.crop(box).resize((idle_box[2]-idle_box[0],idle_box[3]-idle_box[1]),Image.Resampling.LANCZOS)
+            aligned=Image.new('RGBA',(CELL,CELL));aligned.alpha_composite(fitted,idle_box[:2]);colors=aligned
         if gait==2:
             # A second stride with the weight shifted and a slight body bob.
-            shifted=Image.new('RGBA',(W,W)); shifted.alpha_composite(colors,(0,-1));colors=shifted
-        horse_atlas.alpha_composite(colors,(di*W,gait*W))
+            shifted=Image.new('RGBA',(CELL,CELL)); shifted.alpha_composite(colors,(0,-3));colors=shifted
+        horse_atlas.alpha_composite(colors,(di*CELL,gait*CELL))
 horse_atlas.save(OUT/'horse.png',optimize=True)

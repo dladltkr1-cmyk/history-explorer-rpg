@@ -25,7 +25,7 @@ const ready=Promise.all(Object.values(atlases).map(img=>new Promise((resolve,rej
 })));
 ready.catch(()=>{});
 const mountLayers=Object.fromEntries(['horse','far','body','near'].map(name=>{
-  const img=new Image();img.src=new URL(`./assets/player/mounted/${name}.png?v=33`,import.meta.url).href;
+  const img=new Image();img.src=new URL(`./assets/player/mounted/${name}.png?v=34`,import.meta.url).href;
   return [name,img];
 }));
 const imageReady=img=>img.complete&&img.naturalWidth ? Promise.resolve(img) : new Promise((resolve,reject)=>{
@@ -58,24 +58,24 @@ export function avatarSource(appearance,direction='front',pose='idle'){
   return result;
 }
 
-// Reusable pixel horse + purpose-drawn seated body + the existing selectable
+// High-resolution horse + purpose-drawn seated body + the existing selectable
 // head/eyes/hair layers. No completed character PNGs or walking-body fragments.
 export function mountedSource(appearance,direction='front',pose='idle'){
   const a=validAppearance(appearance);
   const id=[a.hair,a.eyes,a.skin,a.hairColor,a.outfit,direction,pose].join('-');
   if(mountedCache.has(id))return mountedCache.get(id);
-  const canvas=document.createElement('canvas');canvas.width=80;canvas.height=120;
+  const canvas=document.createElement('canvas');canvas.width=256;canvas.height=384;
   const promise=Promise.all([...Object.values(mountLayers),...Object.values(atlases)].map(imageReady)).then(()=>{
-    const c=canvas.getContext('2d');c.imageSmoothingEnabled=false;
+    const c=canvas.getContext('2d');c.imageSmoothingEnabled=true;c.imageSmoothingQuality='high';
     const side=direction==='left'||direction==='right', d=direction==='back'?2:side?1:0;
     const gait=pose==='walk-1'?1:pose==='walk-2'?2:0;
     const index=a.outfit*36+a.skin*9+d*3+gait;
-    const mountPart=name=>c.drawImage(mountLayers[name],index%12*80,Math.floor(index/12)*120,80,120,0,0,80,120);
-    const headPart=(name,index)=>c.drawImage(atlases[name],index%12*256,Math.floor(index/12)*256,256,256,0,0,80,80);
-    const riderPart=fn=>{c.save();if(direction==='right'){c.translate(80,0);c.scale(-1,1);}fn();c.restore();};
+    const mountPart=name=>c.drawImage(mountLayers[name],index%12*256,Math.floor(index/12)*384,256,384,0,0,256,384);
+    const headPart=(name,index)=>c.drawImage(atlases[name],index%12*256,Math.floor(index/12)*256,256,256,0,0,256,256);
+    const riderPart=fn=>{c.save();if(direction==='right'){c.translate(256,0);c.scale(-1,1);}fn();c.restore();};
     riderPart(()=>mountPart('far'));
     const horseIndex=['front','back','left','right'].indexOf(direction);
-    c.drawImage(mountLayers.horse,horseIndex*80,gait*80,80,80,0,36,80,80);
+    c.drawImage(mountLayers.horse,horseIndex*256,gait*256,256,256,0,115,256,256);
     riderPart(()=>{
       const hair=a.hair*12+a.hairColor*3+d;
       headPart('hair-rear',hair);
@@ -87,9 +87,9 @@ export function mountedSource(appearance,direction='front',pose='idle'){
     });
     if(side){
       // Rein passes in front of the horse; hand and shin occupy separate layers.
-      c.strokeStyle='#342c27';c.lineWidth=1;
+      c.strokeStyle='#342c27';c.lineWidth=2.5;
       c.beginPath();
-      if(direction==='left'){c.moveTo(20,56);c.lineTo(9,67);}else{c.moveTo(60,56);c.lineTo(71,67);}
+      if(direction==='left'){c.moveTo(64,179);c.lineTo(29,214);}else{c.moveTo(192,179);c.lineTo(227,214);}
       c.stroke();
     }
     return canvas;
