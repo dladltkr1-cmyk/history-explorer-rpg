@@ -2156,6 +2156,7 @@ function drawSprite(art, x, y, w, h) {
   if (im?.complete && im.naturalWidth)
     ctx.drawImage(im, x - w / 2, y - h + h * (SPRITE_BASELINE[art] || 0), w, h);
 }
+const WALKING_PLAYER_SCALE = 1.06;
 function drawPlayer(x, y, w, h) {
   let direction =
     s.direction === "up"
@@ -2532,7 +2533,7 @@ function draw() {
       ctx.filter = 'grayscale(1)';
     }
     const bob = isPlayer && moving ? Math.sin(clock * 17) * 2 : 0;
-    if (isPlayer) s.mounted && s.map.startsWith('nation-') ? drawMountedPlayer(x,y+bob) : drawPlayer(x, y + bob, w, h);
+    if (isPlayer) s.mounted && s.map.startsWith('nation-') ? drawMountedPlayer(x,y+bob) : drawPlayer(x, y + bob, w * WALKING_PLAYER_SCALE, h * WALKING_PLAYER_SCALE);
     else {
       if (e.type === "enemy" && e.elite) ctx.filter = "sepia(.28) saturate(1.2)";
       drawSprite(e.art, x, y + bob, w, h);
