@@ -1,5 +1,5 @@
 import {entity,person} from './common.js';
-import {FISHING_MATERIALS} from '../fishing.js';
+import {FISHING_MATERIALS} from '../fishing.js?v=39';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [
@@ -16,7 +16,17 @@ export const FISHING_QA = [
   {id:'near',name:'퀘스트 완료 직전',quest:'pre-fishing-first',map:'neo-river',target:'neo-fishing',items:{fishingrod:1}},
   {id:'complete',name:'완료 상태',quest:'pre-fishing-first',map:'neo-river',target:'neo-fishing',items:{fishingrod:1},complete:true},
 ];
-export const INTERACTION_QA = [{id:'fishing',name:'낚시 미니게임 테스트',map:'neo-river',target:'neo-fishing',items:{fishingrod:1},action:'fishing'}];
+export const FISHING_TEST_MODES = [
+  {id:'tutorial',name:'튜토리얼 낚시',options:{tutorial:true}},
+  {id:'easy',name:'쉬운 난이도',options:{tutorial:false,profile:'easy'}},
+  {id:'normal',name:'보통 난이도',options:{tutorial:false,profile:'normal'}},
+  {id:'hard',name:'어려운 난이도',options:{tutorial:false,profile:'hard'}},
+  {id:'rare',name:'희귀 난이도',options:{tutorial:false,profile:'rare'}},
+  {id:'long',name:'긴 입질 대기 · 60초',options:{tutorial:false,profile:'normal',waitMs:60000}},
+  {id:'success-rest',name:'낚시 성공 후 쿨타임',rest:true},
+  {id:'failure-rest',name:'낚시 실패 후 재도전',rest:false},
+];
+export const INTERACTION_QA = [{id:'fishing',name:'낚시 미니게임 테스트',map:'neo-river',target:'neo-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES}];
 export const FISHING_SITES = [
   {map:'neo-river',id:'neo-fishing',x:16.7,y:6.2,name:'강가 낚시 자리'},
   {map:'bronze-village',id:'bronze-fishing',x:19.4,y:6.6,name:'마을 외곽 물가',pond:{x:21,y:5.2,rx:1.5,ry:2}},
@@ -31,7 +41,7 @@ export function addFishing(regions) {
   neo.quests.push(
     {id:'pre-fishing-start',title:'기술자와 낚싯대 이야기를 하자.',detail:'안정적으로 먹을거리를 구할 새 도구를 만들어 보자.',map:'pre-village',target:'neo-technician',event:'talk:neo-technician',xp:0,coins:0,qa},
     {id:'pre-fishing-rod',title:'낚싯대를 만들 재료를 모으자.',detail:'가락바퀴로 실 만들기 → 숲에서 가지 줍기 → 멧돼지 뼈로 뼈바늘 만들기 → 기술자에게 돌아가기.',map:'pre-village',target:'neo-technician',event:'craft:fishingrod',xp:20,coins:0,qa},
-    {id:'pre-fishing-first',title:'낚싯대로 첫 물고기를 잡자.',detail:'강가 낚시 자리에서 성공 구간에 맞춰 3번 당겨 보자.',map:'neo-river',target:'neo-fishing',event:'fishing:catch',xp:25,coins:0,qa}
+    {id:'pre-fishing-first',title:'낚싯대로 첫 물고기를 잡자.',detail:'강가 낚시 자리에서 입질을 기다린 뒤 성공 구간에 맞춰 당겨 보자.',map:'neo-river',target:'neo-fishing',event:'fishing:catch',xp:25,coins:0,qa}
   );
   neo.maps.find(m=>m.id==='pre-village').entities.push(person('neo-technician',13.5,10.5,'마을 기술자',['강에서 물고기를 잡으면 먹을거리를 더 구할 수 있어.','게임에서는 실과 나뭇가지, 뼈바늘로 간단한 낚싯대를 만들 수 있어.'],'farmer'));
   neo.maps.find(m=>m.id==='pre-forest').entities.push(entity('fishing-branch','fishingBranch',7,10.7,'떨어진 나뭇가지',{art:'branchIcon'}));
@@ -61,6 +71,7 @@ export function prepareContentQA(s,r,stage) {
   for(const q of r.quests.slice(0,index))if(q.event.startsWith('artifact:')&&!s.artifacts.includes(q.event.slice(9)))s.artifacts.push(q.event.slice(9));
   s.artifacts=s.artifacts.filter(id=>!(stage.removeArtifacts||[]).includes(id));
   if(qa.resetTutorial)s.tutorials[qa.resetTutorial]=Boolean(stage.complete);
+  if(qa.resetTutorial==='fishing')for(const key of Object.keys(s.cooldowns))if(key.startsWith('fishing:'))delete s.cooldowns[key];
   for(const id of qa.resetMonsters||[]){delete s.cooldowns[id];delete s.monsters[id];}
   return stage;
 }

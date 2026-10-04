@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=38";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=39";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,10 +15,10 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=38";
+} from "./state.js?v=39";
 import { ASSETS } from "./assets.js?v=38";
-import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound } from './fishing.js?v=38.1';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=38';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=39';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=39';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
@@ -672,7 +672,7 @@ function adminInteractions() {
       for(const [id,n] of Object.entries(registered.items||{}))adminGive(id,n);
       const target=MAPS[registered.map].entities.find(e=>e.id===registered.target);
       adminJump(registered.map,target);
-      if(registered.action==='fishing')fishingMenu(target);
+      if(registered.action==='fishing')adminFishingQA(target,registered.modes);
       return;
     }
     if(a==='map'){nationMap();return;}
@@ -1464,18 +1464,56 @@ function fishingTechnician(e,q) {
     toast('강가 낚시 자리에서 첫 물고기를 잡아 보자.');
   };
 }
-function fishingMenu(e) {
-  if(!hasRod(s)){dialogue(e.name,['낚싯대가 필요해. 신석기 마을 기술자에게 만들어 달라고 하자.'],'rodIcon');return;}
-  const tutorial=!s.tutorials.fishing;
-  panel(e.name,`<div class="fishing-intro">${imageTag('rodIcon','나무 막대와 실로 만든 낚싯대')}<p>물가에 낚싯대를 던져 보자.<br>표시가 밝은 성공 구간에 들어오면 <b>당기기!</b></p></div><p>5번의 기회 중 3번 성공하면 생물고기 1마리!<br>한 기회에 한 번만 당길 수 있어. 실패해도 잃는 것은 없어.</p>${tutorial?'<p class="note">첫 낚시는 표시가 천천히 움직이고 성공 구간이 더 넓어.</p>':''}<button id="cast-fishing" class="primary full">낚시 시작</button>`);
-  $('#cast-fishing').onclick=()=>startFishing(e,tutorial);
+function adminFishingQA(e,modes=INTERACTION_QA.find(v=>v.id==='fishing').modes) {
+  if(!adminMode)return;
+  panel('낚시 미니게임 테스트',`<p>시험 조건을 선택하자. 학생 원래 기록에는 저장되지 않아.</p><div class="admin-grid">${modes.map(v=>`<button data-fishing-test="${v.id}">${v.name}</button>`).join('')}</div><button id="qa-fishing-reset" class="full">이 낚시터 쿨타임 초기화</button><button id="admin-back">관리자 메뉴</button>`);
+  document.querySelectorAll('[data-fishing-test]').forEach(b=>b.onclick=()=>{
+    const mode=modes.find(v=>v.id===b.dataset.fishingTest);
+    delete s.cooldowns[fishingSiteKey(s.map,e.id)];
+    if(mode.rest!==undefined)restFishingSite(s,s.map,e.id,mode.rest);
+    fishingMenu(e,mode.options||{});
+  });
+  $('#qa-fishing-reset').onclick=()=>{delete s.cooldowns[fishingSiteKey(s.map,e.id)];hud();toast('시험 낚시터가 다시 열렸다.');};
+  adminBack();
 }
-function startFishing(e,tutorial) {
-  const game=createFishing(tutorial), state=s;
-  panel('낚시',`<div class="fishing-water" aria-hidden="true"><span class="water-ring"></span><span class="fishing-float">│<br>●</span></div><p id="fishing-status" role="status">낚싯대를 던졌다. 입질을 기다리는 중...</p><p id="fishing-count">성공 0 / 3 · 기회 1 / 5</p><div class="fishing-gauge" aria-label="움직이는 표시와 성공 구간"><span class="fishing-zone" style="left:${game.zone[0]*100}%;width:${(game.zone[1]-game.zone[0])*100}%">성공 구간</span><span id="fishing-marker" class="fishing-marker" data-in-zone="false"></span></div><button id="pull-fishing" class="primary full fishing-pull" disabled>당기기!</button><p class="note">한 기회에 한 번만! 표시가 성공 구간에 왔을 때 눌러.</p>`,{type:'fishing'});
-  const button=$('#pull-fishing'),marker=$('#fishing-marker'),status=$('#fishing-status'),count=$('#fishing-count');
-  let frame=0,alive=true,active=false,start=performance.now()+1200,roundAt=start;
+function watchFishingCooldown(e,button,status) {
+  const state=s,map=s.map;
+  let frame=0,alive=true;
   stopFishing=()=>{alive=false;cancelAnimationFrame(frame);};
+  function update() {
+    if(!alive||s!==state)return;
+    const remaining=fishingCooldown(state,map,e.id);
+    button.disabled=remaining>0;
+    button.textContent=remaining>0?`다시 낚시하기 · ${Math.ceil(remaining/1000)}초 뒤`:'다시 낚시하기';
+    if(status&&remaining<=0)status.textContent='다시 낚시할 수 있어.';
+    if(remaining>0)frame=requestAnimationFrame(update);
+  }
+  update();
+}
+function fishingMenu(e,options={}) {
+  if(!hasRod(s)){dialogue(e.name,['낚싯대가 필요해. 신석기 마을 기술자에게 만들어 달라고 하자.'],'rodIcon');return;}
+  if(!adminMode)options={};
+  const tutorial=options.tutorial??!s.tutorials.fishing;
+  const resting=fishingCooldown(s,s.map,e.id)>0;
+  panel(e.name,`${resting?'<p id="fishing-rest">지금은 물고기가 보이지 않는다.<br>조금 뒤에 다시 와 보자.</p>':`<div class="fishing-intro">${imageTag('rodIcon','나무 막대와 실로 만든 낚싯대')}<p>입질을 기다린 뒤,<br>표시가 성공 구간에 왔을 때 <b>당기기!</b></p></div><p>물고기마다 필요한 성공 횟수와 타이밍이 달라.<br>한 기회에 한 번만 당길 수 있어. 실패해도 잃는 것은 없어.</p>${tutorial?'<p class="note">첫 낚시는 조금 더 쉬워. 성공 2~3회로 잡을 수 있어.</p>':'<p class="note">입질은 금방 올 수도, 1분 가까이 걸릴 수도 있어.</p>'}`}<button id="cast-fishing" class="primary full" ${resting?'disabled':''}>낚시 시작</button>${adminMode?'<button id="qa-fishing-clear" class="full">시험 쿨타임 초기화</button><button id="qa-fishing-back">낚시 시험 조건</button>':''}`);
+  $('#cast-fishing').onclick=()=>startFishing(e,tutorial,options);
+  if(resting)watchFishingCooldown(e,$('#cast-fishing'),$('#fishing-rest'));
+  if(adminMode){
+    $('#qa-fishing-clear').onclick=()=>{delete s.cooldowns[fishingSiteKey(s.map,e.id)];fishingMenu(e,options);};
+    $('#qa-fishing-back').onclick=()=>adminFishingQA(e);
+  }
+}
+function startFishing(e,tutorial,options={}) {
+  if(fishingCooldown(s,s.map,e.id)>0){fishingMenu(e,options);return;}
+  const game=createFishing(tutorial,adminMode?options:{}),state=s,map=s.map;
+  panel('낚시',`<div class="fishing-water waiting" aria-hidden="true"><span class="water-ring"></span><span class="fishing-float">│<br>●</span></div><p id="fishing-status" role="status">낚싯대를 던졌다. 입질을 기다리는 중...</p><p id="fishing-count"></p><div class="fishing-gauge" hidden aria-label="움직이는 표시와 성공 구간"><span class="fishing-zone">성공</span><span id="fishing-marker" class="fishing-marker" data-in-zone="false"></span></div><button id="pull-fishing" class="primary full fishing-pull" disabled>당기기!</button><p class="note">한 기회에 한 번만! 성공 구간 밖에서 누르면 이번 기회는 끝나.</p>${adminMode?'<button id="qa-fishing-skip" class="full">시험 대기 건너뛰기</button>':''}`,{type:'fishing'});
+  const button=$('#pull-fishing'),marker=$('#fishing-marker'),status=$('#fishing-status'),count=$('#fishing-count'),gauge=$('.fishing-gauge'),zone=$('.fishing-zone'),water=$('.fishing-water');
+  let frame=0,alive=true,active=false,biteShown=false,biteAt=performance.now()+game.waitMs,roundAt=biteAt+900;
+  const updateCount=()=>{count.textContent=`성공 ${game.successes} / ${game.required} · 실수 ${game.round+(game.pressed?1:0)-game.successes} / ${game.maxFailures}`;};
+  const updateZone=()=>{zone.style.left=`${game.zone[0]*100}%`;zone.style.width=`${(game.zone[1]-game.zone[0])*100}%`;};
+  updateCount();updateZone();
+  stopFishing=()=>{alive=false;cancelAnimationFrame(frame);};
+  if(adminMode)$('#qa-fishing-skip').onclick=()=>{if(biteShown)return;biteAt=performance.now();roundAt=biteAt+900;$('#qa-fishing-skip').disabled=true;};
   music.effect('click');
   button.onclick=()=>{
     if(!alive||!active||game.pressed||s!==state)return;
@@ -1483,35 +1521,42 @@ function startFishing(e,tutorial) {
     if(game.position>=1)return;
     const success=pullFishing(game);
     button.disabled=true;
-    status.textContent=success?'좋아! 물고기를 조금 더 당겨 보자.':'이번에는 빗나갔다. 다음 기회를 기다리자.';
-    count.textContent=`성공 ${game.successes} / 3 · 기회 ${game.round+1} / 5`;
+    status.textContent=success?'좋아! 물고기를 당겼다.':'이번에는 빗나갔다.';
+    updateCount();
     music.effect(success?'xp':'click');
   };
   function complete() {
     close();
+    restFishingSite(state,map,e.id,game.won);
     if(game.won) {
       state.inventory.fish++;state.tutorials.fishing=true;
       feedback('물고기를 잡았다! 생물고기 +1','item','artifact');
       finishEvent('fishing:catch');
       if(screen==='dialogue')return;
-    }
-    panel(game.won?'물고기를 잡았다!':'물고기가 도망갔다!',`<p>${game.won?'생물고기 1마리를 얻었다. 모닥불에서 익힐 수 있어.':'다시 도전해 보자. HP와 엽전, 낚싯대는 그대로야.'}</p><button id="fish-retry" class="primary full">다시 낚시하기</button>`);
-    $('#fish-retry').onclick=()=>startFishing(e,!state.tutorials.fishing);
+    } else save();
+    panel(game.won?'물고기를 잡았다!':'물고기가 도망갔다!',`<p>${game.won?'생물고기 1마리를 얻었다. 모닥불에서 익힐 수 있어.<br>이 낚시터는 1분 동안 쉬어. 다른 물가를 찾아보자.':'다시 도전해 보자. HP와 엽전, 낚싯대는 그대로야.<br>잠시 기다리면 이 낚시터가 다시 열려.'}</p><button id="fish-retry" class="primary full" disabled>다시 낚시하기</button>${adminMode?'<button id="qa-fishing-back">낚시 시험 조건</button>':''}`);
+    $('#fish-retry').onclick=()=>fishingMenu(e,options);
+    watchFishingCooldown(e,$('#fish-retry'));
+    if(adminMode)$('#qa-fishing-back').onclick=()=>adminFishingQA(e);
   }
   function animate(now) {
     if(!alive||screen!=='fishing'||s!==state)return;
+    if(now>=biteAt&&!biteShown){
+      biteShown=true;water.className='fishing-water biting';
+      status.textContent='입질이다! 곧 당길 준비!';music.effect('xp');
+      if(adminMode)$('#qa-fishing-skip').disabled=true;
+    }
     if(now>=roundAt) {
-      if(!active){active=true;button.disabled=false;status.textContent='입질이다! 성공 구간에 맞춰 당기기!';music.effect('click');}
+      if(!active){active=true;gauge.hidden=false;button.disabled=false;water.className='fishing-water';status.textContent='성공 구간에 맞춰 당기기!';}
       const pos=fishingPosition(game,now-roundAt);
       marker.style.left=`${pos*100}%`;
       marker.dataset.inZone=String(pos>=game.zone[0]&&pos<=game.zone[1]);
       if(pos>=1) {
-        active=false;button.disabled=true;
-        nextFishingRound(game);
+        active=false;button.disabled=true;gauge.hidden=true;
+        nextFishingRound(game);updateCount();
         if(game.done){complete();return;}
-        count.textContent=`성공 ${game.successes} / 3 · 기회 ${game.round+1} / 5`;
-        status.textContent='찌가 흔들린다. 다음 기회!';
-        roundAt=now+200;
+        updateZone();status.textContent='물고기가 다시 움직인다. 다음 기회!';
+        roundAt=now+450;
         marker.style.left='0%';marker.dataset.inZone='false';
       }
     }
@@ -2744,7 +2789,7 @@ function draw() {
       ctx.setLineDash([]);
     }
     $("#interact").firstChild.textContent = e
-      ? e.type === 'fishingSpot' ? '낚시하기 '
+      ? e.type === 'fishingSpot' ? fishingCooldown(s,s.map,e.id)>0 ? '낚시터 쉬는 중 ' : '낚시하기 '
       : e.type === 'fishingBranch' ? '줍기 '
       : e.type === "exit"
         ? "이동하기 "

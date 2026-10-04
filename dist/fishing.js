@@ -1,4 +1,4 @@
-// Shared fishing rules: one press per opportunity, three successes, no loss on failure.
+// Shared fishing rules and per-site timers. Live mini-game state is never saved.
 export const FISHING_MATERIALS = ['fishingthread','fishingbranch','boarbone','boneneedle','fishingrod'];
 export const ROD_RECIPE = { fishingthread:1, fishingbranch:1, boneneedle:1 };
 export const FISHING_ITEMS = {
@@ -41,9 +41,44 @@ export function fishingBoneDrop(s,enemy,era) {
   if(era!=='prehistoric'||enemy!=='boar'||!fishingStarted(s)||hasRod(s)||s.inventory.boarbone||s.inventory.boneneedle)return {};
   return {boarbone:1};
 }
-export function createFishing(tutorial=false) {
-  return {tutorial,round:0,successes:0,pressed:false,done:false,won:false,
-    duration:tutorial?2600:2400,zone:tutorial?[.28,.72]:[.34,.66],position:0};
+export const FISHING_PROFILES = {
+  tutorial:{required:[2,3],width:[.36,.42],duration:[2500,2800],mistakesAllowed:2},
+  easy:{required:[2,2],width:[.26,.30],duration:[2050,2250],mistakesAllowed:2},
+  normal:{required:[3,3],width:[.21,.25],duration:[1750,2000],mistakesAllowed:2},
+  hard:{required:[4,4],width:[.18,.21],duration:[1600,1800],mistakesAllowed:1},
+  rare:{required:[5,5],width:[.16,.19],duration:[1500,1750],mistakesAllowed:1},
+};
+const between=(range,random)=>range[0]+(range[1]-range[0])*random();
+export function fishingWait(random=Math.random) {
+  const roll=random();
+  const range=roll<.18?[5000,12000]:roll<.80?[12000,30000]:roll<.96?[30000,45000]:[45000,60000];
+  return Math.round(between(range,random));
+}
+function configureFishingRound(game) {
+  const profile=FISHING_PROFILES[game.profile],random=game.random;
+  const width=between(profile.width,random);
+  let left=.08+(1-width-.16)*random();
+  // Keep successive targets visibly distinct, even when random rolls are alike.
+  if(game.zone&&Math.abs(left-game.zone[0])<.10)
+    left=game.zone[0]<.40?1-.08-width:.08;
+  game.zone=[left,left+width];
+  game.duration=Math.round(between(profile.duration,random));
+  game.position=0;game.pressed=false;
+}
+export function createFishing(tutorial=false,options={},random=Math.random) {
+  const roll=random();
+  const profile=tutorial?'tutorial':options.profile&&FISHING_PROFILES[options.profile]?options.profile:
+    roll<.24?'easy':roll<.70?'normal':roll<.94?'hard':'rare';
+  const rules=FISHING_PROFILES[profile];
+  const game={tutorial,profile,random,round:0,successes:0,failures:0,pressed:false,done:false,won:false,
+    required:Math.round(between(rules.required,random)),maxFailures:rules.mistakesAllowed+1,
+    waitMs:options.waitMs??(tutorial?Math.round(between([5000,12000],random)):fishingWait(random))};
+  configureFishingRound(game);return game;
+}
+export const fishingSiteKey=(map,id)=>`fishing:${map}:${id}`;
+export const fishingCooldown=(s,map,id,now=Date.now())=>Math.max(0,(s.cooldowns[fishingSiteKey(map,id)]||0)-now);
+export function restFishingSite(s,map,id,won,now=Date.now()) {
+  s.cooldowns[fishingSiteKey(map,id)]=now+(won?60000:7000);
 }
 export function fishingPosition(game,elapsed) {
   game.position=Math.min(1,Math.max(0,elapsed/game.duration));return game.position;
@@ -58,7 +93,9 @@ export function pullFishing(game) {
 export function nextFishingRound(game) {
   if(game.done)return;
   game.round++;
-  game.won=game.successes>=3;
-  game.done=game.won||game.round>=5;
-  game.pressed=false;game.position=0;
+  game.failures=game.round-game.successes;
+  game.won=game.successes>=game.required;
+  game.done=game.won||game.failures>=game.maxFailures;
+  game.pressed=false;
+  if(!game.done)configureFishingRound(game);
 }

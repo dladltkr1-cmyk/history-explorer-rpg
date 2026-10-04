@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class {set src(v){} get complete(){return false;}};
 const {fresh,validate,advance,ITEMS,abilities}=await import('../dist/state.js');
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=38');
-const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=38');
-const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective}=await import('../dist/fishing.js?v=38.1');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=39');
+const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=39');
+const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=39');
 const {rollDrop,cookItem,salePrice}=await import('../dist/economy.js');
 const neo=REGIONS.find(r=>r.id==='prehistoric');
 const s=fresh('낚시검사','boy');s.unlockedRegions.push('prehistoric');s.map='pre-village';s.progress.prehistoric=6;
@@ -19,16 +19,60 @@ assert.ok(makeRod(s));assert.equal(makeRod(s),false);assert.ok(s.artifacts.inclu
 assert.deepEqual(['fishingthread','fishingbranch','boneneedle'].map(k=>s.inventory[k]),[0,0,0]);advance(s,'craft:fishingrod');assert.equal(s.progress.prehistoric,8);
 s.map='neo-river';s.inventory.fish++;advance(s,'fishing:catch');assert.ok(s.completedRegions.includes('prehistoric'));assert.ok(s.unlockedRegions.includes('bronze'));
 const coin=s.coins;assert.equal(advance(s,'fishing:catch').length,0);assert.equal(s.coins,coin);
-for(const tutorial of [false,true]) {
-  const g=createFishing(tutorial);
-  for(let i=0;i<2;i++){fishingPosition(g,g.duration*.5);assert.equal(pullFishing(g),true);for(let j=0;j<20;j++)assert.equal(pullFishing(g),null);nextFishingRound(g);assert.equal(g.done,false);}
-  fishingPosition(g,g.duration*.5);pullFishing(g);nextFishingRound(g);assert.ok(g.done&&g.won);assert.equal(g.successes,3);
-  const f=createFishing(tutorial);
-  for(let i=0;i<5;i++){fishingPosition(f,0);assert.equal(pullFishing(f),false);fishingPosition(f,f.duration*.5);assert.equal(pullFishing(f),null);nextFishingRound(f);}
-  assert.ok(f.done&&!f.won);assert.equal(f.successes,0);
-  const noPress=createFishing(tutorial);for(let i=0;i<5;i++)nextFishingRound(noPress);assert.ok(noPress.done&&!noPress.won);
+let seed=3904;const random=()=>{seed=seed*16807%2147483647;return (seed-1)/2147483646;};
+const waits=[],requirements=new Set(),positions=new Set(),speeds=new Set(),profiles=new Set();
+for(let i=0;i<1000;i++) {
+  const g=createFishing(false,{},random);waits.push(g.waitMs);requirements.add(g.required);profiles.add(g.profile);
+  let previous=null;
+  while(!g.done){
+    const [left,right]=g.zone;positions.add(left.toFixed(3));speeds.add(g.duration);
+    assert.ok(left>=.079999&&right<=.920001);
+    assert.ok(right-left>=FISHING_PROFILES[g.profile].width[0]-.00001);
+    assert.ok(g.duration>=FISHING_PROFILES[g.profile].duration[0]);
+    if(previous!==null)assert.ok(Math.abs(left-previous)>=.0999);
+    previous=left;
+    fishingPosition(g,g.duration*(left+right)/2);assert.equal(pullFishing(g),true);
+    for(let j=0;j<20;j++)assert.equal(pullFishing(g),null);
+    if(g.successes<g.required)assert.equal(g.done,false);
+    nextFishingRound(g);
+  }
+  assert.ok(g.won);assert.equal(g.successes,g.required);
 }
-assert.ok(createFishing(true).duration>createFishing(false).duration);assert.ok(createFishing(true).zone[0]<createFishing(false).zone[0]);
+assert.deepEqual([...requirements].sort(),[2,3,4,5]);assert.equal(profiles.size,4);
+assert.ok(positions.size>100&&speeds.size>100);
+assert.ok(waits.every(v=>v>=5000&&v<=60000));assert.ok(Math.min(...waits)<7000&&Math.max(...waits)>58000);
+const normalWaits=waits.filter(v=>v>=12000&&v<30000).length;assert.ok(normalWaits>500&&normalWaits<730);
+assert.ok(waits.filter(v=>v>=45000).length<80);
+for(const profile of ['easy','normal','hard','rare']) {
+  const f=createFishing(false,{profile},random);
+  for(let i=0;i<f.maxFailures;i++){
+    fishingPosition(f,0);assert.equal(pullFishing(f),false);
+    fishingPosition(f,f.duration*(f.zone[0]+f.zone[1])/2);assert.equal(pullFishing(f),null);
+    nextFishingRound(f);assert.equal(f.done,i===f.maxFailures-1);
+  }
+  assert.ok(f.done&&!f.won);assert.equal(f.successes,0);
+  const idle=createFishing(false,{profile},random);while(!idle.done)nextFishingRound(idle);assert.equal(idle.failures,idle.maxFailures);
+  const mixed=createFishing(false,{profile},random);
+  nextFishingRound(mixed);assert.equal(mixed.done,false); // one mistake never ends a game
+  while(!mixed.done){fishingPosition(mixed,mixed.duration*(mixed.zone[0]+mixed.zone[1])/2);pullFishing(mixed);nextFishingRound(mixed);}
+  assert.ok(mixed.won);
+}
+for(let i=0;i<100;i++){
+ const t=createFishing(true,{},random);assert.ok(t.required===2||t.required===3);assert.ok(t.zone[1]-t.zone[0]>=.36);assert.ok(t.duration>=2500);assert.ok(t.waitMs>=5000&&t.waitMs<=12000);
+}
+assert.equal(createFishing(false,{waitMs:60000}).waitMs,60000);
+assert.equal(fishingWait(()=>0),5000);assert.equal(fishingWait(()=>1),60000);
+const resting=structuredClone(s),now=Date.now();
+restFishingSite(resting,'neo-river','neo-fishing',true,now);
+assert.equal(fishingCooldown(resting,'neo-river','neo-fishing',now),60000);
+assert.equal(fishingCooldown(resting,'bronze-village','bronze-fishing',now),0);
+const loaded=validate(JSON.parse(JSON.stringify(resting)));
+assert.equal(fishingCooldown(loaded,'neo-river','neo-fishing',now+1000),59000);
+assert.equal(fishingCooldown(loaded,'neo-river','neo-fishing',now+60000),0);
+restFishingSite(resting,'neo-river','neo-fishing',false,now);
+assert.equal(fishingCooldown(resting,'neo-river','neo-fishing',now),7000);
+assert.equal(fishingCooldown(resting,'neo-river','neo-fishing',now+7000),0);
+console.log('Random fishing: 1000 catches; all 4 profiles / 2–5 successes; varied targets/speeds; weighted waits 5–60s; miss/spam guards; per-site 60s/7s cooldown and save restoration.');
 const resumed=validate(JSON.parse(JSON.stringify(s)));assert.equal(resumed.inventory.fishingrod,1);assert.equal(resumed.inventory.fish,s.inventory.fish);
 resumed.personalCode='HE123456';const codeRoundTrip=validate(JSON.parse(JSON.stringify(resumed)));assert.equal(codeRoundTrip.inventory.fishingrod,1);
 for(let i=0;i<=6;i++){
@@ -50,4 +94,4 @@ guide.inventory.fishingbranch=1;assert.match(fishingObjective(guide),/멧돼지/
 guide.inventory.boarbone=1;assert.match(fishingObjective(guide),/가방 → 기타/);
 guide.inventory.boneneedle=1;assert.match(fishingObjective(guide),/기술자에게 돌아가자/);
 guide.inventory.fishingrod=1;assert.match(fishingObjective(guide),/낚시 자리/);
-console.log('Fishing verified: crafting/drop, 3-of-5, spam/failure, save/code serialization, 7 legacy progress cases, 12 QA stages, 6 waterside spots, cooking/economy.');
+console.log('Fishing verified: crafting/drop, random targets, spam/failure, save/code serialization, 7 legacy progress cases, 12 QA stages, 6 waterside spots, cooking/economy.');

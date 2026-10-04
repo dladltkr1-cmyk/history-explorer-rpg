@@ -822,5 +822,6 @@
 .fishing-zone{height:100%;position:absolute;background:#83b575;color:#233c29;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px}
 .fishing-marker{position:absolute;top:-8px;height:68px;width:10px;background:#394b55;border:2px solid #fff1be;border-radius:6px;transform:translateX(-50%);box-sizing:border-box}
 .fishing-pull{min-height:70px;font-size:24px;touch-action:manipulation}#fishing-count{font-weight:bold}#fishing-status{min-height:48px}
+.fishing-water.waiting .fishing-float{animation-duration:2.4s}.fishing-water.biting .fishing-float{animation-duration:.12s}.fishing-water.biting{border-color:#f7d174}.fishing-gauge[hidden]{display:none}.fishing-zone{font-size:12px;white-space:nowrap}
 @keyframes fishing-ripple{from{transform:scale(.65);opacity:1}to{transform:scale(1.7);opacity:.2}}@keyframes fishing-bob{to{transform:translateY(5px) rotate(6deg)}}
 @media(prefers-reduced-motion:reduce){.water-ring,.fishing-float{animation:none}}
