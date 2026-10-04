@@ -1,5 +1,5 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=40";
-import { FISHING_ITEMS } from './fishing.js?v=40';
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=40.1";
+import { FISHING_ITEMS } from './fishing.js?v=40.1';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
 export const MAX_LEVEL = 10,

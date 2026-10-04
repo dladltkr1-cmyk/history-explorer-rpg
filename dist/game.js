@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=40";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=40.1";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,10 +15,10 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=40";
+} from "./state.js?v=40.1";
 import { ASSETS } from "./assets.js?v=38";
-import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=40';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=40';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=40.1';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=40.1';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";

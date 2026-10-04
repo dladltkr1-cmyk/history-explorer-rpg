@@ -1,5 +1,5 @@
 import {entity,person} from './common.js';
-import {FISHING_MATERIALS} from '../fishing.js?v=40';
+import {FISHING_MATERIALS} from '../fishing.js?v=40.1';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [

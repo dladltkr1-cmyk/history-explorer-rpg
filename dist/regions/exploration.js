@@ -33,7 +33,7 @@ export function addExploration(paleo,neo,bronze,go){
     entity('river-berry','berry',7,13,'수풀의 열매',{art:'berries'}),
     foe('river-snake',17,11,'snake'),foe('river-boar',10,13,'boar')],{river:true,
     // Return beside the village exit, outside the river collision strip.
-    returnTo:{map:'pre-village',x:20,y:13}});
+    returnTo:{map:'pre-village',x:21,y:14}});
   neo.maps.push(river);
   move(neo,'pre-village','neo-river','pre-farmer',8,12);
 
