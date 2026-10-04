@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class {set src(v){} get complete(){return false;}};
 const {fresh,validate,advance,ITEMS,abilities}=await import('../dist/state.js');
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=39');
-const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=39');
-const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=39');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=40');
+const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=40');
+const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=40');
 const {rollDrop,cookItem,salePrice}=await import('../dist/economy.js');
 const neo=REGIONS.find(r=>r.id==='prehistoric');
 const s=fresh('낚시검사','boy');s.unlockedRegions.push('prehistoric');s.map='pre-village';s.progress.prehistoric=6;
@@ -28,7 +28,9 @@ for(let i=0;i<1000;i++) {
     const [left,right]=g.zone;positions.add(left.toFixed(3));speeds.add(g.duration);
     assert.ok(left>=.079999&&right<=.920001);
     assert.ok(right-left>=FISHING_PROFILES[g.profile].width[0]-.00001);
+    assert.ok(right-left<=FISHING_PROFILES[g.profile].width[1]+.00001);
     assert.ok(g.duration>=FISHING_PROFILES[g.profile].duration[0]);
+    assert.ok(g.duration<=FISHING_PROFILES[g.profile].duration[1]);
     if(previous!==null)assert.ok(Math.abs(left-previous)>=.0999);
     previous=left;
     fishingPosition(g,g.duration*(left+right)/2);assert.equal(pullFishing(g),true);
@@ -43,6 +45,12 @@ assert.ok(positions.size>100&&speeds.size>100);
 assert.ok(waits.every(v=>v>=5000&&v<=60000));assert.ok(Math.min(...waits)<7000&&Math.max(...waits)>58000);
 const normalWaits=waits.filter(v=>v>=12000&&v<30000).length;assert.ok(normalWaits>500&&normalWaits<730);
 assert.ok(waits.filter(v=>v>=45000).length<80);
+// Free fishing requires a smaller, faster target than the teaching round.
+for(const profile of ['easy','normal','hard','rare']) {
+  assert.ok(FISHING_PROFILES[profile].width[1]<=.22);
+  assert.ok(FISHING_PROFILES[profile].width[1]<FISHING_PROFILES.tutorial.width[0]);
+  assert.ok(FISHING_PROFILES[profile].duration[1]<FISHING_PROFILES.tutorial.duration[0]);
+}
 for(const profile of ['easy','normal','hard','rare']) {
   const f=createFishing(false,{profile},random);
   for(let i=0;i<f.maxFailures;i++){
@@ -58,7 +66,7 @@ for(const profile of ['easy','normal','hard','rare']) {
   assert.ok(mixed.won);
 }
 for(let i=0;i<100;i++){
- const t=createFishing(true,{},random);assert.ok(t.required===2||t.required===3);assert.ok(t.zone[1]-t.zone[0]>=.36);assert.ok(t.duration>=2500);assert.ok(t.waitMs>=5000&&t.waitMs<=12000);
+ const t=createFishing(true,{},random);assert.ok(t.required===2||t.required===3);assert.ok(t.zone[1]-t.zone[0]>=.26-1e-10);assert.ok(t.duration>=2100);assert.ok(t.waitMs>=5000&&t.waitMs<=12000);
 }
 assert.equal(createFishing(false,{waitMs:60000}).waitMs,60000);
 assert.equal(fishingWait(()=>0),5000);assert.equal(fishingWait(()=>1),60000);

@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=39";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=40";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,10 +15,10 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=39";
+} from "./state.js?v=40";
 import { ASSETS } from "./assets.js?v=38";
-import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=39';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=39';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=40';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=40';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
@@ -1446,6 +1446,8 @@ function spindleThread() {
   $('#make-thread').onclick=()=>{if(makeThread(s)){close();save();hud();feedback('실 +1','item');if(rodReady(s))toast(fishingObjective(s));}};
 }
 function fishingTechnician(e,q) {
+  clearTimeout(toastTimer);
+  $('#toast').style.opacity=0;
   if(hasRod(s)){dialogue(e.name,['낚싯대는 계속 사용할 수 있어. 물가의 낚시 자리로 가 보자.'],e.art);return;}
   if(!fishingStarted(s)) {
     if(q?.id!=='pre-fishing-start'&&!s.completedRegions.includes('prehistoric')) {
@@ -1457,12 +1459,16 @@ function fishingTechnician(e,q) {
       toast('실, 나뭇가지, 뼈바늘을 준비하자. 뼈바늘은 가방에서 만들 수 있어.');
     });return;
   }
-  panel('낚싯대 만들기',`<p>${fishingMaterialsText().replaceAll('\n','<br>')}</p><p>실은 가락바퀴에서, 가지는 숲에서 구해 보자.<br>멧돼지를 잡아 얻은 뼈는 가방 → 기타에서 뼈바늘로 만들 수 있어.</p><p class="note">게임에서는 이 재료들을 이용해 간단한 낚싯대를 만들 수 있어.</p><button id="make-rod" class="primary full" ${rodReady(s)?'':'disabled'}>낚싯대 만들기</button>`);
-  $('#make-rod').onclick=()=>{
+  const craft=()=>{
     if(!makeRod(s))return;
     close();finishEvent('craft:fishingrod');feedback('낚싯대 획득!','item','artifact');
     toast('강가 낚시 자리에서 첫 물고기를 잡아 보자.');
   };
+  if(rodReady(s)) {
+    dialogue(e.name,['재료를 다 모았구나.','좋아. 낚싯대를 만들어 줄게.'],e.art,craft);
+    return;
+  }
+  panel('낚싯대 만들기',`<p>${fishingMaterialsText().replaceAll('\n','<br>')}</p><p>실은 가락바퀴에서, 가지는 숲에서 구해 보자.<br>멧돼지를 잡아 얻은 뼈는 가방 → 기타에서 뼈바늘로 만들 수 있어.</p><p class="note">게임에서는 이 재료들을 이용해 간단한 낚싯대를 만들 수 있어.</p><button id="make-rod" class="primary full" disabled>낚싯대 만들기</button>`);
 }
 function adminFishingQA(e,modes=INTERACTION_QA.find(v=>v.id==='fishing').modes) {
   if(!adminMode)return;

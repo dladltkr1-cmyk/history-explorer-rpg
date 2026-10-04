@@ -31,7 +31,9 @@ export function addExploration(paleo,neo,bronze,go){
     person('river-fisher',9,6,'고기잡이하는 사람',['강에서는 물고기를 잡아.\n잡은 물고기는 불에서 익힐 수 있어.'],'farmer'),
     entity('river-fish','loot',17,5,'잡은 물고기',{art:'fish',loot:{fish:2},resource:'fish',spots:[[17,5],[17,7],[20,6],[20,12]]}),
     entity('river-berry','berry',7,13,'수풀의 열매',{art:'berries'}),
-    foe('river-snake',17,11,'snake'),foe('river-boar',10,13,'boar')],{river:true});
+    foe('river-snake',17,11,'snake'),foe('river-boar',10,13,'boar')],{river:true,
+    // Return beside the village exit, outside the river collision strip.
+    returnTo:{map:'pre-village',x:20,y:13}});
   neo.maps.push(river);
   move(neo,'pre-village','neo-river','pre-farmer',8,12);
 

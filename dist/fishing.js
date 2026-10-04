@@ -42,11 +42,11 @@ export function fishingBoneDrop(s,enemy,era) {
   return {boarbone:1};
 }
 export const FISHING_PROFILES = {
-  tutorial:{required:[2,3],width:[.36,.42],duration:[2500,2800],mistakesAllowed:2},
-  easy:{required:[2,2],width:[.26,.30],duration:[2050,2250],mistakesAllowed:2},
-  normal:{required:[3,3],width:[.21,.25],duration:[1750,2000],mistakesAllowed:2},
-  hard:{required:[4,4],width:[.18,.21],duration:[1600,1800],mistakesAllowed:1},
-  rare:{required:[5,5],width:[.16,.19],duration:[1500,1750],mistakesAllowed:1},
+  tutorial:{required:[2,3],width:[.26,.30],duration:[2100,2400],mistakesAllowed:2},
+  easy:{required:[2,2],width:[.20,.22],duration:[1750,1950],mistakesAllowed:2},
+  normal:{required:[3,3],width:[.16,.18],duration:[1500,1700],mistakesAllowed:2},
+  hard:{required:[4,4],width:[.13,.15],duration:[1400,1550],mistakesAllowed:1},
+  rare:{required:[5,5],width:[.10,.12],duration:[1300,1450],mistakesAllowed:1},
 };
 const between=(range,random)=>range[0]+(range[1]-range[0])*random();
 export function fishingWait(random=Math.random) {
