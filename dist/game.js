@@ -1439,7 +1439,7 @@ function settings() {
   };
 }
 function fishingMaterialsText() {
-  return Object.keys(ROD_RECIPE).map(id=>`${ITEMS[id].name} ${Math.min(s.inventory[id]||0,1)} / 1`).join(' · ')+'\n'+fishingObjective(s);
+  return Object.keys(ROD_RECIPE).map(id=>`${ITEMS[id].name} ${Math.min(s.inventory[id]||0,1)} / 1`).join(' · ')+(rodReady(s)?'':'\n'+fishingObjective(s));
 }
 function spindleThread() {
   panel('가락바퀴로 실 만들기',`<div class="artifact-detail">${imageTag('spindle','가락바퀴')}<p>가락바퀴를 이용하면 섬유를 꼬아 실을 만들 수 있어.</p></div><p>가락바퀴와 도감 기록은 그대로 남아.</p><button id="make-thread" class="primary full" ${s.inventory.fishingthread?'disabled':''}>실 만들기${s.inventory.fishingthread?' · 이미 준비됨':''}</button>`);
