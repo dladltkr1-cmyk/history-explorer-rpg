@@ -2,6 +2,7 @@ import prehistoric from './prehistoric.js';import gojoseon from './gojoseon.js';
 import {paleolithic,bronze,expand} from './expansion.js';
 import {addExploration} from './exploration.js';
 import {growth} from './nations.js?v=37.1';
+import {addFishing} from './fishing-content.js?v=38';
 expand(prehistoric,gojoseon);
 // Keep each era's story objects and optional activities in their own period.
 const neoCave=prehistoric.maps.find(m=>m.id==='pre-cave');
@@ -30,6 +31,7 @@ gojoseon.requests.push({id:'go-hide',name:'가죽 모으기',npc:'hide-worker',k
 addExploration(paleolithic,prehistoric,bronze,gojoseon);
 gojoseon.unlock='nations';
 export const REGIONS=[paleolithic,prehistoric,bronze,gojoseon,growth];
+addFishing(REGIONS);
 export const HUB=map('hq','탐험 본부','hq',[entity('era-gate','gate',12,5,'시대의 문',{art:'portal'}),person('hq-guide',9,8,'탐험 안내원',['시대의 문에서 탐험할 곳을 골라 봐.\n찾은 유물은 역사 도감에 남아.'],'researcher'),entity('shop','shop',17,9,'상점',{art:'shopkeeper'}),entity('archive','archive',6,9,'역사 도감',{art:'chest'}),entity('hq-rest','rest',12,12,'쉬어 가기',{art:'campfire'})]);
 export const MAPS=Object.fromEntries([HUB,...REGIONS.flatMap(r=>r.maps)].map(m=>[m.id,m]));
 export const ARTIFACTS=REGIONS.flatMap(r=>r.artifacts);

@@ -1,4 +1,5 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=37.1";
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=38";
+import { FISHING_ITEMS } from './fishing.js?v=38';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
 export const MAX_LEVEL = 10,
@@ -137,6 +138,7 @@ ITEMS.rawmeat.risk = { chance: 0.25, damage: 6 };
 ITEMS.fish.risk = { chance: 0.2, damage: 5 };
 for (const item of Object.values(ITEMS))
   if (item.kind === "food") item.sellable = true;
+for (const [id,item] of Object.entries(FISHING_ITEMS)) ITEMS[id]={...item,kind:'material',price:0,sellable:false,questOnly:true};
 export const STACK_IDS = Object.keys(ITEMS).filter((id) =>
   ["food", "material"].includes(ITEMS[id].kind),
 );
@@ -147,6 +149,7 @@ export const xpNeed = (level) => 60 + (level - 1) * 30;
 export function fresh(name, avatar) {
   return {
     saveVersion: 3,
+    fishingStoryRevision: 1,
     merchantIntro: false,
     basicTutorialDone: false,
     tutorials: { fire: false, artifact: false, food: false, rice: false },
@@ -229,6 +232,8 @@ export function advance(s, event) {
       (q.event === "cook:any" && event?.startsWith("cook:")) ||
       (q.event.startsWith("artifact:") &&
         s.artifacts.includes(q.event.slice(9)))) &&
+      (q.event !== 'craft:fishingrod' || s.inventory.fishingrod > 0) &&
+      (q.event !== 'fishing:catch' || s.inventory.fishingrod > 0) &&
       (!q.items || Object.entries(q.items).every(([id,n])=>(s.inventory[id]||0)>=n)) &&
       (!q.marks || s.nationMarks.length >= q.marks) &&
       (!q.anyFood || (s.inventory.berries||0)>=2 || (s.inventory.food||0)>=1 || (s.inventory.rawmeat||0)>=1) ||
@@ -287,6 +292,10 @@ export function validate(raw) {
       s.unlockedRegions.push("bronze");
   }
   s.saveVersion = 3;
+  // Original six quest indices are unchanged. Completed eras retain completion;
+  // their technician offers the same recipe as optional catch-up content.
+  s.fishingStoryRevision ??= 1;
+  if(s.fishingStoryRevision!==1)throw Error('낚시 이야기 기록을 읽을 수 없다.');
   s.merchantIntro ??= false;
   // 이전 저장은 이미 인트로를 본 기록이므로 새 기본 튜토리얼을 강제로 다시 띄우지 않는다.
   s.basicTutorialDone ??= Boolean(s.introSeen);

@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=37.1";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=38";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,8 +15,10 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=37.2";
-import { ASSETS } from "./assets.js?v=37";
+} from "./state.js?v=38";
+import { ASSETS } from "./assets.js?v=38";
+import { hasRod, fishingStarted, rodReady, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound } from './fishing.js?v=38';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=38';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
@@ -88,7 +90,8 @@ let s = fresh("탐험가", "boy"),
   safeArea = null,
   lastQuestId = null,
   questPinned = false,
-  questPeekTimer;
+  questPeekTimer,
+  stopFishing = null;
 s.map = "paleo-camp";
 s.x = 11;
 s.y = 9;
@@ -182,6 +185,7 @@ function setAvatarImage(el, direction = "front", pose = "idle") {
   if(img.complete && img.naturalWidth)show();else img.addEventListener('load',show,{once:true});
 }
 function close() {
+  stopFishing?.(); stopFishing=null;
   overlay.hidden = true;
   overlay.innerHTML = "";
   screen = "";
@@ -193,6 +197,7 @@ function panel(
   body,
   { wide = false, closable = true, type = "panel" } = {},
 ) {
+  stopFishing?.(); stopFishing=null;
   keys.clear();
   screen = type;
   overlay.hidden = false;
@@ -554,6 +559,13 @@ function adminRequirements(q) {
 function adminPrepareQuest(regionId,index,stage) {
   const r=REGIONS.find(v=>v.id===regionId), q=r?.quests[index];
   if(!q) return;
+  if(q.qa) {
+    const id=stage==='current'?q.id==='pre-fishing-start'?'start':q.id==='pre-fishing-rod'?'spindle':'first':stage==='next'?q.id==='pre-fishing-start'?'spindle':'first':stage;
+    const fixture=q.qa.stages.find(v=>v.id===id)||q.qa.stages[0];
+    prepareContentQA(s,r,fixture);
+    s.unlockedRegions=REGIONS.map(v=>v.id);
+    adminJump(fixture.map,MAPS[fixture.map].entities.find(e=>e.id===fixture.target));return;
+  }
   s.unlockedRegions=REGIONS.map(v=>v.id);
   s.progress[r.id]=index;
   s.completedRegions=s.completedRegions.filter(id=>id!==r.id);
@@ -592,6 +604,10 @@ function adminQuests(regionId=REGIONS[0].id,index=0) {
   panel('퀘스트 테스트',`<p>시대와 퀘스트를 고르면 해당 장소와 필요한 물건을 준비한다.</p><label>시대<select id="qa-era">${REGIONS.map(v=>`<option value="${v.id}" ${v.id===r.id?'selected':''}>${v.name}</option>`).join('')}</select></label><label>퀘스트<select id="qa-quest">${r.quests.map((q,i)=>`<option value="${i}" ${i===index?'selected':''}>${i+1}. ${esc(q.title)}</option>`).join('')}</select></label><div class="admin-grid">${[['start','처음부터 테스트'],['current','현재 단계로 이동'],['next','다음 단계'],['near','완료 직전'],['complete','완료 처리']].map(([a,label])=>`<button data-qa-stage="${a}">${label}</button>`).join('')}</div><button id="admin-back">관리자 메뉴</button>`,{wide:true});
   $('#qa-era').onchange=e=>adminQuests(e.target.value,0);
   $('#qa-quest').onchange=e=>adminQuests(r.id,Number(e.target.value));
+  if(r.quests[index].qa) {
+    const grid=$('#qa-quest').closest('section').querySelector('.admin-grid');
+    grid.innerHTML=r.quests[index].qa.stages.map(stage=>`<button data-qa-stage="${stage.id}">${stage.name}</button>`).join('');
+  }
   document.querySelectorAll('[data-qa-stage]').forEach(b=>b.onclick=()=>adminPrepareQuest(r.id,index,b.dataset.qaStage));
   adminBack();
 }
@@ -639,7 +655,7 @@ function adminAppearance() {
 }
 function adminItems(category='food') {
   const categories=[['food','음식'],['material','재료'],['weapon','무기'],['clothes','방어구'],['quest','퀘스트 아이템']];
-  const questIds=new Set(REGIONS.flatMap(r=>r.quests.flatMap(q=>Object.keys(q.items||{}))));
+  const questIds=new Set(REGIONS.flatMap(r=>r.quests.flatMap(q=>[...Object.keys(q.items||{}),...(q.qa?.items||[])])));
   const list=Object.entries(ITEMS).filter(([id,v])=>category==='quest'?questIds.has(id):category==='material'?v.kind==='material'&&!questIds.has(id):category==='clothes'?['clothes','accessory'].includes(v.kind):v.kind===category&&!questIds.has(id));
   panel('아이템 지급',`<label>종류<select id="qa-item-category">${categories.map(([id,name])=>`<option value="${id}" ${id===category?'selected':''}>${name}</option>`).join('')}</select></label><label>물건<select id="qa-item">${list.map(([id,v])=>`<option value="${id}">${esc(v.name)}</option>`).join('')}</select></label><button id="qa-give" class="primary full">지급</button><button id="admin-back">관리자 메뉴</button>`);
   $('#qa-item-category').onchange=e=>adminItems(e.target.value);
@@ -647,9 +663,18 @@ function adminItems(category='food') {
 }
 function adminInteractions() {
   const shortcuts=[['npc','NPC 대화 · 퀘스트'],['artifact','유물 조사'],['resource','열매 · 자원'],['fire','모닥불 조리'],['shop','상점 · 구매 · 판매'],['combat','전투 · 패배'],['map','지도 · 빠른 이동'],['quiz','나라 마무리 퀴즈'],['border','동예 경계 미션'],['horse','말 출현 · 길들이기 · 탑승']];
+  shortcuts.push(...INTERACTION_QA.map(v=>[v.id,v.name]));
   panel('상호작용 테스트',`<p>선택한 대상 가까이로 이동한다. 상호작용 버튼으로 실제 기능을 시험하자.</p><div class="admin-grid">${shortcuts.map(([id,name])=>`<button data-qa-interact="${id}">${name}</button>`).join('')}</div><button id="admin-back">관리자 메뉴</button>`,{wide:true});
   document.querySelectorAll('[data-qa-interact]').forEach(b=>b.onclick=()=>{
     const a=b.dataset.qaInteract;
+    const registered=INTERACTION_QA.find(v=>v.id===a);
+    if(registered) {
+      for(const [id,n] of Object.entries(registered.items||{}))adminGive(id,n);
+      const target=MAPS[registered.map].entities.find(e=>e.id===registered.target);
+      adminJump(registered.map,target);
+      if(registered.action==='fishing')fishingMenu(target);
+      return;
+    }
     if(a==='map'){nationMap();return;}
     if(a==='quiz'){const r=REGIONS.find(v=>v.id==='nations');adminPrepareQuest(r.id,r.quests.findIndex(q=>q.id==='buyeo-festival'),'near');return;}
     if(a==='border'){const r=REGIONS.find(v=>v.id==='nations');adminPrepareQuest(r.id,r.quests.findIndex(q=>q.id==='dongye-deliver'),'near');adminJump('nation-dongye-border');return;}
@@ -734,7 +759,7 @@ function hud() {
     ? '\n'+Object.entries(q.items).map(([id,n])=>`${NATION_ITEM_NAMES[id]||ITEMS[id]?.name||id} ${Math.min(s.inventory[id]||0,n)} / ${n}`).join(' · ')
     : '';
   $("#quest-detail").textContent =
-    (q?.detail ? q.detail + paleoStatus + nationItems + (r?.id === 'nations' ? `\n탐험 표식 ${s.nationMarks.length} / 5` : '') : "") ||
+    (q?.detail ? q.detail + paleoStatus + nationItems + (q.id==='pre-fishing-rod'?'\n'+fishingMaterialsText(): '') + (r?.id === 'nations' ? `\n탐험 표식 ${s.nationMarks.length} / 5` : '') : "") ||
     (s.map === "hq"
       ? "가까이 가서 조사 / 말하기를 눌러."
       : "놓친 유물과 부탁을 찾아보자.");
@@ -768,7 +793,7 @@ function finishEvent(event) {
       "탐험 완료",
       [
         r.id === "prehistoric"
-          ? "청동기를 발견했다.\n청동기 시대가 열렸다."
+          ? "강과 바다에서도 먹을거리를 얻을 수 있었어.\n청동기 시대가 열렸다."
           : r.id === "bronze"
             ? "고조선 시대가 열렸다."
             : nextEra
@@ -965,7 +990,7 @@ function inventory(tab = "food") {
             )
               .map(
                 (id) =>
-                  `<div class="item">${itemIcon(id)}<div class="info"><b>${ITEMS[id].name} × ${s.inventory[id]}</b><small>${ITEMS[id].text}</small></div></div>`,
+                  `<div class="item">${itemIcon(id)}<div class="info"><b>${ITEMS[id].name} × ${s.inventory[id]}</b><small>${ITEMS[id].text}</small></div>${id==='boarbone'?'<button id="craft-needle">뼈바늘 만들기</button>':''}</div>`,
               )
               .join("") + '<p class="note">유물은 역사 도감에 기록된다.</p>'
     }</div>`,
@@ -988,6 +1013,7 @@ function inventory(tab = "food") {
         inventory(tab);
       }),
   );
+  $('#craft-needle')?.addEventListener('click',()=>{if(makeNeedle(s)){save();hud();inventory('other');feedback('뼈를 다듬어 뼈바늘을 만들었다.','item');}else toast('기술자에게 낚싯대 이야기를 먼저 들어 보자.');});
 }
 function profile() {
   const a = abilities(s);
@@ -1000,7 +1026,7 @@ function profile() {
 function safeMenu(fn) {
   if (
     playing &&
-    !["battle", "intro", "tutorial", "defeat", "dialogue", "eating"].includes(screen)
+    !["battle", "intro", "tutorial", "defeat", "dialogue", "eating", "fishing"].includes(screen)
   )
     fn();
 }
@@ -1412,6 +1438,87 @@ function settings() {
     }
   };
 }
+function fishingMaterialsText() {
+  return Object.keys(ROD_RECIPE).map(id=>`${ITEMS[id].name} ${s.inventory[id]>0?'✓':'·'}`).join(' · ');
+}
+function spindleThread() {
+  panel('가락바퀴로 실 만들기',`<div class="artifact-detail">${imageTag('spindle','가락바퀴')}<p>가락바퀴를 이용하면 섬유를 꼬아 실을 만들 수 있어.</p></div><p>가락바퀴와 도감 기록은 그대로 남아.</p><button id="make-thread" class="primary full" ${s.inventory.fishingthread?'disabled':''}>실 만들기${s.inventory.fishingthread?' · 이미 준비됨':''}</button>`);
+  $('#make-thread').onclick=()=>{if(makeThread(s)){close();save();hud();feedback('실 +1','item');}};
+}
+function fishingTechnician(e,q) {
+  if(hasRod(s)){dialogue(e.name,['낚싯대는 계속 사용할 수 있어. 물가의 낚시 자리로 가 보자.'],e.art);return;}
+  if(!fishingStarted(s)) {
+    if(q?.id!=='pre-fishing-start'&&!s.completedRegions.includes('prehistoric')) {
+      dialogue(e.name,['찾던 도구를 살펴보고 어른께 돌아간 뒤 다시 만나자.'],e.art);return;
+    }
+    dialogue(e.name,e.lines,e.art,()=>{
+      if(activeQuest(s)?.id==='pre-fishing-start')finishEvent('talk:neo-technician');
+      else {s.completedQuests.push('pre-fishing-start');save();hud();}
+      toast('실, 나뭇가지, 뼈바늘을 준비하자. 뼈바늘은 가방에서 만들 수 있어.');
+    });return;
+  }
+  panel('낚싯대 만들기',`<p>${fishingMaterialsText()}</p><p>실은 가락바퀴에서, 가지는 숲에서 구해 보자.<br>멧돼지를 잡아 얻은 뼈는 가방 → 기타에서 뼈바늘로 만들 수 있어.</p><p class="note">게임에서는 이 재료들을 이용해 간단한 낚싯대를 만들 수 있어.</p><button id="make-rod" class="primary full" ${rodReady(s)?'':'disabled'}>낚싯대 만들기</button>`);
+  $('#make-rod').onclick=()=>{
+    if(!makeRod(s))return;
+    close();finishEvent('craft:fishingrod');feedback('낚싯대 획득!','item','artifact');
+    toast('강가 낚시 자리에서 첫 물고기를 잡아 보자.');
+  };
+}
+function fishingMenu(e) {
+  if(!hasRod(s)){dialogue(e.name,['낚싯대가 필요해. 신석기 마을 기술자에게 만들어 달라고 하자.'],'rodIcon');return;}
+  const tutorial=!s.tutorials.fishing;
+  panel(e.name,`<div class="fishing-intro">${imageTag('rodIcon','나무 막대와 실로 만든 낚싯대')}<p>물가에 낚싯대를 던져 보자.<br>표시가 밝은 성공 구간에 들어오면 <b>당기기!</b></p></div><p>5번의 기회 중 3번 성공하면 생물고기 1마리!<br>한 기회에 한 번만 당길 수 있어. 실패해도 잃는 것은 없어.</p>${tutorial?'<p class="note">첫 낚시는 표시가 천천히 움직이고 성공 구간이 더 넓어.</p>':''}<button id="cast-fishing" class="primary full">낚시 시작</button>`);
+  $('#cast-fishing').onclick=()=>startFishing(e,tutorial);
+}
+function startFishing(e,tutorial) {
+  const game=createFishing(tutorial), state=s;
+  panel('낚시',`<div class="fishing-water" aria-hidden="true"><span class="water-ring"></span><span class="fishing-float">│<br>●</span></div><p id="fishing-status" role="status">낚싯대를 던졌다. 입질을 기다리는 중...</p><p id="fishing-count">성공 0 / 3 · 기회 1 / 5</p><div class="fishing-gauge" aria-label="움직이는 표시와 성공 구간"><span class="fishing-zone" style="left:${game.zone[0]*100}%;width:${(game.zone[1]-game.zone[0])*100}%">성공 구간</span><span id="fishing-marker" class="fishing-marker" data-in-zone="false"></span></div><button id="pull-fishing" class="primary full fishing-pull" disabled>당기기!</button><p class="note">한 기회에 한 번만! 표시가 성공 구간에 왔을 때 눌러.</p>`,{type:'fishing'});
+  const button=$('#pull-fishing'),marker=$('#fishing-marker'),status=$('#fishing-status'),count=$('#fishing-count');
+  let frame=0,alive=true,active=false,start=performance.now()+1200,roundAt=start;
+  stopFishing=()=>{alive=false;cancelAnimationFrame(frame);};
+  music.effect('click');
+  button.onclick=()=>{
+    if(!alive||!active||game.pressed||s!==state)return;
+    fishingPosition(game,performance.now()-roundAt);
+    if(game.position>=1)return;
+    const success=pullFishing(game);
+    button.disabled=true;
+    status.textContent=success?'좋아! 물고기를 조금 더 당겨 보자.':'이번에는 빗나갔다. 다음 기회를 기다리자.';
+    count.textContent=`성공 ${game.successes} / 3 · 기회 ${game.round+1} / 5`;
+    music.effect(success?'xp':'click');
+  };
+  function complete() {
+    close();
+    if(game.won) {
+      state.inventory.fish++;state.tutorials.fishing=true;
+      feedback('물고기를 잡았다! 생물고기 +1','item','artifact');
+      finishEvent('fishing:catch');
+      if(screen==='dialogue')return;
+    }
+    panel(game.won?'물고기를 잡았다!':'물고기가 도망갔다!',`<p>${game.won?'생물고기 1마리를 얻었다. 모닥불에서 익힐 수 있어.':'다시 도전해 보자. HP와 엽전, 낚싯대는 그대로야.'}</p><button id="fish-retry" class="primary full">다시 낚시하기</button>`);
+    $('#fish-retry').onclick=()=>startFishing(e,!state.tutorials.fishing);
+  }
+  function animate(now) {
+    if(!alive||screen!=='fishing'||s!==state)return;
+    if(now>=roundAt) {
+      if(!active){active=true;button.disabled=false;status.textContent='입질이다! 성공 구간에 맞춰 당기기!';music.effect('click');}
+      const pos=fishingPosition(game,now-roundAt);
+      marker.style.left=`${pos*100}%`;
+      marker.dataset.inZone=String(pos>=game.zone[0]&&pos<=game.zone[1]);
+      if(pos>=1) {
+        active=false;button.disabled=true;
+        nextFishingRound(game);
+        if(game.done){complete();return;}
+        count.textContent=`성공 ${game.successes} / 3 · 기회 ${game.round+1} / 5`;
+        status.textContent='찌가 흔들린다. 다음 기회!';
+        roundAt=now+200;
+        marker.style.left='0%';marker.dataset.inZone='false';
+      }
+    }
+    frame=requestAnimationFrame(animate);
+  }
+  frame=requestAnimationFrame(animate);
+}
 function nearby() {
   return MAPS[s.map].entities
     .filter(
@@ -1438,6 +1545,13 @@ function interact() {
     return;
   }
   const q = activeQuest(s);
+  if(e.type==='fishingSpot'){fishingMenu(e);return;}
+  if(e.type==='fishingBranch') {
+    if(!fishingStarted(s)){toast('먼저 마을 기술자에게 낚싯대 이야기를 들어 보자.');return;}
+    panel(e.name,`<p>나무 아래에 튼튼한 가지가 떨어져 있다.</p><button id="pick-branch" class="primary full" ${s.inventory.fishingbranch||hasRod(s)?'disabled':''}>줍기</button>`);
+    $('#pick-branch').onclick=()=>{if(pickBranch(s)){close();save();hud();feedback('나뭇가지 +1','item');}};return;
+  }
+  if(e.id==='neo-technician'){fishingTechnician(e,q);return;}
   if(e.type==='roomDoor') { travel(e.to); return; }
   if(e.type==='roomLoot') {
     s.opened.push(e.id);
@@ -1500,6 +1614,7 @@ function interact() {
     artifactDetail(e.artifact, found, () => {
       finishEvent("artifact:" + e.artifact);
       if (e.artifact === "fire") restMenu(e);
+      if (e.artifact === 'spindle' && fishingStarted(s) && !hasRod(s)) spindleThread();
     });
   } else if (e.type === "inspect") {
     dialogue(e.name, e.lines, e.art, () => finishEvent("inspect:" + e.id));
@@ -1946,6 +2061,7 @@ function winBattle() {
   const b = battle,
     r = regionOf(s.map),
     drop = rollDrop(b.entity.enemy);
+  Object.assign(drop.items,fishingBoneDrop(s,b.entity.enemy,r?.id));
   if (
     b.entity.id === "go-bandit2" &&
     !s.completedQuests.includes("first-bandit-reward")
@@ -2070,6 +2186,11 @@ function blocked(x, y) {
   let m = MAPS[s.map];
   if (x < 1 || x > m.w-2 || y < 1 || y > m.h-2) return true;
   if (m.river && x > 17.5 && x < 19.5 && !(y > 8.25 && y < 9.75)) return true;
+  if(m.fishingPond) {
+    const p=m.fishingPond,dx=x-p.x,dy=y-p.y;
+    const rx=dx*Math.cos(.15)-dy*Math.sin(.15),ry=dx*Math.sin(.15)+dy*Math.cos(.15);
+    if((rx/p.rx)**2+(ry/p.ry)**2<1)return true;
+  }
   if (
     m.obstacles.some((o) => Math.abs(o.x - x) < 0.65 && Math.abs(o.y - y) < 0.6)
   )
@@ -2086,6 +2207,11 @@ function blocked(x, y) {
 }
 function marker(e) {
   if (e.type === "npc") {
+    if(e.id==='neo-technician') {
+      if(hasRod(s))return '';
+      if(fishingStarted(s))return rodReady(s)?'?':'';
+      if(activeQuest(s)?.id==='pre-fishing-start'||s.completedRegions.includes('prehistoric'))return '!';
+    }
     const q = activeQuest(s);
     if (q?.target === e.id && q.map === s.map)
       return q.id.endsWith("return") ? "?" : "!";
@@ -2111,6 +2237,11 @@ function targetEntity() {
   if (s.map === "hq") return MAPS.hq.entities[0];
   if (!q) return null;
   let targetMap=q.map, targetId=q.target;
+  if(q.id==='pre-fishing-rod'&&!rodReady(s)) {
+    if(!s.inventory.fishingthread){targetMap='pre-village';targetId='spindle';}
+    else if(!s.inventory.fishingbranch){targetMap='pre-forest';targetId='fishing-branch';}
+    else if(!s.inventory.boarbone&&!s.inventory.boneneedle){targetMap='pre-forest';targetId='pre-boar1';}
+  }
   if (regionOf(s.map)?.id==='nations' && q.event.startsWith('collect:')) {
     const missing=Object.entries(q.items||{}).filter(([id,n])=>(s.inventory[id]||0)<n).map(([id])=>id);
     const options=REGIONS.at(-1).maps.flatMap(m=>m.entities.filter(e=>e.collect && missing.includes(e.collect) && !s.opened.includes(e.id)).map(e=>({map:m.id,id:e.id})));
@@ -2421,6 +2552,12 @@ function draw() {
     ctx.fillRect(15*T,11.5*T,5*T,2*T);
   }
   if (m.nationVisual) drawNationTerrain(m,T);
+  if(m.fishingPond) {
+    const p=m.fishingPond;
+    ctx.fillStyle='#799981';ctx.beginPath();ctx.ellipse(p.x*T,p.y*T,(p.rx+.22)*T,(p.ry+.2)*T,-.15,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#639eaa';ctx.beginPath();ctx.ellipse(p.x*T,p.y*T,p.rx*T,p.ry*T,-.15,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#aacbca';ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse((p.x-.3+i*.2)*T,(p.y-.6+i*.55)*T,.5*T,.06*T,0,0,Math.PI*2);ctx.stroke();}
+  }
   if (["deep-wild","deep-bronze","go-wild"].includes(m.theme)) {
     // Broken earth and low brush make the remote hunting grounds distinct from a village road.
     for (let i=0;i<38;i++) {
@@ -2606,7 +2743,9 @@ function draw() {
       ctx.setLineDash([]);
     }
     $("#interact").firstChild.textContent = e
-      ? e.type === "exit"
+      ? e.type === 'fishingSpot' ? '낚시하기 '
+      : e.type === 'fishingBranch' ? '줍기 '
+      : e.type === "exit"
         ? "이동하기 "
         : e.type === "npc" || e.type === "shop"
           ? "말하기 "

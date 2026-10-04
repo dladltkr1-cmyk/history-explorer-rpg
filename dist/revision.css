@@ -812,3 +812,15 @@
 .creator-preview img,.creator-directions img,.creator-thumb img,.title-hero img,#portrait,#intro-player{image-rendering:auto}
 
 #hud #mount-btn{background:#ead5a1;border-color:#84683e;color:#3a3325;min-width:68px}#hud #mount-btn:hover{background:#f7e4b5}
+
+/* Shared touch-friendly fishing timing game. */
+.fishing-intro{display:flex;align-items:center;gap:18px}.fishing-intro img{width:80px;height:80px;object-fit:contain}
+.fishing-water{height:100px;position:relative;overflow:hidden;background:#79adb4;border-radius:18px;border:3px solid #a6c4b6}
+.water-ring{position:absolute;left:40%;top:45%;width:22%;height:30%;border:2px solid #d6e5da;border-radius:50%;animation:fishing-ripple 1.8s ease-out infinite}
+.fishing-float{position:absolute;top:24%;left:50%;color:#a54e33;font-weight:bold;text-align:center;line-height:14px;animation:fishing-bob .65s ease-in-out infinite alternate}
+.fishing-gauge{height:56px;position:relative;background:#dfd4b6;border:3px solid #8e7d59;border-radius:12px;margin:18px 10px 24px}
+.fishing-zone{height:100%;position:absolute;background:#83b575;color:#233c29;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px}
+.fishing-marker{position:absolute;top:-8px;height:68px;width:10px;background:#394b55;border:2px solid #fff1be;border-radius:6px;transform:translateX(-50%);box-sizing:border-box}
+.fishing-pull{min-height:70px;font-size:24px;touch-action:manipulation}#fishing-count{font-weight:bold}#fishing-status{min-height:48px}
+@keyframes fishing-ripple{from{transform:scale(.65);opacity:1}to{transform:scale(1.7);opacity:.2}}@keyframes fishing-bob{to{transform:translateY(5px) rotate(6deg)}}
+@media(prefers-reduced-motion:reduce){.water-ring,.fishing-float{animation:none}}
