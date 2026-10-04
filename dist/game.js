@@ -17,7 +17,7 @@ import {
   validate,
 } from "./state.js?v=38";
 import { ASSETS } from "./assets.js?v=38";
-import { hasRod, fishingStarted, rodReady, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound } from './fishing.js?v=38';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound } from './fishing.js?v=38.1';
 import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=38';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -1013,7 +1013,7 @@ function inventory(tab = "food") {
         inventory(tab);
       }),
   );
-  $('#craft-needle')?.addEventListener('click',()=>{if(makeNeedle(s)){save();hud();inventory('other');feedback('뼈를 다듬어 뼈바늘을 만들었다.','item');}else toast('기술자에게 낚싯대 이야기를 먼저 들어 보자.');});
+  $('#craft-needle')?.addEventListener('click',()=>{if(makeNeedle(s)){save();hud();inventory('other');feedback('뼈를 다듬어 뼈바늘을 만들었다.','item');if(rodReady(s))toast(fishingObjective(s));}else toast('기술자에게 낚싯대 이야기를 먼저 들어 보자.');});
 }
 function profile() {
   const a = abilities(s);
@@ -1439,11 +1439,11 @@ function settings() {
   };
 }
 function fishingMaterialsText() {
-  return Object.keys(ROD_RECIPE).map(id=>`${ITEMS[id].name} ${s.inventory[id]>0?'✓':'·'}`).join(' · ');
+  return Object.keys(ROD_RECIPE).map(id=>`${ITEMS[id].name} ${Math.min(s.inventory[id]||0,1)} / 1`).join(' · ')+'\n'+fishingObjective(s);
 }
 function spindleThread() {
   panel('가락바퀴로 실 만들기',`<div class="artifact-detail">${imageTag('spindle','가락바퀴')}<p>가락바퀴를 이용하면 섬유를 꼬아 실을 만들 수 있어.</p></div><p>가락바퀴와 도감 기록은 그대로 남아.</p><button id="make-thread" class="primary full" ${s.inventory.fishingthread?'disabled':''}>실 만들기${s.inventory.fishingthread?' · 이미 준비됨':''}</button>`);
-  $('#make-thread').onclick=()=>{if(makeThread(s)){close();save();hud();feedback('실 +1','item');}};
+  $('#make-thread').onclick=()=>{if(makeThread(s)){close();save();hud();feedback('실 +1','item');if(rodReady(s))toast(fishingObjective(s));}};
 }
 function fishingTechnician(e,q) {
   if(hasRod(s)){dialogue(e.name,['낚싯대는 계속 사용할 수 있어. 물가의 낚시 자리로 가 보자.'],e.art);return;}
@@ -1457,7 +1457,7 @@ function fishingTechnician(e,q) {
       toast('실, 나뭇가지, 뼈바늘을 준비하자. 뼈바늘은 가방에서 만들 수 있어.');
     });return;
   }
-  panel('낚싯대 만들기',`<p>${fishingMaterialsText()}</p><p>실은 가락바퀴에서, 가지는 숲에서 구해 보자.<br>멧돼지를 잡아 얻은 뼈는 가방 → 기타에서 뼈바늘로 만들 수 있어.</p><p class="note">게임에서는 이 재료들을 이용해 간단한 낚싯대를 만들 수 있어.</p><button id="make-rod" class="primary full" ${rodReady(s)?'':'disabled'}>낚싯대 만들기</button>`);
+  panel('낚싯대 만들기',`<p>${fishingMaterialsText().replaceAll('\n','<br>')}</p><p>실은 가락바퀴에서, 가지는 숲에서 구해 보자.<br>멧돼지를 잡아 얻은 뼈는 가방 → 기타에서 뼈바늘로 만들 수 있어.</p><p class="note">게임에서는 이 재료들을 이용해 간단한 낚싯대를 만들 수 있어.</p><button id="make-rod" class="primary full" ${rodReady(s)?'':'disabled'}>낚싯대 만들기</button>`);
   $('#make-rod').onclick=()=>{
     if(!makeRod(s))return;
     close();finishEvent('craft:fishingrod');feedback('낚싯대 획득!','item','artifact');
@@ -1549,7 +1549,7 @@ function interact() {
   if(e.type==='fishingBranch') {
     if(!fishingStarted(s)){toast('먼저 마을 기술자에게 낚싯대 이야기를 들어 보자.');return;}
     panel(e.name,`<p>나무 아래에 튼튼한 가지가 떨어져 있다.</p><button id="pick-branch" class="primary full" ${s.inventory.fishingbranch||hasRod(s)?'disabled':''}>줍기</button>`);
-    $('#pick-branch').onclick=()=>{if(pickBranch(s)){close();save();hud();feedback('나뭇가지 +1','item');}};return;
+    $('#pick-branch').onclick=()=>{if(pickBranch(s)){close();save();hud();feedback('나뭇가지 +1','item');if(rodReady(s))toast(fishingObjective(s));}};return;
   }
   if(e.id==='neo-technician'){fishingTechnician(e,q);return;}
   if(e.type==='roomDoor') { travel(e.to); return; }
@@ -2241,6 +2241,7 @@ function targetEntity() {
     if(!s.inventory.fishingthread){targetMap='pre-village';targetId='spindle';}
     else if(!s.inventory.fishingbranch){targetMap='pre-forest';targetId='fishing-branch';}
     else if(!s.inventory.boarbone&&!s.inventory.boneneedle){targetMap='pre-forest';targetId='pre-boar1';}
+    else if(!s.inventory.boneneedle)return null;
   }
   if (regionOf(s.map)?.id==='nations' && q.event.startsWith('collect:')) {
     const missing=Object.entries(q.items||{}).filter(([id,n])=>(s.inventory[id]||0)<n).map(([id])=>id);

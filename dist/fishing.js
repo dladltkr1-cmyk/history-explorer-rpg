@@ -11,6 +11,15 @@ export const FISHING_ITEMS = {
 export const hasRod = s => (s.inventory.fishingrod||0)>0;
 export const fishingStarted = s => s.completedQuests.includes('pre-fishing-start');
 export const rodReady = s => Object.entries(ROD_RECIPE).every(([id,n])=>(s.inventory[id]||0)>=n);
+export function fishingObjective(s) {
+  if(hasRod(s))return '강가 낚시 자리에서 물고기를 잡아 보자.';
+  if(rodReady(s))return '재료를 모두 모았다. 마을 기술자에게 돌아가자.';
+  if(!s.inventory.fishingthread)return '가락바퀴를 조사하고 실을 만들자.';
+  if(!s.inventory.fishingbranch)return '숲의 나무 주변에서 나뭇가지를 줍자.';
+  if(!s.inventory.boneneedle)return s.inventory.boarbone
+    ? '가방 → 기타에서 멧돼지 뼈로 뼈바늘을 만들자.'
+    : '신석기 숲에서 멧돼지를 잡아 뼈를 얻자.';
+}
 export function makeThread(s) {
   if(!fishingStarted(s)||!s.artifacts.includes('spindle')||hasRod(s)||s.inventory.fishingthread) return false;
   s.inventory.fishingthread=1;return true;
