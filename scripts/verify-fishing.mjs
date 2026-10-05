@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class {set src(v){} get complete(){return false;}};
 const {fresh,validate,advance,ITEMS,abilities}=await import('../dist/state.js');
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=41');
-const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=41');
-const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=41');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=41.1');
+const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=41.1');
+const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=41.1');
 const {rollDrop,cookItem,salePrice}=await import('../dist/economy.js');
 const {inFishingRiver}=await import('../dist/waterside.js');
 const neo=REGIONS.find(r=>r.id==='prehistoric');
@@ -104,6 +104,10 @@ for(const [id,oldMap,newMap,village]of [
   assert.equal(inFishingRiver(m,site.x,site.y),false);
   assert.equal(inFishingRiver(m,site.float.x,site.float.y),true);
   assert.ok(MAPS[village].entities.some(e=>e.type==='exit'&&e.to===newMap));
+  for(const [x,y]of [[20,14],[20,13]]) {
+    assert.ok(!MAPS[village].obstacles.some(o=>Math.abs(o.x-x)<.65&&Math.abs(o.y-y)<.6),'bank exit approach and return must stay clear');
+    assert.ok(!MAPS[village].entities.some(e=>(e.solid||e.type==='npc'||e.type==='shop')&&Math.abs(e.x-x)<(e.solid?1:.48)&&Math.abs(e.y-y)<(e.solid?.65:.42)));
+  }
   assert.ok(m.entities.some(e=>e.type==='exit'&&e.to===village));
   assert.ok(!m.entities.some(e=>e.type!=='fishingSpot'&&inFishingRiver(m,e.x,e.y)));
   assert.ok(INTERACTION_QA.some(e=>e.map===newMap&&e.target===id&&e.action==='fishing'));

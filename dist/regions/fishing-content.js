@@ -1,6 +1,6 @@
 import {entity,person,exit} from './common.js';
-import {inFishingRiver,pathDistance} from '../waterside.js?v=41';
-import {FISHING_MATERIALS} from '../fishing.js?v=41';
+import {inFishingRiver,pathDistance} from '../waterside.js?v=41.1';
+import {FISHING_MATERIALS} from '../fishing.js?v=41.1';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [
@@ -49,7 +49,7 @@ export function addFishing(regions) {
     const village=get(villageId),outside=get(outsideId);
     village.entities.push(exit(doorId,21,14,'숲길 강가로',outsideId));
     outside.entities.push(exit(doorId+'-return',2,backY,'마을로',villageId));
-    village.obstacles=village.obstacles.filter(o=>Math.hypot(o.x-21,o.y-14)>1.6);
+    village.obstacles=village.obstacles.filter(o=>Math.hypot(o.x-21,o.y-14)>2.2);
     outside.fishingRiver={width:2.2,points:[[21.2,-2],[22,4],[21.8,7],[22.6,10],[26,11.5]],reeds:[[20.5,4],[20.5,9],[21.7,11]]};
     outside.bankPath=[[3,backY],[6,10],[11,9],[16,8.2],[20,7.4]];
     outside.obstacles=outside.obstacles.filter(o=>!inFishingRiver(outside,o.x,o.y,.7)&&
