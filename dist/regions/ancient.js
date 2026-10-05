@@ -75,7 +75,7 @@ function place(id,name,theme,entities,extra={}) {
 }
 const story=(id,x,y,name,art,lines,extra={})=>entity(id,'ancientStory',x,y,name,{art,lines,actor:art.startsWith('ancientHelper'),...extra});
 const king=(id,x,y,key,lines)=>entity(id,'ancientStory',x,y,ANCIENT_KINGS[key].name,{art:ANCIENT_KINGS[key].art,lines,king:key,legend:true,actor:true});
-export const ANCIENT_HAN_TERRAIN={historicalRegion:'han',fishingRiver:{width:2.2,points:[[21.2,-2],[22,4],[21.8,7],[22.6,10],[26,11.5]]},bankPath:[[3,9],[8,9],[13,9],[16,8.2],[20,7.4]]};
+export const ANCIENT_HAN_TERRAIN={historicalRegion:'han',fishingRiver:{width:2.2,points:[[21.2,-2],[22,4],[21.8,7],[22.6,10],[26,11.5]],reeds:[[20.5,4],[20.5,9],[21.7,11]]},bankPath:[[3,9],[8,9],[13,9],[16,8.2],[20,7.4]]};
 const maps=[
   place('ancient-origins','기록 마당','ancient-plain',[
     story('ancient-guide',10,7,'이야기 안내원','ancientHelperPlain',['네 나라의 시작을 만나 보자.','옛사람들이 전한 건국 이야기 속으로 들어간다.','실제 생활과 이야기 속 신비한 장면은 구분해서 보자.']),
