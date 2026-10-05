@@ -1,5 +1,6 @@
-import {entity,person} from './common.js';
-import {FISHING_MATERIALS} from '../fishing.js?v=40.1';
+import {entity,person,exit} from './common.js';
+import {inFishingRiver,pathDistance} from '../waterside.js?v=41';
+import {FISHING_MATERIALS} from '../fishing.js?v=41';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [
@@ -26,16 +27,34 @@ export const FISHING_TEST_MODES = [
   {id:'success-rest',name:'낚시 성공 후 쿨타임',rest:true},
   {id:'failure-rest',name:'낚시 실패 후 재도전',rest:false},
 ];
-export const INTERACTION_QA = [{id:'fishing',name:'낚시 미니게임 테스트',map:'neo-river',target:'neo-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES}];
+export const INTERACTION_QA = [
+  {id:'fishing',name:'낚시 미니게임 테스트',map:'neo-river',target:'neo-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES},
+  {id:'bronze-bank',name:'청동기 외곽 강가 낚시',map:'bronze-outskirts',target:'bronze-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES},
+  {id:'go-bank',name:'고조선 외곽 강가 낚시',map:'go-outskirts',target:'go-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES},
+];
 export const FISHING_SITES = [
   {map:'neo-river',id:'neo-fishing',x:16.7,y:6.2,name:'강가 낚시 자리'},
-  {map:'bronze-village',id:'bronze-fishing',x:19.4,y:6.6,name:'마을 외곽 물가',pond:{x:21,y:5.2,rx:1.5,ry:2}},
-  {map:'go-field',id:'go-fishing',x:5,y:6.4,name:'들판 물가',pond:{x:4,y:4.5,rx:2,ry:1.4}},
+  {map:'bronze-outskirts',id:'bronze-fishing',x:20.0,y:7.3,name:'숲길 강가 낚시 자리',float:{x:21.8,y:7.3}},
+  {map:'go-outskirts',id:'go-fishing',x:20.0,y:7.5,name:'외곽 강가 낚시 자리',float:{x:21.8,y:7.5}},
   {map:'nation-iron-field',id:'iron-fishing',x:19.2,y:6.3,name:'들판 물가',pond:{x:21,y:5,rx:1.5,ry:2}},
   {map:'nation-okjeo-river',id:'okjeo-fishing',x:5.9,y:6.2,name:'강가 낚시 자리'},
   {map:'nation-samhan-mahan',id:'samhan-fishing',x:8,y:13.1,name:'개울 낚시 자리'},
 ];
 export function addFishing(regions) {
+  const maps=regions.flatMap(r=>r.maps),get=id=>maps.find(m=>m.id===id);
+  for(const [villageId,outsideId,doorId,backY]of [
+    ['bronze-village','bronze-outskirts','bronze-bank-door',9],
+    ['go-village','go-outskirts','go-bank-door',13],
+  ]) {
+    const village=get(villageId),outside=get(outsideId);
+    village.entities.push(exit(doorId,21,14,'숲길 강가로',outsideId));
+    outside.entities.push(exit(doorId+'-return',2,backY,'마을로',villageId));
+    village.obstacles=village.obstacles.filter(o=>Math.hypot(o.x-21,o.y-14)>1.6);
+    outside.fishingRiver={width:2.2,points:[[21.2,-2],[22,4],[21.8,7],[22.6,10],[26,11.5]],reeds:[[20.5,4],[20.5,9],[21.7,11]]};
+    outside.bankPath=[[3,backY],[6,10],[11,9],[16,8.2],[20,7.4]];
+    outside.obstacles=outside.obstacles.filter(o=>!inFishingRiver(outside,o.x,o.y,.7)&&
+      (o.x===0||o.y===0||o.x===outside.w-1||o.y===outside.h-1||pathDistance(outside.bankPath,o.x,o.y)>1.1));
+  }
   const neo=regions.find(r=>r.id==='prehistoric');
   const qa={name:'낚싯대 만들기와 첫 낚시',stages:FISHING_QA,items:FISHING_MATERIALS,resetTutorial:'fishing',resetMonsters:['pre-boar1']};
   neo.quests.push(
@@ -48,7 +67,7 @@ export function addFishing(regions) {
   for(const site of FISHING_SITES) {
     const m=regions.flatMap(r=>r.maps).find(m=>m.id===site.map);
     if(!m)throw Error('Missing fishing map: '+site.map);
-    m.entities.push(entity(site.id,'fishingSpot',site.x,site.y,site.name,{art:'fishingSpotIcon'}));
+    m.entities.push(entity(site.id,'fishingSpot',site.x,site.y,site.name,{art:'fishingSpotIcon',...(site.float?{float:site.float}:{})}));
     if(site.pond)m.fishingPond=site.pond;
     m.obstacles=m.obstacles.filter(o=>o.x===0||o.y===0||o.x===m.w-1||o.y===m.h-1||Math.hypot(o.x-site.x,o.y-site.y)>1.8);
   }

@@ -75,7 +75,9 @@ export function createFishing(tutorial=false,options={},random=Math.random) {
     waitMs:options.waitMs??(tutorial?Math.round(between([5000,12000],random)):fishingWait(random))};
   configureFishingRound(game);return game;
 }
-export const fishingSiteKey=(map,id)=>`fishing:${map}:${id}`;
+// Relocation keeps the same saved timer identity; old clients and saves agree.
+const originalFishingMaps={'bronze-fishing':'bronze-village','go-fishing':'go-field'};
+export const fishingSiteKey=(map,id)=>`fishing:${originalFishingMaps[id]||map}:${id}`;
 export const fishingCooldown=(s,map,id,now=Date.now())=>Math.max(0,(s.cooldowns[fishingSiteKey(map,id)]||0)-now);
 export function restFishingSite(s,map,id,won,now=Date.now()) {
   s.cooldowns[fishingSiteKey(map,id)]=now+(won?60000:7000);

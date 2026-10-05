@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class {set src(v){} get complete(){return false;}};
 const {fresh,validate,advance,ITEMS,abilities}=await import('../dist/state.js');
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=40.1');
-const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=40.1');
-const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=40.1');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=41');
+const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=41');
+const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=41');
 const {rollDrop,cookItem,salePrice}=await import('../dist/economy.js');
+const {inFishingRiver}=await import('../dist/waterside.js');
 const neo=REGIONS.find(r=>r.id==='prehistoric');
 const s=fresh('낚시검사','boy');s.unlockedRegions.push('prehistoric');s.map='pre-village';s.progress.prehistoric=6;
 assert.equal(neo.quests[5].id,'pre-return');assert.equal(neo.quests.length,9);
@@ -91,7 +92,28 @@ for(let i=0;i<=6;i++){
 const original=JSON.stringify(s);for(const stage of FISHING_QA){const qa=structuredClone(s);prepareContentQA(qa,neo,stage);qa.map=stage.map;assert.ok(MAPS[stage.map].entities.some(e=>e.id===stage.target));assert.doesNotThrow(()=>validate(qa));assert.equal(qa.inventory.fishingrod,stage.items?.fishingrod||0);}assert.equal(JSON.stringify(s),original);
 assert.equal(FISHING_QA.length,12);assert.ok(INTERACTION_QA.some(v=>v.action==='fishing'));
 assert.equal(MAPS['neo-river'].entities.some(e=>e.id==='river-fish'),false);assert.ok(MAPS['paleo-forest'].entities.some(e=>e.id==='wild-fish'));
-for(const site of FISHING_SITES){assert.ok(MAPS[site.map].entities.some(e=>e.id===site.id&&e.type==='fishingSpot'));assert.ok(MAPS[site.map].river||MAPS[site.map].fishingPond||['nation-okjeo-river','nation-samhan-mahan'].includes(site.map));}
+for(const site of FISHING_SITES){assert.ok(MAPS[site.map].entities.some(e=>e.id===site.id&&e.type==='fishingSpot'));assert.ok(MAPS[site.map].river||MAPS[site.map].fishingRiver||MAPS[site.map].fishingPond||['nation-okjeo-river','nation-samhan-mahan'].includes(site.map));}
+for(const [id,oldMap,newMap,village]of [
+  ['bronze-fishing','bronze-village','bronze-outskirts','bronze-village'],
+  ['go-fishing','go-field','go-outskirts','go-village'],
+]) {
+  const site=FISHING_SITES.find(e=>e.id===id),m=MAPS[newMap];
+  assert.equal(site.map,newMap);assert.ok(!MAPS[oldMap].fishingPond);
+  assert.ok(!MAPS[oldMap].entities.some(e=>e.id===id));
+  assert.ok(!['field','bronze','ancient'].includes(m.theme));
+  assert.equal(inFishingRiver(m,site.x,site.y),false);
+  assert.equal(inFishingRiver(m,site.float.x,site.float.y),true);
+  assert.ok(MAPS[village].entities.some(e=>e.type==='exit'&&e.to===newMap));
+  assert.ok(m.entities.some(e=>e.type==='exit'&&e.to===village));
+  assert.ok(!m.entities.some(e=>e.type!=='fishingSpot'&&inFishingRiver(m,e.x,e.y)));
+  assert.ok(INTERACTION_QA.some(e=>e.map===newMap&&e.target===id&&e.action==='fishing'));
+  const prior=fresh('옛물가저장','boy');prior.cooldowns[`fishing:${oldMap}:${id}`]=now+60000;
+  const v=validate(JSON.parse(JSON.stringify(prior)));
+  assert.equal(fishingCooldown(v,newMap,id,now+1000),59000);
+  restFishingSite(v,newMap,id,true,now+2000);
+  assert.equal(fishingCooldown(v,oldMap,id,now+3000),59000);
+  assert.equal(Object.keys(v.cooldowns).filter(k=>k.startsWith('fishing:')).length,1);
+}
 assert.equal(ITEMS.fish.heal,8);assert.equal(ITEMS.cookedfish.heal,13);assert.equal(salePrice(ITEMS.fish),6);
 const food=structuredClone(s);food.artifacts.push('fire');food.inventory.fish=1;assert.ok(cookItem(food,'fish'));assert.equal(food.inventory.cookedfish,1);
 assert.equal(abilities(fresh('능력','boy')).attack,7);

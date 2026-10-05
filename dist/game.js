@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=40.1";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=41";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,10 +15,11 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=40.1";
+} from "./state.js?v=41";
 import { ASSETS } from "./assets.js?v=38";
-import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=40.1';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=40.1';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=41';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=41';
+import {inFishingRiver,drawFishingRiver} from './waterside.js?v=41';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
@@ -2237,6 +2238,7 @@ function blocked(x, y) {
   let m = MAPS[s.map];
   if (x < 1 || x > m.w-2 || y < 1 || y > m.h-2) return true;
   if (m.river && x > 17.5 && x < 19.5 && !(y > 8.25 && y < 9.75)) return true;
+  if(inFishingRiver(m,x,y))return true;
   if(m.fishingPond) {
     const p=m.fishingPond,dx=x-p.x,dy=y-p.y;
     const rx=dx*Math.cos(.15)-dy*Math.sin(.15),ry=dx*Math.sin(.15)+dy*Math.cos(.15);
@@ -2610,6 +2612,7 @@ function draw() {
     ctx.fillStyle='#639eaa';ctx.beginPath();ctx.ellipse(p.x*T,p.y*T,p.rx*T,p.ry*T,-.15,0,Math.PI*2);ctx.fill();
     ctx.strokeStyle='#aacbca';ctx.lineWidth=2;for(let i=0;i<3;i++){ctx.beginPath();ctx.ellipse((p.x-.3+i*.2)*T,(p.y-.6+i*.55)*T,.5*T,.06*T,0,0,Math.PI*2);ctx.stroke();}
   }
+  drawFishingRiver(ctx,m,T,clock);
   if (["deep-wild","deep-bronze","go-wild"].includes(m.theme)) {
     // Broken earth and low brush make the remote hunting grounds distinct from a village road.
     for (let i=0;i<38;i++) {
@@ -2657,6 +2660,15 @@ function draw() {
   for (const e of objects) {
     let x = e.x * T,
       y = e.y * T;
+    if(e.type==='fishingSpot'&&e.float) {
+      const fx=e.float.x*T,fy=e.float.y*T;
+      ctx.strokeStyle='#b0d4ca';ctx.lineWidth=2;
+      ctx.beginPath();ctx.ellipse(fx,fy,17+Math.sin(clock*2)*3,5,0,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle='#e5dfc0';ctx.fillRect(fx-2,fy-20,4,14);
+      ctx.fillStyle='#af6556';ctx.fillRect(fx-3,fy-12,6,11);
+      labels.push({x,y,label:e.name});
+      continue;
+    }
     const isPlayer = e.type === "player";
     let w =
         isPlayer || ["npc", "quiz", "shop", "enemy"].includes(e.type) ? 58 : 64,
