@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=41.1";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=42";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,11 +15,14 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=41.1";
-import { ASSETS } from "./assets.js?v=38";
-import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=41.1';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=41.1';
-import {inFishingRiver,drawFishingRiver} from './waterside.js?v=41.1';
+} from "./state.js?v=42";
+import { ASSETS } from "./assets.js?v=42";
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=42';
+import {noteAncientVisit} from './ancient-state.js?v=42';
+import {createAncientUI} from './ancient-ui.js?v=42';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=42';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=42';
+import {inFishingRiver,drawFishingRiver} from './waterside.js?v=42';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
@@ -106,6 +109,9 @@ const esc = (v) =>
   );
 const imageTag = (art, alt = "", cls = "") =>
   `<img src="${ASSETS[art] || ASSETS.chest}" alt="${esc(alt)}" class="${cls}">`;
+const currentMap=()=>ancientWorld(MAPS[s.map],s);
+const canMount=()=>s.map.startsWith('nation-') || (MAPS[s.map]?.ancient && MAPS[s.map].theme!=='room');
+const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel});
 function toast(text) {
   $("#toast").textContent = text;
   $("#toast").style.opacity = 1;
@@ -239,15 +245,16 @@ function start(state) {
   if (adminMode) $("#game").insertAdjacentHTML("beforeend", '<div class="admin-mode-badge">관리자 시험 기록 · 학생 저장과 분리</div>');
   close();
   if (blocked(s.x, s.y)) {
-    s.x = MAPS[s.map].start.x;
-    s.y = MAPS[s.map].start.y;
+    s.x = currentMap().start.x;
+    s.y = currentMap().start.y;
   }
-  refreshResources(s, MAPS[s.map]);
+  refreshResources(s, currentMap());
   placeMonsters();
   save();
   hud();
   if (s.introSeen && !s.basicTutorialDone && !adminMode)
     setTimeout(startBasicTutorial, 0);
+  if(!adminMode&&s.map==='ancient-origins'&&(s.progress.ancient||0)===0)ancientUI.entry();
 }
 const BASIC_TUTORIAL_STEPS = [
   { target: ".health-track", text: "이것은 체력이야.\n전투에서 공격받으면 줄어들어." },
@@ -560,6 +567,10 @@ function adminRequirements(q) {
 function adminPrepareQuest(regionId,index,stage) {
   const r=REGIONS.find(v=>v.id===regionId), q=r?.quests[index];
   if(!q) return;
+  if(r.id==='ancient') {
+    const fixture=q.qa.stages.find(v=>v.id===stage)||{id:q.id,name:q.title,index,quest:q.id,map:q.map,target:q.target};
+    ancientUI.prepare(fixture);return;
+  }
   if(q.qa) {
     const id=stage==='current'?q.id==='pre-fishing-start'?'start':q.id==='pre-fishing-rod'?'spindle':'first':stage==='next'?q.id==='pre-fishing-start'?'spindle':'first':stage;
     const fixture=q.qa.stages.find(v=>v.id===id)||q.qa.stages[0];
@@ -670,10 +681,12 @@ function adminInteractions() {
     const a=b.dataset.qaInteract;
     const registered=INTERACTION_QA.find(v=>v.id===a);
     if(registered) {
+      if(registered.action==='ancient'){ancientUI.adminPanel();return;}
+      if(registered.action==='ancient-fishing'){ancientUI.prepare('4c');s.progress.ancient=21;s.ancient.century=4;s.ancient.chapter='4c';}
       for(const [id,n] of Object.entries(registered.items||{}))adminGive(id,n);
       const target=MAPS[registered.map].entities.find(e=>e.id===registered.target);
       adminJump(registered.map,target);
-      if(registered.action==='fishing')adminFishingQA(target,registered.modes);
+      if(['fishing','ancient-fishing'].includes(registered.action))adminFishingQA(target,registered.modes);
       return;
     }
     if(a==='map'){nationMap();return;}
@@ -689,7 +702,7 @@ function adminInteractions() {
 }
 function adminData() {
   const r=regionOf(s.map),q=r&&activeQuest(s);
-  panel('저장/데이터',`<p>개인 코드: ${esc(adminOriginal?.personalCode||'없음')}<br>원래 저장: ${adminOriginal?'있음':'없음'}<br>시험 시대: ${esc(r?.name||'탐험 본부')}<br>시험 지역: ${esc(MAPS[s.map].name)}<br>시험 퀘스트: ${esc(q?.title||'완료 또는 대기')}</p><p id="qa-cloud-status">서버 시험 코드: ${esc(qaCloudCode||'없음')}</p><button id="qa-local" class="full">현재 로컬 저장 확인</button><button id="qa-server" class="full">원래 서버 저장 확인</button><button id="qa-cloud-push" class="full">시험 기록 서버에 저장</button><button id="qa-cloud-load" class="full">시험 기록 서버에서 불러오기</button><button id="qa-reset" class="full">시험 세션 초기화</button><button id="qa-restore" class="primary full">원래 저장으로 돌아가기</button><button id="admin-back">관리자 메뉴</button>`);
+  panel('저장/데이터',`<p>개인 코드: ${esc(adminOriginal?.personalCode||'없음')}<br>원래 저장: ${adminOriginal?'있음':'없음'}<br>시험 시대: ${esc(r?.name||'탐험 본부')}<br>시험 지역: ${esc(currentMap().name)}<br>시험 퀘스트: ${esc(q?.title||'완료 또는 대기')}</p><p id="qa-cloud-status">서버 시험 코드: ${esc(qaCloudCode||'없음')}</p><button id="qa-local" class="full">현재 로컬 저장 확인</button><button id="qa-server" class="full">원래 서버 저장 확인</button><button id="qa-cloud-push" class="full">시험 기록 서버에 저장</button><button id="qa-cloud-load" class="full">시험 기록 서버에서 불러오기</button><button id="qa-reset" class="full">시험 세션 초기화</button><button id="qa-restore" class="primary full">원래 저장으로 돌아가기</button><button id="admin-back">관리자 메뉴</button>`);
   const status = message => { const el=$('#qa-cloud-status'); if(el) el.textContent=message; };
   $('#qa-local').onclick=()=>status(saved?`기기 저장: ${saved.nickname} · ${new Date(saved.updatedAt).toLocaleString('ko-KR')}`:'기기 저장 없음');
   $('#qa-server').onclick=async()=>{try { if(!adminOriginal?.personalCode) return status('원래 개인 코드 없음'); const {state}=await loadCode(adminOriginal.personalCode);status(`서버 저장: ${state.nickname} · ${new Date(state.updatedAt).toLocaleString('ko-KR')}`); } catch(e){status(e.message);} };
@@ -743,8 +756,8 @@ function hud() {
   $("#health").classList.toggle("critical", s.hp / a.hp <= 0.25);
   $("#health").style.width = `${(s.hp / a.hp) * 100}%`;
   setAvatarImage($("#portrait"));
-  $("#place").textContent = MAPS[s.map].name;
-  $('#mount-btn').hidden=!(s.horseUnlocked && s.map.startsWith('nation-'));
+  $("#place").textContent = currentMap().name;
+  $('#mount-btn').hidden=!(s.horseUnlocked && canMount());
   $('#mount-btn').textContent=s.mounted?'내리기':'말 타기';
   $("#era").textContent = r?.name || "시간탐험대";
   $("#coins").textContent = s.coins.toLocaleString();
@@ -752,7 +765,7 @@ function hud() {
     ? `${(s.progress[r.id] || 0) + 1} / ${r.quests.length}`
     : "";
   $("#quest-title").textContent =
-    q?.title || (s.map === "hq" ? "시대의 문으로 가 보자." : "자유 탐험");
+    (r?.id==='ancient'&&!q?`${s.ancient.century}세기 · 다음 이야기 준비 중`:q?.title) || (s.map === "hq" ? "시대의 문으로 가 보자." : "자유 탐험");
   const paleoStatus = r?.id === "paleolithic" && q
     ? `\n주먹도끼 ${s.artifacts.includes("handaxe") ? "✓" : "·"}  뗀석기 ${s.artifacts.includes("flint") ? "✓" : "·"}\n불의 사용 ${s.artifacts.includes("fire") ? "✓" : "·"}  음식 조리 ${s.completedQuests.includes("paleo-cook") ? "✓" : "·"}`
     : "";
@@ -809,14 +822,14 @@ function finishEvent(event) {
 function eraMenu() {
   panel(
     "어느 시대로 갈까?",
-    `<div class="era-list">${REGIONS.map((r, i) => `<button class="era-button" data-era="${r.id}" ${!s.unlockedRegions.includes(r.id) ? "disabled" : ""}><span class="era-number">0${i + 1}</span><div><strong>${r.name}</strong><small>${r.subtitle}</small></div><span class="status">${s.completedRegions.includes(r.id) ? "완료 ✓" : s.unlockedRegions.includes(r.id) ? "열림" : "잠김"}</span></button>`).join("")}<button class="era-button" disabled><span class="era-number">06</span><div><strong>고대 국가</strong><small>다음 탐험 준비 중</small></div><span class="status">준비 중</span></button></div><p class="note">이야기 임무를 마치면 다음 시대가 열린다.</p>`,
+    `<div class="era-list">${REGIONS.map((r, i) => `<button class="era-button" data-era="${r.id}" ${!adminMode && !s.unlockedRegions.includes(r.id) ? "disabled" : ""}><span class="era-number">0${i + 1}</span><div><strong>${r.name}</strong><small>${r.subtitle}</small></div><span class="status">${s.completedRegions.includes(r.id) ? "완료 ✓" : s.unlockedRegions.includes(r.id) ? "열림" : "잠김"}</span></button>`).join("")}</div><p class="note">이야기 임무를 마치면 다음 시대가 열린다.</p>`,
   );
   document
     .querySelectorAll("[data-era]")
     .forEach(
       (b) =>
         (b.onclick = () =>
-          travel(REGIONS.find((r) => r.id === b.dataset.era).start)),
+          travel(b.dataset.era==='ancient'?ancientDestination(s):REGIONS.find((r) => r.id === b.dataset.era).start)),
     );
 }
 function rollHorse(id) {
@@ -834,12 +847,13 @@ function travel(id, from = s.map, {fast=false} = {}) {
     toast('지금 해야 할 일을 먼저 마치자.'); return;
   }
   const r = regionOf(id);
+  if(!adminMode && !ancientCanEnter(s,MAPS[id])) {toast('지금의 이야기 임무를 먼저 마치자.');return;}
   if (!adminMode && r && !s.unlockedRegions.includes(r.id)) {
     toast("아직 잠긴 시대다.");
     return;
   }
   s.map = id;
-  if (!id.startsWith('nation-')) s.mounted = false;
+  if (!id.startsWith('nation-') && !(MAPS[id]?.ancient && MAPS[id].theme!=='room')) s.mounted = false;
   rollHorse(id);
   let discovery='';
   if (id.startsWith('nation-') && !s.discoveredMaps.includes(id)) {
@@ -848,7 +862,7 @@ function travel(id, from = s.map, {fast=false} = {}) {
     if (nation) discovery='새로운 지역을 발견했다. ' + nation.name;
   }
   const roomReturn = MAPS[from]?.returnTo?.map === id ? MAPS[from].returnTo : null;
-  const back = MAPS[id].entities.find(
+  const back = ancientWorld(MAPS[id],s).entities.find(
     (e) => e.type === "exit" && e.to === from,
   );
   s.x = roomReturn ? roomReturn.x : !fast && back
@@ -878,16 +892,20 @@ function travel(id, from = s.map, {fast=false} = {}) {
   close();
   save();
   hud();
-  toast(discovery || MAPS[id].name);
+  noteAncientVisit(s,id);save();
+  toast(discovery || currentMap().name);
+  if(!adminMode&&id==='ancient-origins'&&(s.progress.ancient||0)===0)ancientUI.entry();
 }
 function menu() {
   panel(
     "탐험수첩",
-    `<div class="menu-grid"><button id="codex">역사 도감<small>${s.artifacts.length} / ${ARTIFACTS.length} 기록</small></button><button id="nation-records">여러 나라 기록<small>탐험 표식 ${s.nationMarks.length} / 5</small></button><button id="requests">퀘스트<small>스토리 퀘스트 · 서브 퀘스트</small></button><button id="settings">환경설정<small>음악 · 저장 파일</small></button><button id="home">탐험 본부로</button>${adminMode ? '<button id="admin-menu">관리자 시험 도구</button>' : ""}<button id="to-title">시작화면으로</button></div>`,
+    `<div class="menu-grid"><button id="codex">역사 도감<small>${s.artifacts.length} / ${ARTIFACTS.length} 기록</small></button><button id="nation-records">여러 나라 기록<small>탐험 표식 ${s.nationMarks.length} / 5</small></button><button id="requests">퀘스트<small>스토리 퀘스트 · 서브 퀘스트</small></button>${currentMap().ancient?'<button id="ancient-records-menu">고대 국가 기록</button><button id="ancient-chapters-menu">고대 국가 이야기</button>':''}<button id="settings">환경설정<small>음악 · 저장 파일</small></button><button id="home">탐험 본부로</button>${adminMode ? '<button id="admin-menu">관리자 시험 도구</button>' : ""}<button id="to-title">시작화면으로</button></div>`,
   );
   $("#codex").onclick = codex;
   $("#nation-records").onclick = nationRecords;
   $("#requests").onclick = requestsMenu;
+  $('#ancient-records-menu')?.addEventListener('click',ancientUI.records);
+  $('#ancient-chapters-menu')?.addEventListener('click',ancientUI.chapters);
   $("#settings").onclick = settings;
   $("#home").onclick = () => travel("hq");
   if (adminMode) $("#admin-menu").onclick = adminPanel;
@@ -936,7 +954,7 @@ function nationMap() {
   if (s.map.startsWith('nation-') && !s.discoveredMaps.includes(s.map)) {s.discoveredMaps.push(s.map);save();}
   const current=places.find(p=>p.maps.includes(s.map));
   const visited=p=>adminMode || p.maps.some(id=>s.discoveredMaps.includes(id));
-  panel('지역 지도', `<p class="map-location">현재 위치: ${esc(MAPS[s.map].name)}</p><div class="nation-map" role="group" aria-label="원본 역사 지도">${places.map(p=>{
+  panel('지역 지도', `<p class="map-location">현재 위치: ${esc(currentMap().name)}</p><div class="nation-map" role="group" aria-label="원본 역사 지도">${places.map(p=>{
       const here=current?.id===p.id,seen=visited(p);
       return `<button class="nation-pin ${seen?'seen':'unknown'}" style="left:${p.x}%;top:${p.y}%" data-nation="${p.id}" aria-label="${p.name}${here?' 현재 위치':seen?' 발견':' 미발견'}"><span class="sr-only">${p.name}</span></button>${here?`<span class="nation-current" style="left:${p.x}%;top:${p.y}%" aria-hidden="true">●</span>`:''}`;
     }).join('')}</div><p class="note">원본 역사 지도 · 위치는 학습용 표시다.</p><div id="map-selection" aria-live="polite">지도에 적힌 지역 이름을 눌러 보자.</div>`,{wide:true});
@@ -949,9 +967,9 @@ function nationMap() {
     if(!here) $('#fast-travel').onclick=()=>travel(p.map,s.map,{fast:true});
   });
 }
-$('#map-btn').onclick=()=>safeMenu(nationMap);
+$('#map-btn').onclick=()=>safeMenu(currentMap().ancient?ancientUI.map:nationMap);
 $('#mount-btn').onclick=async()=>{
-  if(!s.horseUnlocked || !s.map.startsWith('nation-')) return;
+  if(!s.horseUnlocked || !canMount()) return;
   if(!s.mounted){
     const button=$('#mount-btn');button.disabled=true;
     try {await prepareMounted(s.appearance);} catch {toast('말 그림을 불러오지 못했다. 다시 시도해 줘.');button.disabled=false;return;}
@@ -1181,7 +1199,7 @@ function shop(tab = "weapon") {
     stock = r.shop;
   panel(
     "상점",
-    `<div class="shop-balance">${s.coins.toLocaleString()} 엽전</div><div class="shop-tabs" role="tablist">${[["weapon", "무기"], ["clothes", "방어구"], ["food", "음식"], ...(['gojoseon','nations'].includes(regionOf(s.map)?.id) ? [["sell", "판매"]] : [])].map(([k, n]) => `<button role="tab" aria-selected="${tab === k}" data-category="${k}" class="${tab === k ? "selected" : ""}">${n}</button>`).join("")}</div><div class="shop-grid">${stock
+    `<div class="shop-balance">${s.coins.toLocaleString()} 엽전</div><div class="shop-tabs" role="tablist">${[["weapon", "무기"], ["clothes", "방어구"], ["food", "음식"], ...(['gojoseon','nations','ancient'].includes(regionOf(s.map)?.id) ? [["sell", "판매"]] : [])].map(([k, n]) => `<button role="tab" aria-selected="${tab === k}" data-category="${k}" class="${tab === k ? "selected" : ""}">${n}</button>`).join("")}</div><div class="shop-grid">${stock
       .filter(
         (id) =>
           ITEMS[id].kind === tab ||
@@ -1246,7 +1264,7 @@ function merchant(e) {
   } else shop();
 }
 function selling() {
-  if (!['gojoseon','nations'].includes(regionOf(s.map)?.id)) return;
+  if (!['gojoseon','nations','ancient'].includes(regionOf(s.map)?.id)) return;
   const ids = STACK_IDS.filter(
     (id) => salePrice(ITEMS[id]) && s.inventory[id] > 0,
   );
@@ -1312,7 +1330,7 @@ function requestBy(id) {
 }
 function requestTalk(
   id,
-  npc = MAPS[s.map].entities.find((e) => e.request === id),
+  npc = currentMap().entities.find((e) => e.request === id),
 ) {
   const original = requestBy(id),
     q = {
@@ -1572,7 +1590,7 @@ function startFishing(e,tutorial,options={}) {
   frame=requestAnimationFrame(animate);
 }
 function nearby() {
-  return MAPS[s.map].entities
+  return currentMap().entities
     .filter(
       (e) =>
         e.type !== "scenery" &&
@@ -1597,6 +1615,7 @@ function interact() {
     return;
   }
   const q = activeQuest(s);
+  if(currentMap().ancient&&ancientUI.interact(e,q))return;
   if(e.type==='fishingSpot'){fishingMenu(e);return;}
   if(e.type==='fishingBranch') {
     if(!fishingStarted(s)){toast('먼저 마을 기술자에게 낚싯대 이야기를 들어 보자.');return;}
@@ -1824,7 +1843,7 @@ function cookingMenu(e) {
   );
 }
 function quiz(id, npc) {
-  const q = NATION_FINAL_QUIZZES[id] || QUIZZES[id],
+  const q = ANCIENT_QUIZZES[id] || NATION_FINAL_QUIZZES[id] || QUIZZES[id],
     key = "quiz:" + id;
   if (s.completedQuests.includes(key)) {
     dialogue(npc.name, ["이미 맞힌 문제다."], npc.art);
@@ -1842,6 +1861,10 @@ function quiz(id, npc) {
     (b) =>
       (b.onclick = () => {
         if (+b.dataset.answer !== q.answer) {
+          if(ANCIENT_QUIZZES[id]) {
+            panel('다시 생각해 보자', '<p>이번 선택은 맞지 않아. 앞에서 살펴본 내용을 떠올려 보자.</p><button id="ancient-quiz-retry" class="primary full">다시 도전하기</button>');
+            $('#ancient-quiz-retry').onclick=()=>quiz(id,npc);return;
+          }
           s.cooldowns[key] = Date.now() + (NATION_FINAL_QUIZZES[id] ? 30000 : 60000);
           const loss = NATION_FINAL_QUIZZES[id] ? 0 : Math.min(s.coins, q.wrongCoins || 0);
           s.coins -= loss;
@@ -1880,7 +1903,7 @@ function startBattle(e) {
   s.encounter.distance = 0;
   const r = regionOf(s.map),
     boss = e.id === "pre-cave-wolf" || e.id === "go-bandit2",
-    eraBoost = ({paleolithic:1,prehistoric:1.12,bronze:1.25,gojoseon:1.35,nations:1.35})[r?.id] || 1,
+    eraBoost = ({paleolithic:1,prehistoric:1.12,bronze:1.25,gojoseon:1.35,nations:1.35,ancient:1.35})[r?.id] || 1,
     boost = eraBoost * (boss || e.elite ? 1.3 : 1),
     def = ENEMIES[e.enemy];
   if (!def) return;
@@ -1889,11 +1912,11 @@ function startBattle(e) {
     ...def,
     name:e.eliteName || def.name,
     boss,
-    level: ({paleolithic:1,prehistoric:2,bronze:4,gojoseon:5,nations:7})[r?.id] + (boss || e.elite ? 2 : 0),
+    level: ({paleolithic:1,prehistoric:2,bronze:4,gojoseon:5,nations:7,ancient:7})[r?.id] + (boss || e.elite ? 2 : 0),
     maxHp: Math.round(def.hp * boost),
     hp: Math.round(def.hp * boost),
     attack:
-      Math.round(def.attack * (['gojoseon','nations'].includes(r?.id) ? 1.2 : 1)) +
+      Math.round(def.attack * (['gojoseon','nations','ancient'].includes(r?.id) ? 1.2 : 1)) +
       (boss || e.elite ? 2 : 0),
     xp: def.xp * (boss ? 2 : e.elite ? 1.5 : 1),
     coins: def.coins * (boss ? 2 : 1),
@@ -1988,7 +2011,7 @@ function strike(from, to) {
 }
 function showDefeat(b) {
   music.effect("defeat");
-  const village = regionOf(s.map).village,
+  const village = regionOf(s.map).id==='ancient'?ancientDestination(s):regionOf(s.map).village,
     loss = Math.min(100, Math.floor(s.coins * 0.1));
   s.coins -= loss;
   s.hp = Math.ceil(abilities(s).hp * 0.25);
@@ -2163,7 +2186,7 @@ function enemyVisible(e) {
 }
 function placeMonsters(force = false) {
   let changed = false;
-  const m = MAPS[s.map];
+  const m = currentMap();
   for (const e of m.entities.filter((e) => e.type === "enemy")) {
     e.hidden = ["wolf","snake","tiger"].includes(e.enemy) || e.id.endsWith("boar");
     const old = s.monsters[e.id],
@@ -2211,14 +2234,14 @@ function placeMonsters(force = false) {
   return changed;
 }
 function checkRandomEncounter(distance) {
-  const types = ENCOUNTER_MAPS[s.map];
+  const types = ENCOUNTER_currentMap();
   if (!types || distance <= 0 || invuln > 0 || Date.now() < s.encounter.until)
     return;
   s.encounter.distance += distance;
   if (s.encounter.distance < ENCOUNTER_STEP_DISTANCE) return;
   s.encounter.distance = 0;
   if (
-    MAPS[s.map].entities.some((e) => Math.hypot(e.x - s.x, e.y - s.y) < 2) ||
+    currentMap().entities.some((e) => Math.hypot(e.x - s.x, e.y - s.y) < 2) ||
     Math.random() >= (ENCOUNTER_CHANCES[s.map] || ENCOUNTER_CHANCE)
   )
     return;
@@ -2235,7 +2258,7 @@ function checkRandomEncounter(distance) {
   });
 }
 function blocked(x, y) {
-  let m = MAPS[s.map];
+  let m = currentMap();
   if (x < 1 || x > m.w-2 || y < 1 || y > m.h-2) return true;
   if (m.river && x > 17.5 && x < 19.5 && !(y > 8.25 && y < 9.75)) return true;
   if(inFishingRiver(m,x,y))return true;
@@ -2251,7 +2274,7 @@ function blocked(x, y) {
   return m.entities.some(
     (e) =>
       (e.solid ||
-        e.type === "npc" ||
+        e.type === "npc" || e.actor ||
         e.type === "shop" ||
         e.art === "dolmen") &&
       Math.abs(e.x - x) < (e.solid ? 1 : 0.48) &&
@@ -2259,6 +2282,10 @@ function blocked(x, y) {
   );
 }
 function marker(e) {
+  if(e.type==='ancientStory'||e.type==='ancientHome') {
+    if(activeQuest(s)?.target===e.id || (activeQuest(s)?.id==='ancient-y-gather'&&e.gather&&!s.ancient.carry.includes(e.gather)))return '!';
+    return '';
+  }
   if (e.type === "npc") {
     if(e.id==='neo-technician') {
       if(hasRod(s))return '';
@@ -2289,6 +2316,7 @@ function targetEntity() {
   const q = activeQuest(s);
   if (s.map === "hq") return MAPS.hq.entities[0];
   if (!q) return null;
+  if(q.id==='ancient-y-gather'){const missing=currentMap().entities.find(e=>e.gather&&!s.ancient.carry.includes(e.gather));if(missing)return missing;}
   let targetMap=q.map, targetId=q.target;
   if(q.id==='pre-fishing-rod'&&!rodReady(s)) {
     if(!s.inventory.fishingthread){targetMap='pre-village';targetId='spindle';}
@@ -2298,12 +2326,12 @@ function targetEntity() {
   }
   if (regionOf(s.map)?.id==='nations' && q.event.startsWith('collect:')) {
     const missing=Object.entries(q.items||{}).filter(([id,n])=>(s.inventory[id]||0)<n).map(([id])=>id);
-    const options=REGIONS.at(-1).maps.flatMap(m=>m.entities.filter(e=>e.collect && missing.includes(e.collect) && !s.opened.includes(e.id)).map(e=>({map:m.id,id:e.id})));
+    const options=REGIONS.find(r=>r.id==='nations').maps.flatMap(m=>m.entities.filter(e=>e.collect && missing.includes(e.collect) && !s.opened.includes(e.id)).map(e=>({map:m.id,id:e.id})));
     const choice=options.find(o=>o.map===s.map)||options[0];
     if(choice){targetMap=choice.map;targetId=choice.id;}
   }
   if (targetMap === s.map)
-    return MAPS[s.map].entities.find((e) => e.id === targetId);
+    return currentMap().entities.find((e) => e.id === targetId);
   let todo = [{ id: s.map, first: null }],
     seen = new Set();
   while (todo.length) {
@@ -2311,10 +2339,10 @@ function targetEntity() {
     if (seen.has(n.id)) continue;
     seen.add(n.id);
     if (n.id === targetMap) return n.first;
-    for (const e of MAPS[n.id].entities.filter(
-      (e) => ["exit", "house"].includes(e.type) && e.to !== "hq",
+    for (const e of ancientWorld(MAPS[n.id],s).entities.filter(
+      (e) => ["exit", "house", "ancientHome"].includes(e.type) && e.to !== "hq",
     ))
-      todo.push({ id: e.to, first: n.first || e });
+      if(MAPS[e.to])todo.push({ id: e.to, first: n.first || e });
   }
   return null;
 }
@@ -2478,7 +2506,7 @@ function drawNationTerrain(m,T) {
 function draw() {
   const W = innerWidth,
     H = innerHeight,
-    m = MAPS[s.map],
+    m = currentMap(),
     T = 64;
   ctx.imageSmoothingEnabled = false;
   const safe = playing ? playerSafeArea(W,H) : {left:0,right:W,top:0,bottom:H};
@@ -2492,7 +2520,7 @@ function draw() {
   // Allow the camera, but never the player, past map bounds when HUD overlaps an edge.
   cam.x = Math.max(s.x*T-safe.right, Math.min(s.x*T-safe.left, usualX));
   cam.y = Math.max(s.y*T-safe.bottom, Math.min(s.y*T-safe.top, usualY));
-  const ground = m.theme === 'room' ? (m.roomPalette?.border || '#514337') : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
+  const ground = m.ground || (m.theme === 'room' ? (m.roomPalette?.border || '#514337') : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
     : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id) ? "#748664"
     : m.id.startsWith("paleo-") ? "#a89e77"
     : m.id.startsWith('nation-buyeo') ? '#a5b482'
@@ -2501,7 +2529,7 @@ function draw() {
     : m.id.startsWith('nation-dongye') ? '#96a778'
     : m.id.startsWith('nation-samhan') ? '#c7b982'
     : m.id.startsWith('nation-iron') ? '#b8ac83'
-    : m.id.startsWith("bronze-") || m.id.startsWith("go-") ? "#c2b981" : "#8fb878";
+    : m.id.startsWith("bronze-") || m.id.startsWith("go-") ? "#c2b981" : "#8fb878");
   ctx.fillStyle = ground;
   ctx.fillRect(0, 0, W, H);
   ctx.save();
@@ -2514,14 +2542,14 @@ function draw() {
   const cave = m.theme === "cave" || m.theme === "interior" || m.theme === 'room',
     bronze = m.id.startsWith("go-") || m.id.startsWith("bronze-") || m.id.startsWith('nation-'),
     natural =
-      m.id.startsWith("pre-") ||
+      m.ancient || m.id.startsWith("pre-") ||
       m.id.startsWith("paleo-") ||
       ["neo-river","bronze-outskirts","bronze-grove","go-outskirts"].includes(m.id) || m.id.startsWith('nation-');
   for (let y = 0; y < m.h; y++)
     for (let x = 0; x < m.w; x++) {
       if(m.theme==='room' && (x<1 || x>=m.w-1 || y<2 || y>=m.h-1))continue;
       let hash = (x * 17 + y * 31) % 11;
-      ctx.fillStyle = m.theme==='room' ? (m.roomPalette?.floor || ['#b69a71','#b99e76','#b19870'])[hash%3] : cave
+      ctx.fillStyle = m.ground&&m.theme!=='room' ? m.ground : m.theme==='room' ? (m.roomPalette?.floor || ['#b69a71','#b99e76','#b19870'])[hash%3] : cave
         ? ["#92947f", "#8b8f7b", "#888c78"][hash % 3]
         : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id)
           ? ["#687f61", "#708863", "#778b63", "#827f5d"][hash % 4]
@@ -2564,6 +2592,10 @@ function draw() {
         y = 8.4 * T + ((i * 19) % 80);
       ctx.fillRect(x, y, 5, 3);
     }
+  }
+  if(m.ancient&&m.theme!=='room'){
+    ctx.strokeStyle='#bca57c';ctx.lineWidth=50;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(3*T,9*T);ctx.lineTo(10*T,9*T);ctx.lineTo(13*T,11*T);ctx.lineTo(20*T,9*T);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(12*T,3*T);ctx.lineTo(10*T,9*T);ctx.lineTo(11*T,15*T);ctx.stroke();
   }
   if (m.river) {
     ctx.fillStyle = "#54aab2";
@@ -2673,6 +2705,7 @@ function draw() {
     let w =
         isPlayer || ["npc", "quiz", "shop", "enemy"].includes(e.type) ? 58 : 64,
       h = isPlayer || ["npc", "shop", "enemy"].includes(e.type) ? 72 : 66;
+    if(e.type==='ancientStory'&&e.king){w=64;h=84;}
     if (e.type === 'horse') { w=88; h=88; }
     if (e.type==='roomLoot') {w=52;h=54;}
     if (e.type==='roomProp') {w=78;h=66;}
@@ -2682,7 +2715,7 @@ function draw() {
       w = e.art === "rock" ? 78 : 110;
       h = e.art === "rock" ? 65 : 138;
     }
-    if (e.type === "scenery" || e.type === "house") {
+    if (e.type === "scenery" || e.type === "house" || e.type==='ancientHome') {
       w = 170;
       h = 145;
     }
@@ -2735,7 +2768,7 @@ function draw() {
       ctx.filter = 'grayscale(1)';
     }
     const bob = isPlayer && moving ? Math.sin(clock * 17) * 2 : 0;
-    if (isPlayer) s.mounted && s.map.startsWith('nation-') ? drawMountedPlayer(x,y+bob) : drawPlayer(x, y + bob, w * WALKING_PLAYER_SCALE, h * WALKING_PLAYER_SCALE);
+    if (isPlayer) s.mounted && canMount() ? drawMountedPlayer(x,y+bob) : drawPlayer(x, y + bob, w * WALKING_PLAYER_SCALE, h * WALKING_PLAYER_SCALE);
     else {
       if (e.type === "enemy" && e.elite) ctx.filter = "sepia(.28) saturate(1.2)";
       drawSprite(e.art, x, y + bob, w, h);
@@ -2746,6 +2779,7 @@ function draw() {
       drawSprite("berries", x - 25, y + 4, 28, 28);
     }
     ctx.globalAlpha = 1;
+    if(e.banner){ctx.fillStyle=ANCIENT_COUNTRIES[e.banner].color;ctx.fillRect(x+25,y-h+15,20,15);ctx.fillStyle='#77583e';ctx.fillRect(x+24,y-h+12,3,40);}
     const mark = marker(e);
     if (mark) {
       const dy = Math.sin(clock * 3) * 3;
@@ -2766,6 +2800,10 @@ function draw() {
     if (
       [
         "npc",
+        "ancientStory",
+        "ancientHome",
+        "ancientStorage",
+        "ancientDisplay",
         "quiz",
         "horse",
         "house",
@@ -2857,7 +2895,7 @@ function tick(t) {
   if (playing && !screen) {
     spawnClock += dt;
     if (spawnClock > 1) {
-      const refreshed = refreshResources(s, MAPS[s.map]);
+      const refreshed = refreshResources(s, currentMap());
       if (placeMonsters() || refreshed) save();
       spawnClock = 0;
     }
@@ -2868,7 +2906,7 @@ function tick(t) {
     if (dx || dy) {
       moving = true;
       s.direction = dx < 0 ? "left" : dx > 0 ? "right" : dy < 0 ? "up" : "down";
-      let speed = ((s.mounted && s.map.startsWith('nation-') ? 5.6 : 3.5) * (adminMode && s.adminSpeed ? 1.5 : 1) * dt) / (dx && dy ? Math.SQRT2 : 1);
+      let speed = ((s.mounted && canMount() ? 5.6 : 3.5) * (adminMode && s.adminSpeed ? 1.5 : 1) * dt) / (dx && dy ? Math.SQRT2 : 1);
       if (!blocked(s.x + dx * speed, s.y)) s.x += dx * speed;
       if (!blocked(s.x, s.y + dy * speed)) s.y += dy * speed;
       saveClock += dt;
@@ -2887,7 +2925,7 @@ function tick(t) {
       });
     }
     if (!screen && invuln <= 0) {
-      let e = MAPS[s.map].entities.find(
+      let e = currentMap().entities.find(
         (e) =>
           e.type === "enemy" &&
           (s.cooldowns[e.id] || 0) <= Date.now() &&

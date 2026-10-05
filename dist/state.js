@@ -1,7 +1,9 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=41.1";
-import { FISHING_ITEMS } from './fishing.js?v=41.1';
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=42";
+import { FISHING_ITEMS } from './fishing.js?v=42';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
+import {ancientQuest} from './regions/ancient.js?v=42';
+import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=42';
 export const MAX_LEVEL = 10,
   KEY = "history-explorer-save-v1";
 export const ITEMS = {
@@ -180,6 +182,7 @@ export function fresh(name, avatar) {
     unlockedRegions: ["paleolithic"],
     completedRegions: [],
     progress: {},
+    ancient: freshAncient(),
     requests: {},
     cooldowns: {},
     resources: {},
@@ -219,7 +222,8 @@ export function gain(s, xp, coins) {
   return s.level - lv;
 }
 export function activeQuest(s, r = regionOf(s.map)) {
-  return r?.quests[s.progress[r.id] || 0] || null;
+  const q=r?.quests[s.progress[r.id] || 0];
+  return q?.available===false?null:r?.id==='ancient'?ancientQuest(q,s):q||null;
 }
 export function advance(s, event) {
   const r = regionOf(s.map);
@@ -227,7 +231,7 @@ export function advance(s, event) {
   let rewards = [];
   let q = activeQuest(s, r);
   while (
-    q &&
+    q && (r.id!=='ancient'||ancientEventAllowed(s,q,event)) &&
     ((q.event === event ||
       (q.event === "cook:any" && event?.startsWith("cook:")) ||
       (q.event.startsWith("artifact:") &&
@@ -253,13 +257,14 @@ export function advance(s, event) {
     if (q.id==='samhan-jinhan') s.inventory.samhansack++;
     s.completedQuests.push(q.id);
     s.progress[r.id] = (s.progress[r.id] || 0) + 1;
+    if(r.id==='ancient')onAncientQuest(s,q);
     const coins = ["paleolithic", "prehistoric"].includes(r.id) ? 0 : q.coins;
     const levels = gain(s, q.xp, coins);
     rewards.push({ ...q, coins, levels });
     event = null;
     q = activeQuest(s, r);
   }
-  if (!q && !s.completedRegions.includes(r.id)) {
+  if (!q && r.quests[s.progress[r.id]||0]?.available!==false && !s.completedRegions.includes(r.id)) {
     s.completedRegions.push(r.id);
     if (r.unlock && !s.unlockedRegions.includes(r.unlock))
       s.unlockedRegions.push(r.unlock);
@@ -425,13 +430,14 @@ export function validate(raw) {
   )
     throw Error("기력이나 음식 정보가 올바르지 않다.");
   if (!num(s.hp, 0, abilities(s).hp)) throw Error("체력 정보가 올바르지 않아.");
+  validateAncient(s,ITEMS,MAPS);
   if (!MAPS[s.map] || !num(s.x, 1, 22) || !num(s.y, 1, 16)) {
     s.map = "hq";
     s.x = 11;
     s.y = 10;
   }
   const r = regionOf(s.map);
-  if (r?.id !== 'nations') s.mounted = false;
+  if (!['nations','ancient'].includes(r?.id)||MAPS[s.map]?.theme==='room') s.mounted = false;
   if (r && !s.unlockedRegions.includes(r.id)) {
     s.map = "hq";
     s.x = 11;

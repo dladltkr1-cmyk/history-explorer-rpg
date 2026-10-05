@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class {set src(v){} get complete(){return false;}};
 const {fresh,validate,advance,ITEMS,abilities}=await import('../dist/state.js');
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=41.1');
-const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=41.1');
-const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=41.1');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=42');
+const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=42');
+const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=42');
 const {rollDrop,cookItem,salePrice}=await import('../dist/economy.js');
 const {inFishingRiver}=await import('../dist/waterside.js');
 const neo=REGIONS.find(r=>r.id==='prehistoric');
@@ -128,4 +128,4 @@ guide.inventory.fishingbranch=1;assert.match(fishingObjective(guide),/멧돼지/
 guide.inventory.boarbone=1;assert.match(fishingObjective(guide),/가방 → 기타/);
 guide.inventory.boneneedle=1;assert.match(fishingObjective(guide),/기술자에게 돌아가자/);
 guide.inventory.fishingrod=1;assert.match(fishingObjective(guide),/낚시 자리/);
-console.log('Fishing verified: crafting/drop, random targets, spam/failure, save/code serialization, 7 legacy progress cases, 12 QA stages, 6 waterside spots, cooking/economy.');
+console.log('Fishing verified: crafting/drop, random targets, spam/failure, save/code serialization, 7 legacy progress cases, 12 QA stages, 7 waterside spots, cooking/economy.');

@@ -18,7 +18,7 @@ for(const [id,map,x,y,horse] of [
  s.unlockedRegions=REGIONS.map(r=>r.id);s.introSeen=true;s.basicTutorialDone=true;
  s.map=map;s.x=x;s.y=y;s.progress.nations=id==='horse-buyeo'||id==='mounted-buyeo'?8:quests.findIndex(q=>q.id===(id==='dongye-cross'?'dongye-deliver':id));
  s.completedQuests=quests.slice(0,s.progress.nations).map(q=>q.id);
- s.discoveredMaps=REGIONS.at(-1).maps.map(m=>m.id);
+ s.discoveredMaps=REGIONS.find(r=>r.id==='nations').maps.map(m=>m.id);
  s.nationMarks=['buyeo','goguryeo','okjeo','dongye','samhan'].filter(n=>s.completedQuests.some(q=>q.startsWith(n+'-')&&['festival','return','ceremony'].some(end=>q.endsWith(end))));
  s.inventory.festivalitem=2;s.inventory.okjeowood=1;s.inventory.okjeograin=1;s.inventory.okjeobowl=1;
  s.coins=170;s.horseUnlocked=id==='mounted-buyeo';s.mounted=s.horseUnlocked;

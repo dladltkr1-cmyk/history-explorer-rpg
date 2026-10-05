@@ -3,6 +3,7 @@ Object.assign(ASSETS,{fish:'/assets/items/food/fish.png',cookedfish:'/assets/ite
 for(const avatar of ['boy','girl'])for(const pose of ['back-idle','left-idle','front-walk-1','front-walk-2','back-walk-1','back-walk-2','left-walk-1','left-walk-2'])ASSETS[avatar+'-'+pose]='/assets/player/directions/'+avatar+'-'+pose+'.png?v=27.3';
 
 ASSETS.hide='/assets/items/hide.png';
+for(const [key,file]of Object.entries({kingJumong:'jumong',kingOnjo:'onjo',kingHyeokgeose:'hyeokgeose',kingSuro:'suro',ancientHelperNorth:'north',ancientHelperRiver:'river',ancientHelperPlain:'plain',ancientHomeNorth:'home-north',ancientHomeRiver:'home-river',ancientHomePlain:'home-plain',ancientVillageHouse:'village-house',ancientShed:'shed',ancientEgg:'egg',ancientMarker:'marker',ancientWell:'well',ancientDesk:'desk',ancientDisplay:'display'}))ASSETS[key]='/assets/ancient/'+file+'.svg?v=42';
 for(const [key,file] of Object.entries({threadIcon:'thread',branchIcon:'branch',boneIcon:'bone',needleIcon:'needle',rodIcon:'rod',fishingSpotIcon:'spot'}))ASSETS[key]='/assets/items/fishing/'+file+'.svg';
 Object.assign(ASSETS,{snake:'/assets/enemies/snake.png',bear:'/assets/enemies/bear.png',tiger:'/assets/enemies/tiger.png'});
 
