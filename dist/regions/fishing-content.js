@@ -1,7 +1,7 @@
 import {entity,person,exit} from './common.js';
-import {inFishingRiver,pathDistance} from '../waterside.js?v=42.1';
-import {FISHING_MATERIALS} from '../fishing.js?v=42.1';
-import {prepareAncientQA} from '../ancient-state.js?v=42.1';
+import {inFishingRiver,pathDistance} from '../waterside.js?v=42.2';
+import {FISHING_MATERIALS} from '../fishing.js?v=42.2';
+import {prepareAncientQA} from '../ancient-state.js?v=42.2';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [

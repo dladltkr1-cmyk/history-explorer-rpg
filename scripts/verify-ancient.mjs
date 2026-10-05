@@ -1,14 +1,20 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 globalThis.Image=class{set src(v){}get complete(){return false;}};
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=42.1');
-const {fresh,validate,advance,activeQuest,abilities,ITEMS}=await import('../dist/state.js?v=42.1');
-const {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_KINGS,ANCIENT_QA,ANCIENT_QUESTS,ANCIENT_QUIZZES,ancientWorld,ancientCanEnter,ancientQuest}=await import('../dist/regions/ancient.js?v=42.1');
-const {chooseAncientCountry,setAncientCentury,transferAncientStorage,prepareAncientQA,completeAncientChapter,noteAncientVisit}=await import('../dist/ancient-state.js?v=42.1');
-const {ancientMapSVG}=await import('../dist/ancient-ui.js?v=42.1');
-const {INTERACTION_QA,FISHING_SITES,prepareContentQA}=await import('../dist/regions/fishing-content.js?v=42.1');
-const {inFishingRiver}=await import('../dist/waterside.js?v=42.1');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=42.2');
+const {fresh,validate,advance,activeQuest,abilities,ITEMS}=await import('../dist/state.js?v=42.2');
+const {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_KINGS,ANCIENT_QA,ANCIENT_QUESTS,ANCIENT_QUIZZES,ancientWorld,ancientCanEnter,ancientQuest}=await import('../dist/regions/ancient.js?v=42.2');
+const {chooseAncientCountry,setAncientCentury,transferAncientStorage,prepareAncientQA,completeAncientChapter,noteAncientVisit}=await import('../dist/ancient-state.js?v=42.2');
+const {ancientMapSVG}=await import('../dist/ancient-ui.js?v=42.2');
+const {INTERACTION_QA,FISHING_SITES,prepareContentQA}=await import('../dist/regions/fishing-content.js?v=42.2');
+const {inFishingRiver}=await import('../dist/waterside.js?v=42.2');
 const era=REGIONS.find(r=>r.id==='ancient'),growth=REGIONS.find(r=>r.id==='nations');
+for(const r of REGIONS.slice(0,5)){
+ const s=fresh('이전 시대 저장','boy'),index=Math.floor(r.quests.length/2);delete s.ancient;
+ s.map=r.quests[index].map;s.progress[r.id]=index;s.unlockedRegions=REGIONS.slice(0,REGIONS.indexOf(r)+1).map(v=>v.id);
+ s.completedRegions=REGIONS.slice(0,REGIONS.indexOf(r)).map(v=>v.id);s.inventory.fishingrod=1;s.horseUnlocked=true;s.appearance={hair:5,eyes:2,skin:2,hairColor:1,outfit:3};s.inventory.gear.push('bronzeCharm');s.personalCode='HE123456';
+ const restored=validate(JSON.parse(JSON.stringify(s)));assert.equal(restored.progress[r.id],index);assert.equal(activeQuest(restored,r).id,r.quests[index].id);assert.equal(restored.map,s.map);assert.deepEqual(restored.appearance,s.appearance);assert.deepEqual(restored.inventory,s.inventory);assert.equal(restored.horseUnlocked,true);assert.equal(restored.personalCode,s.personalCode);assert.ok(!restored.unlockedRegions.includes('ancient'));
+}
 assert.equal(REGIONS.length,6);assert.equal(growth.unlock,'ancient');
 const partial=fresh('옛기록','boy');partial.nickname='옛기록';delete partial.ancient;partial.progress.nations=5;partial.unlockedRegions.push('ancient');assert.ok(!validate(partial).unlockedRegions.includes('ancient'));assert.equal(validate(partial).progress.nations,5);
 const old=fresh('옛저장','boy');delete old.ancient;old.completedRegions.push('nations');old.unlockedRegions.push('nations');const restored=validate(old);assert.ok(restored.unlockedRegions.includes('ancient'));assert.equal(restored.ancient.country,null);assert.equal(restored.saveVersion,3);
@@ -35,7 +41,7 @@ for(const [country,c]of Object.entries(ANCIENT_COUNTRIES)) {
  for(const n of [4,5,6]){s.ancient.century=n;const m=ancientWorld(MAPS['ancient-han'],s);assert.equal(m.entities.find(e=>e.countryReturn).to,c.village);assert.equal(m.entities.find(e=>e.centuryState==='sign').banner,ANCIENT_MAPS[n].han);assert.notEqual(m.entities.find(e=>e.centuryState==='sign').lines.length,0);}
 }
 assert.equal(new Set([4,5,6].map(n=>ancientMapSVG(n))).size,3);assert.deepEqual([4,5,6].map(n=>ANCIENT_MAPS[n].han),['baekje','goguryeo','silla']);assert.equal(MAPS['ancient-han'].entities.find(e=>e.centuryState==='sign').lines.length,0,'shared definitions remain immutable');
-for(const q of ANCIENT_QA){const s=fresh('시험','boy');const r=prepareContentQA(s,era,q);assert.ok(MAPS[r.map].entities.some(e=>e.id===r.target));assert.equal(s.progress.ancient,q.index);if(q.index>=17)assert.equal(s.ancient.country,'baekje');}
+for(const q of ANCIENT_QA){const s=fresh('시험','boy');const r=prepareContentQA(s,era,q);assert.ok(MAPS[r.map].entities.some(e=>e.id===r.target));s.map=r.map;assert.equal(validate(JSON.parse(JSON.stringify(s))).map,r.map);assert.equal(s.progress.ancient,q.index);if(q.index>=17)assert.equal(s.ancient.country,'baekje');}
 for(const m of era.maps){assert.ok(m.ancient);for(const e of m.entities){assert.ok(!inFishingRiver(m,e.x,e.y),'land interaction '+e.id);if(e.to)assert.ok(MAPS[e.to],'linked map '+e.id);assert.ok(!m.obstacles.some(o=>Math.abs(o.x-e.x)<.65&&Math.abs(o.y-e.y)<.6),'tree overlap '+e.id);}}
 for(const [id,k]of Object.entries(ANCIENT_KINGS)){if(k.available){const file=await readFile(new URL('../dist/assets/ancient/'+({jumong:'jumong',onjo:'onjo',hyeokgeose:'hyeokgeose',suro:'suro'}[id])+'.svg',import.meta.url),'utf8');assert.ok(file.includes('<svg'));assert.ok(era.maps.some(m=>m.entities.some(e=>e.king===id&&e.legend)));}else assert.equal(k.art,null);}
 assert.equal(ANCIENT_CHAPTERS.filter(c=>c.ready).length,2);assert.ok(INTERACTION_QA.some(v=>v.action==='ancient'));assert.ok(FISHING_SITES.some(v=>v.map==='ancient-han'));

@@ -1,4 +1,4 @@
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=42.1';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=42.2';
 
 export const ANCIENT_EXHIBITS={}; // Register sourced culture records here with their content update.
 export const ANCIENT_EXTENSIONS=['field','workbench','storage','culture','horse'];
@@ -89,6 +89,8 @@ export function prepareAncientQA(s,stage,{country=s.ancient?.country||'baekje'}=
   const savedHome=structuredClone(s.ancient?.home||freshAncient().home);
   s.ancient=freshAncient();s.ancient.home=savedHome;s.ancient.home.owned=false;
   s.progress.ancient=fixture.index;
+  // The isolated trial must also survive the normal save validator/cloud round trip.
+  if(!s.completedRegions.includes('nations'))s.completedRegions.push('nations');
   s.completedRegions=s.completedRegions.filter(id=>id!=='ancient');
   s.completedQuests=s.completedQuests.filter(id=>!id.startsWith('ancient-')&&!id.startsWith('quiz:ancient-'));
   for(const q of ANCIENT_QUESTS.slice(0,fixture.index)){s.completedQuests.push(q.id);if(q.event.startsWith('quiz:'))s.completedQuests.push(q.event);}
