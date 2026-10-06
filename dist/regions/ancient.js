@@ -125,7 +125,7 @@ for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
     entity('ancient-horse-post','horseStable',7.8,9.8,'말 쉼터',{art:'ancientHorsePost'}),
     entity('ancient-village-house','scenery',17,5,'이웃의 집',{art:'ancientVillageHouse',solid:true}),
     entity('ancient-fire-'+id,'rest',14,11,'마을 화로',{art:'campfire'}),
-    entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:'shopkeeper'}),
+    entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:id==='goguryeo'?'elder':'farmer'}),
     exit('ancient-han-door-'+id,21,9,'강가로','ancient-han'),exit('ancient-hq-'+id,11,15,'탐험 본부','hq'),
   ],{entryAt:17,country:id,ground:c.ground,trees:id==='goguryeo'?[[3,3],[3,12],[18,3],[19,14],[15,3]]:[[3,3],[3,13],[20,3],[20,14]]}));
   const room=place(c.home,'내 거처 · '+c.name,'room',[

@@ -3,7 +3,7 @@ Object.assign(ASSETS,{fish:'/assets/items/food/fish.png',cookedfish:'/assets/ite
 for(const avatar of ['boy','girl'])for(const pose of ['back-idle','left-idle','front-walk-1','front-walk-2','back-walk-1','back-walk-2','left-walk-1','left-walk-2'])ASSETS[avatar+'-'+pose]='/assets/player/directions/'+avatar+'-'+pose+'.png?v=27.3';
 
 ASSETS.hide='/assets/items/hide.png';
-for(const [key,file]of Object.entries({ancientHomeNorth:'home-north',ancientHomeRiver:'home-river',ancientHomePlain:'home-plain',ancientVillageHouse:'village-house',ancientShed:'shed',ancientEgg:'egg',ancientMarker:'marker',ancientWell:'well',ancientDesk:'desk',ancientDisplay:'display'}))ASSETS[key]='/assets/ancient/'+file+'.svg?v=44';
+for(const [key,file]of Object.entries({ancientHomeNorth:'home-north',ancientHomeRiver:'home-river',ancientHomePlain:'home-plain',ancientVillageHouse:'village-house',ancientShed:'shed',ancientEgg:'egg',ancientMarker:'marker',ancientWell:'well',ancientDesk:'desk',ancientDisplay:'display'}))ASSETS[key]='/assets/ancient/'+file+'.svg?v=44.1';
 for(const [key,file] of Object.entries({threadIcon:'thread',branchIcon:'branch',boneIcon:'bone',needleIcon:'needle',rodIcon:'rod',fishingSpotIcon:'spot'}))ASSETS[key]='/assets/items/fishing/'+file+'.svg';
 Object.assign(ASSETS,{snake:'/assets/enemies/snake.png',bear:'/assets/enemies/bear.png',tiger:'/assets/enemies/tiger.png'});
 ASSETS.bandit='/assets/enemies/bandit-v43.png';
@@ -23,6 +23,6 @@ Object.assign(ASSETS,{
 });
 
 // Existing NPC rasters retain their established faces, outlines and pixel density.
-Object.assign(ASSETS,{ancientHelperNorth:ASSETS.farmer,ancientHelperRiver:ASSETS.shopkeeper,ancientHelperPlain:ASSETS.elder,ancientHorsePost:'/assets/ancient/horse-post.svg?v=44'});
+Object.assign(ASSETS,{ancientHelperNorth:ASSETS.farmer,ancientHelperRiver:ASSETS.shopkeeper,ancientHelperPlain:ASSETS.elder,ancientHorsePost:'/assets/ancient/horse-post.svg?v=44.1'});
 
 Object.assign(ASSETS,{kingJumong:'/assets/ancient/jumong-v44.png',kingOnjo:'/assets/ancient/onjo-v44.png',kingHyeokgeose:'/assets/ancient/hyeokgeose-v44.png',kingSuro:'/assets/ancient/suro-v44.png'});

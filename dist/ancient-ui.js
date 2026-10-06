@@ -1,6 +1,6 @@
-import {parkHorse,retrieveHorse} from './horse-state.js?v=44';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=44';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=44';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=44.1';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=44.1';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=44.1';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // Percentages refer to the complete unmodified JPG, including its title/margins.
@@ -58,7 +58,7 @@ export function createAncientUI(api) {
     if(!a.century){panel('고대 국가의 길',`<p>지금은 건국 이야기와 정착을 진행하고 있다.<br>내 거처에서 4세기를 시작하면 역사 지도가 열린다.</p><button id="ancient-open-chapters" class="full">이야기 진행 보기</button>`);$('#ancient-open-chapters').onclick=chapters;return;}
     noteAncientVisit(s,s.map);if((s.progress.ancient||0)===20)finishEvent('ancient:4c-map');save();
     const d=ANCIENT_MAPS[a.century],current=ANCIENT_COUNTRIES[a.country];
-    panel(d.title,`<p class="ancient-map-phase">${d.phase}</p><div class="ancient-map-layout">${ancientMapImage(a.century,{country:a.country,map:s.map,visited:a.maps[a.century],admin:isAdmin()})}<div><p>${esc(d.caption)}</p><p class="map-location">현재 위치: ${esc(maps[s.map].name)}</p><p>● 머무는 나라: ${current.name}<br>◆ 한강 유역: ${d.hanLabel}</p><div class="ancient-map-places">${[['village','내 마을',current.village],['home','내 거처',current.home],['han','한강 유역','ancient-han']].map(([id,name,map])=>`<button data-ancient-place="${map}" ${isAdmin()||a.maps[a.century].includes(map)?'':'disabled'}>${name}${s.map===map?' · 현재 위치':a.maps[a.century].includes(map)?' · 방문함':' · 길로 찾아가기'}</button>`).join('')}</div><p>다른 나라와 가야의 본격 지역은 다음 이야기에서 열린다.</p></div></div><p class="note">사용자가 제공한 역사 백지도 원본 · 이동 표시는 게임용 별도 레이어입니다.</p>`,{wide:true});
+    panel(d.title,`<p class="ancient-map-phase">${d.phase}</p><div class="ancient-map-layout">${ancientMapImage(a.century,{country:a.country,map:s.map,visited:a.maps[a.century],admin:isAdmin()})}<div><p>${esc(d.caption)}</p><p class="map-location">현재 위치: ${esc(maps[s.map].name)}</p><p>● 머무는 나라: ${current.name}<br>◆ 한강 유역: ${d.hanLabel}</p><div class="ancient-map-places">${[['village','내 마을',current.village],['home','내 거처',current.home],['han','한강 유역','ancient-han']].map(([id,name,map])=>`<button data-ancient-place="${map}" ${isAdmin()||a.maps[a.century].includes(map)?'':'disabled'}>${name}${s.map===map?' · 현재 위치':a.maps[a.century].includes(map)?' · 방문함':' · 길로 찾아가기'}</button>`).join('')}</div><p>다른 나라와 가야의 본격 지역은 다음 이야기에서 열린다.</p></div></div><p class="note">수업용 역사 백지도 · 표시된 이동 지점은 게임 속 장소입니다.</p>`,{wide:true});
     document.querySelectorAll('[data-map-zoom]').forEach(b=>b.onclick=()=>{const stage=$('.ancient-map-stage');stage.style.width=b.dataset.mapZoom==='fit'?'100%':b.dataset.mapZoom+'px';});
     document.querySelectorAll('[data-map-target]').forEach(b=>b.onclick=()=>travel(b.dataset.mapTarget,s.map,{fast:true}));
     document.querySelectorAll('[data-ancient-place]').forEach(b=>b.onclick=()=>travel(b.dataset.ancientPlace,s.map,{fast:true}));
