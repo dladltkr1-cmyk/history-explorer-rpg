@@ -1,16 +1,18 @@
-import {parkHorse,retrieveHorse} from './horse-state.js?v=44.1';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=44.1';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=44.1';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=44.2';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=44.2';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=44.2';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
-// Percentages refer to the complete unmodified JPG, including its title/margins.
+// The untouched JPG is viewed through its exact printed map frame.
+// Click percentages start in source coordinates, then map into the cropped viewport.
 // These are game gateways, not claims about a player's historical exact address.
 const mapPoints={goguryeo:[46.5,38.5],baekje:[52,68.5],silla:[68,72],han:[52,61]};
+const framePoint=([x,y])=>[(x*14.47-103)/1242*100,(y*20.48-241)/1704*100];
 export function ancientMapImage(century,{country='baekje',map='',visited=[],admin=false}={}) {
   const d=ANCIENT_MAPS[century],c=ANCIENT_COUNTRIES[country];
-  const point=mapPoints[map==='ancient-han'?'han':country];
+  const sourcePoint=mapPoints[map==='ancient-han'?'han':country],point=framePoint([sourcePoint[0]+2,sourcePoint[1]+1]);
   const targets=[...Object.entries(ANCIENT_COUNTRIES).map(([id,v])=>({key:id,name:v.name+'의 거점',map:v.village})),{key:'han',name:'한강 유역',map:'ancient-han'}];
-  return `<div class="ancient-map-view"><div class="row ancient-map-zoom"><button data-map-zoom="fit">전체 보기</button><button data-map-zoom="720">글자 확대</button><button data-map-zoom="1080">더 확대</button></div><p class="note">지도를 밀어서 둘러보세요. 동그란 표시는 게임의 이동 지점입니다.</p><div class="ancient-map-scroll" tabindex="0" aria-label="역사 지도 스크롤 영역"><div class="ancient-map-stage"><img class="ancient-history-map" src="${d.image}" alt="${d.originalName}" aria-label="${d.title} · ${d.originalName}"/><div class="ancient-map-overlay">${targets.map(t=>{const [x,y]=mapPoints[t.key],open=(t.key===country||t.key==='han')&&(admin||visited.includes(t.map));return `<button class="ancient-map-target" data-map-target="${t.map}" style="left:${x}%;top:${y}%" ${open?'':'disabled'} aria-label="${t.name}${open?'으로 이동':' · 아직 열리지 않은 길'}" title="${t.name}${open?'':' · 잠김'}"><span>${open?'○':'◇'}</span></button>`;}).join('')}<span class="ancient-map-current" style="left:${point[0]+2}%;top:${point[1]+1}%" title="현재 위치" aria-label="현재 위치"></span></div></div></div></div>`;
+  return `<div class="ancient-map-view"><div class="row ancient-map-zoom"><button data-map-zoom="fit">전체 보기</button><button data-map-zoom="720">글자 확대</button><button data-map-zoom="1080">더 확대</button></div><p class="note">지도를 밀어서 둘러보세요. 동그란 표시는 게임의 이동 지점입니다.</p><div class="ancient-map-scroll" tabindex="0" aria-label="역사 지도 스크롤 영역"><div class="ancient-map-stage"><div class="ancient-map-crop"><img class="ancient-history-map" src="${d.image}" alt="${d.originalName}" aria-label="${d.title} · ${d.originalName}"/><div class="ancient-map-overlay">${targets.map(t=>{const [x,y]=framePoint(mapPoints[t.key]),open=(t.key===country||t.key==='han')&&(admin||visited.includes(t.map));return `<button class="ancient-map-target" data-map-target="${t.map}" style="left:${x}%;top:${y}%" ${open?'':'disabled'} aria-label="${t.name}${open?'으로 이동':' · 아직 열리지 않은 길'}" title="${t.name}${open?'':' · 잠김'}"><span>${open?'○':'◇'}</span></button>`;}).join('')}<span class="ancient-map-current" style="left:${point[0]}%;top:${point[1]}%" title="현재 위치" aria-label="현재 위치"></span></div></div></div></div></div>`;
 }
 export function createAncientUI(api) {
   const {$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items,maps,prepareContentQA,regions}=api;

@@ -15,9 +15,9 @@ export const ANCIENT_CHAPTERS=[
 ];
 // A century view shows a representative later phase, never one border for 100 years.
 export const ANCIENT_MAPS={
-  4:{image:'/assets/ancient/map-baekje-original.jpg',originalName:'역사 백지도_삼국 시대(백제 전성기).jpg',title:'4세기 지도',phase:'4세기 후반 · 백제의 성장',han:'baekje',hanLabel:'백제 중심의 한강 유역',caption:'한강을 중심으로 백제가 성장하고 바닷길로 교류했다.'},
-  5:{image:'/assets/ancient/map-goguryeo-original.jpg',originalName:'역사 백지도_삼국 시대(고구려 전성기).jpg',title:'5세기 지도',phase:'5세기 후반 · 고구려의 남진',han:'goguryeo',hanLabel:'고구려가 확보한 한강 유역',caption:'장수왕은 평양으로 도읍을 옮겼다. 475년 한성을 차지하며 남쪽으로 나아갔다.'},
-  6:{image:'/assets/ancient/map-silla-original.jpg',originalName:'역사 백지도_삼국 시대(신라 전성기).jpg',title:'6세기 지도',phase:'6세기 후반 · 신라의 성장',han:'silla',hanLabel:'신라가 확보한 한강 유역',caption:'백제와 신라가 한강 유역을 되찾은 뒤, 553년 신라가 한강 하류를 차지했다.'},
+  4:{image:'/assets/ancient/map-baekje-original.jpg',originalName:'역사 백지도_삼국 시대(백제 전성기).jpg',title:'4세기 지도',phase:'4세기 · 백제 전성기',han:'baekje',hanLabel:'백제 중심의 한강 유역',caption:'한강을 중심으로 백제가 성장하고 바닷길로 교류했다.'},
+  5:{image:'/assets/ancient/map-goguryeo-original.jpg',originalName:'역사 백지도_삼국 시대(고구려 전성기).jpg',title:'5세기 지도',phase:'5세기 · 고구려 전성기',han:'goguryeo',hanLabel:'고구려가 확보한 한강 유역',caption:'장수왕은 평양으로 도읍을 옮겼다. 475년 한성을 차지하며 남쪽으로 나아갔다.'},
+  6:{image:'/assets/ancient/map-silla-original.jpg',originalName:'역사 백지도_삼국 시대(신라 전성기).jpg',title:'6세기 지도',phase:'6세기 · 신라 전성기',han:'silla',hanLabel:'신라가 확보한 한강 유역',caption:'백제와 신라가 한강 유역을 되찾은 뒤, 553년 신라가 한강 하류를 차지했다.'},
 };
 // Extension contracts only. No future minigame is exposed as playable in phase 1.
 export const ANCIENT_ACTIVITIES={
