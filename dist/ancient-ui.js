@@ -1,5 +1,5 @@
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=42.2';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=42.2';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=43';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=43';
 
 const peninsula='M 69 9 L 80 15 L 76 23 L 83 30 L 76 39 L 73 49 L 76 56 L 75 66 L 78 73 L 72 83 L 67 91 L 59 97 L 51 96 L 46 92 L 44 86 L 45 81 L 42 76 L 45 70 L 42 64 L 45 59 L 45 53 L 40 48 L 42 40 L 39 33 L 46 28 L 47 21 L 55 19 L 60 13 Z';
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};

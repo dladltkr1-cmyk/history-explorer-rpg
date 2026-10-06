@@ -1,9 +1,9 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=42.2";
-import { FISHING_ITEMS } from './fishing.js?v=42.2';
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=43";
+import { FISHING_ITEMS } from './fishing.js?v=43';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
-import {ancientQuest} from './regions/ancient.js?v=42.2';
-import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=42.2';
+import {ancientQuest} from './regions/ancient.js?v=43';
+import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=43';
 export const MAX_LEVEL = 10,
   KEY = "history-explorer-save-v1";
 export const ITEMS = {

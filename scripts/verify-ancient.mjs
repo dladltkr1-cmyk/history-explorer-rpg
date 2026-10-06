@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 globalThis.Image=class{set src(v){}get complete(){return false;}};
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=42.2');
-const {fresh,validate,advance,activeQuest,abilities,ITEMS}=await import('../dist/state.js?v=42.2');
-const {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_KINGS,ANCIENT_QA,ANCIENT_QUESTS,ANCIENT_QUIZZES,ancientWorld,ancientCanEnter,ancientQuest}=await import('../dist/regions/ancient.js?v=42.2');
-const {chooseAncientCountry,setAncientCentury,transferAncientStorage,prepareAncientQA,completeAncientChapter,noteAncientVisit}=await import('../dist/ancient-state.js?v=42.2');
-const {ancientMapSVG}=await import('../dist/ancient-ui.js?v=42.2');
-const {INTERACTION_QA,FISHING_SITES,prepareContentQA}=await import('../dist/regions/fishing-content.js?v=42.2');
-const {inFishingRiver}=await import('../dist/waterside.js?v=42.2');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=43');
+const {fresh,validate,advance,activeQuest,abilities,ITEMS}=await import('../dist/state.js?v=43');
+const {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_KINGS,ANCIENT_QA,ANCIENT_QUESTS,ANCIENT_QUIZZES,ancientWorld,ancientCanEnter,ancientQuest}=await import('../dist/regions/ancient.js?v=43');
+const {chooseAncientCountry,setAncientCentury,transferAncientStorage,prepareAncientQA,completeAncientChapter,noteAncientVisit}=await import('../dist/ancient-state.js?v=43');
+const {ancientMapSVG}=await import('../dist/ancient-ui.js?v=43');
+const {INTERACTION_QA,FISHING_SITES,prepareContentQA}=await import('../dist/regions/fishing-content.js?v=43');
+const {inFishingRiver}=await import('../dist/waterside.js?v=43');
 const era=REGIONS.find(r=>r.id==='ancient'),growth=REGIONS.find(r=>r.id==='nations');
 for(const r of REGIONS.slice(0,5)){
  const s=fresh('이전 시대 저장','boy'),index=Math.floor(r.quests.length/2);delete s.ancient;

@@ -1,4 +1,4 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=42.2";
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=43";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,14 +15,15 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=42.2";
-import { ASSETS } from "./assets.js?v=42.2";
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=42.2';
-import {noteAncientVisit} from './ancient-state.js?v=42.2';
-import {createAncientUI} from './ancient-ui.js?v=42.2';
-import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=42.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=42.2';
-import {inFishingRiver,drawFishingRiver} from './waterside.js?v=42.2';
+} from "./state.js?v=43";
+import { ASSETS } from "./assets.js?v=43";
+import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=43';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=43';
+import {noteAncientVisit} from './ancient-state.js?v=43';
+import {createAncientUI} from './ancient-ui.js?v=43';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=43';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=43';
+import {inFishingRiver,drawFishingRiver} from './waterside.js?v=43';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
@@ -2367,8 +2368,11 @@ const SPRITE_BASELINE = {
 };
 function drawSprite(art, x, y, w, h) {
   const im = images[art];
-  if (im?.complete && im.naturalWidth)
+  if (im?.complete && im.naturalWidth) {
+    const profile=FIELD_SPRITES[art];
+    if(profile){ctx.drawImage(im,...profile.source,x-w/2,y-h,w,h);return;}
     ctx.drawImage(im, x - w / 2, y - h + h * (SPRITE_BASELINE[art] || 0), w, h);
+  }
 }
 const WALKING_PLAYER_SCALE = 1.06;
 function drawPlayer(x, y, w, h) {
@@ -2744,7 +2748,9 @@ function draw() {
       w = 70;
       h = 66;
     }
-    if (e.type === "enemy" && e.elite) { w *= 1.13; h *= 1.13; }
+    const fieldSize=e.type==='enemy'&&fieldSpriteSize(e.art,e.elite);
+    if(fieldSize){w=fieldSize.w;h=fieldSize.h;}
+    else if (e.type === "enemy" && e.elite) { w *= 1.13; h *= 1.13; }
     if (x + w < cam.x || x - w > cam.x + W || y < cam.y || y - h > cam.y + H)
       continue;
     drawObjectShadow(e, x, y, w, h);
