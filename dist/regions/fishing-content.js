@@ -1,7 +1,7 @@
 import {entity,person,exit} from './common.js';
-import {inFishingRiver,pathDistance} from '../waterside.js?v=43';
-import {FISHING_MATERIALS} from '../fishing.js?v=43';
-import {prepareAncientQA} from '../ancient-state.js?v=43';
+import {inFishingRiver,pathDistance} from '../waterside.js?v=44';
+import {FISHING_MATERIALS} from '../fishing.js?v=44';
+import {prepareAncientQA} from '../ancient-state.js?v=44';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [
@@ -29,6 +29,7 @@ export const FISHING_TEST_MODES = [
   {id:'failure-rest',name:'낚시 실패 후 재도전',rest:false},
 ];
 export const INTERACTION_QA = [
+  {id:'ancient-horse',name:'내 거처 · 말 맡기기/데려오기 시험',map:'ancient-village-baekje',target:'ancient-horse-post',action:'ancient-horse'},
   {id:'ancient',name:'고대 국가 · 건국/나라/거처/세기/지도 시험',map:'ancient-origins',target:'ancient-guide',action:'ancient'},
   {id:'ancient-bank',name:'고대 국가 강가 · 기존 낚시 시험',map:'ancient-han',target:'ancient-fishing',items:{fishingrod:1},action:'ancient-fishing',modes:FISHING_TEST_MODES},
   {id:'fishing',name:'낚시 미니게임 테스트',map:'neo-river',target:'neo-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES},

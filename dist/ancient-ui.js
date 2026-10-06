@@ -1,11 +1,16 @@
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=43';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=43';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=44';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=44';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=44';
 
-const peninsula='M 69 9 L 80 15 L 76 23 L 83 30 L 76 39 L 73 49 L 76 56 L 75 66 L 78 73 L 72 83 L 67 91 L 59 97 L 51 96 L 46 92 L 44 86 L 45 81 L 42 76 L 45 70 L 42 64 L 45 59 L 45 53 L 40 48 L 42 40 L 39 33 L 46 28 L 47 21 L 55 19 L 60 13 Z';
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
-export function ancientMapSVG(century) {
-  const d=ANCIENT_MAPS[century],colors={goguryeo:'#719b9d',baekje:'#ce936c',silla:'#c8b765',gaya:'#aa99b4'};
-  return `<svg viewBox="20 0 75 105" class="ancient-history-map" role="img" aria-label="${d.title} ${d.phase}"><defs><clipPath id="ancient-land"><path d="${peninsula}"/></clipPath><filter id="ancient-soft"><feGaussianBlur stdDeviation="2.5"/></filter></defs><path d="${peninsula}" fill="#e0d8b7" stroke="#8c9b85" stroke-width=".5"/><g clip-path="url(#ancient-land)" filter="url(#ancient-soft)">${d.regions.map(r=>`<ellipse cx="${r.x}" cy="${r.y}" rx="${r.rx}" ry="${r.ry}" fill="${colors[r.id]}" opacity=".72"/>`).join('')}</g><path d="M 47 59 Q 57 61 68 59" stroke="#568f9a" stroke-width="1" fill="none"/><text x="33" y="61" fill="#354d57">한강</text>${d.regions.map(r=>`<text x="${r.x}" y="${r.y}" text-anchor="middle" fill="#293e3a" font-weight="bold">${names[r.id]}${century===6&&r.id==='gaya'?'*':''}</text>`).join('')}${d.routes.includes('sea')?'<path d="M 42 72 Q 28 62 33 40" stroke="#aa7955" stroke-dasharray="2 2" fill="none"/><text x="25" y="72">바닷길</text>':d.routes.includes('south')?'<path d="M 58 33 Q 52 47 50 56" stroke="#4f7e80" stroke-width="1.4" fill="none"/><path d="M 47 53 L 50 57 L 53 53" fill="none" stroke="#4f7e80"/>':'<circle cx="49" cy="59" r="4" fill="none" stroke="#aa903d" stroke-width="1.5"/>'}</svg>`;
+// Percentages refer to the complete unmodified JPG, including its title/margins.
+// These are game gateways, not claims about a player's historical exact address.
+const mapPoints={goguryeo:[46.5,38.5],baekje:[52,68.5],silla:[68,72],han:[52,61]};
+export function ancientMapImage(century,{country='baekje',map='',visited=[],admin=false}={}) {
+  const d=ANCIENT_MAPS[century],c=ANCIENT_COUNTRIES[country];
+  const point=mapPoints[map==='ancient-han'?'han':country];
+  const targets=[...Object.entries(ANCIENT_COUNTRIES).map(([id,v])=>({key:id,name:v.name+'의 거점',map:v.village})),{key:'han',name:'한강 유역',map:'ancient-han'}];
+  return `<div class="ancient-map-view"><div class="row ancient-map-zoom"><button data-map-zoom="fit">전체 보기</button><button data-map-zoom="720">글자 확대</button><button data-map-zoom="1080">더 확대</button></div><p class="note">지도를 밀어서 둘러보세요. 동그란 표시는 게임의 이동 지점입니다.</p><div class="ancient-map-scroll" tabindex="0" aria-label="역사 지도 스크롤 영역"><div class="ancient-map-stage"><img class="ancient-history-map" src="${d.image}" alt="${d.originalName}" aria-label="${d.title} · ${d.originalName}"/><div class="ancient-map-overlay">${targets.map(t=>{const [x,y]=mapPoints[t.key],open=(t.key===country||t.key==='han')&&(admin||visited.includes(t.map));return `<button class="ancient-map-target" data-map-target="${t.map}" style="left:${x}%;top:${y}%" ${open?'':'disabled'} aria-label="${t.name}${open?'으로 이동':' · 아직 열리지 않은 길'}" title="${t.name}${open?'':' · 잠김'}"><span>${open?'○':'◇'}</span></button>`;}).join('')}<span class="ancient-map-current" style="left:${point[0]+2}%;top:${point[1]+1}%" title="현재 위치" aria-label="현재 위치"></span></div></div></div></div>`;
 }
 export function createAncientUI(api) {
   const {$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items,maps,prepareContentQA,regions}=api;
@@ -53,7 +58,9 @@ export function createAncientUI(api) {
     if(!a.century){panel('고대 국가의 길',`<p>지금은 건국 이야기와 정착을 진행하고 있다.<br>내 거처에서 4세기를 시작하면 역사 지도가 열린다.</p><button id="ancient-open-chapters" class="full">이야기 진행 보기</button>`);$('#ancient-open-chapters').onclick=chapters;return;}
     noteAncientVisit(s,s.map);if((s.progress.ancient||0)===20)finishEvent('ancient:4c-map');save();
     const d=ANCIENT_MAPS[a.century],current=ANCIENT_COUNTRIES[a.country];
-    panel(d.title,`<p class="ancient-map-phase">${d.phase}</p><div class="ancient-map-layout">${ancientMapSVG(a.century)}<div><p>${esc(d.caption)}</p><p class="map-location">현재 위치: ${esc(maps[s.map].name)}</p><p>● 머무는 나라: ${current.name}<br>◆ 한강 유역: ${d.hanLabel}</p><div class="ancient-map-places">${[['village','내 마을',current.village],['home','내 거처',current.home],['han','한강 유역','ancient-han']].map(([id,name,map])=>`<button data-ancient-place="${map}" ${isAdmin()||a.maps[a.century].includes(map)?'':'disabled'}>${name}${s.map===map?' · 현재 위치':a.maps[a.century].includes(map)?' · 방문함':' · 길로 찾아가기'}</button>`).join('')}</div><p>다른 나라와 가야의 본격 지역은 다음 이야기에서 열린다.</p></div></div><p class="note">학습용 간략 지도 · 색은 주요 성장 지역을 나타낸다. 정확한 국경선이나 세기 전체의 고정 영토가 아니다.${a.century===6?' *가야는 여러 나라로 이루어졌으며 6세기에 차례로 신라에 병합되었다.':''}</p>`,{wide:true});
+    panel(d.title,`<p class="ancient-map-phase">${d.phase}</p><div class="ancient-map-layout">${ancientMapImage(a.century,{country:a.country,map:s.map,visited:a.maps[a.century],admin:isAdmin()})}<div><p>${esc(d.caption)}</p><p class="map-location">현재 위치: ${esc(maps[s.map].name)}</p><p>● 머무는 나라: ${current.name}<br>◆ 한강 유역: ${d.hanLabel}</p><div class="ancient-map-places">${[['village','내 마을',current.village],['home','내 거처',current.home],['han','한강 유역','ancient-han']].map(([id,name,map])=>`<button data-ancient-place="${map}" ${isAdmin()||a.maps[a.century].includes(map)?'':'disabled'}>${name}${s.map===map?' · 현재 위치':a.maps[a.century].includes(map)?' · 방문함':' · 길로 찾아가기'}</button>`).join('')}</div><p>다른 나라와 가야의 본격 지역은 다음 이야기에서 열린다.</p></div></div><p class="note">사용자가 제공한 역사 백지도 원본 · 이동 표시는 게임용 별도 레이어입니다.</p>`,{wide:true});
+    document.querySelectorAll('[data-map-zoom]').forEach(b=>b.onclick=()=>{const stage=$('.ancient-map-stage');stage.style.width=b.dataset.mapZoom==='fit'?'100%':b.dataset.mapZoom+'px';});
+    document.querySelectorAll('[data-map-target]').forEach(b=>b.onclick=()=>travel(b.dataset.mapTarget,s.map,{fast:true}));
     document.querySelectorAll('[data-ancient-place]').forEach(b=>b.onclick=()=>travel(b.dataset.ancientPlace,s.map,{fast:true}));
   }
   function records() {
@@ -62,6 +69,17 @@ export function createAncientUI(api) {
   }
   function interact(e,q) {
     const s=state();
+    if(e.type==='horseStable'||e.type==='parkedHorse') {
+      if(!s.ancient.home.owned){dialogue('말 쉼터',['내 거처를 마련하면 말을 이곳에 맡길 수 있다.'],'ancientHorsePost');return true;}
+      if(!s.horseUnlocked){dialogue('말 쉼터',['아직 데려온 말이 없다. 길들인 말은 이곳에서 쉴 수 있다.'],'ancientHorsePost');return true;}
+      panel('내 거처 · 말 쉼터',`${imageTag(s.horseParked?'horseLeftIdle':'ancientHorsePost','내 말 쉼터')}<p>${s.horseParked?'내 말이 집 앞에서 쉬고 있다.':'말을 매는 기둥과 먹이통이 있다.'}</p><button id="ancient-horse-action" class="primary full">${s.horseParked?'말 타기':'말 세워두기'}</button>`);
+      $('#ancient-horse-action').onclick=async()=>{
+        const button=$('#ancient-horse-action');button.disabled=true;
+        if(s.horseParked){try{await api.prepareMounted(s.appearance);}catch{button.disabled=false;toast('말 그림을 불러오지 못했다. 다시 시도해 줘.');return;}if(!retrieveHorse(s))return;}
+        else if(!parkHorse(s))return;
+        close();save();hud();toast(s.horseParked?'말을 집 앞에 세워 두었다.':'내 말에 탔다.');
+      };return true;
+    }
     if(e.type==='ancientStorage'){storage();return true;}
     if(e.type==='ancientDisplay'){display();return true;}
     if(e.type==='ancientHome') {
@@ -102,7 +120,7 @@ export function createAncientUI(api) {
   }
   function adminPanel() {
     const s=state(),a=s.ancient;
-    panel('고대 국가 시험',`<p class="note">기존 별도 시험 세션 · 원본 학생 기록에는 저장하지 않는다.</p><p>나라: ${a.country?names[a.country]:'선택 전'} · 시기: ${a.century?a.century+'세기':'건국/정착'}</p><h3>건국과 정착</h3><div class="admin-grid">${ANCIENT_QA.map(v=>`<button data-ancient-stage="${v.id}">${v.name}</button>`).join('')}</div><h3>머무는 나라 변경</h3><div class="row">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-ancient-country="${id}">${c.name}</button>`).join('')}</div><h3>세기·지도·한강 상태</h3><div class="admin-grid">${[4,5,6].map(n=>`<button data-ancient-century="${n}">${n}세기 상태</button><button data-ancient-map="${n}">${n}세기 지도</button><button data-ancient-han="${n}">${n}세기 한강</button>`).join('')}</div><button id="ancient-qa-home" class="full">내 거처 · 보관/전시 시험</button><button id="ancient-qa-reset-quiz" class="full">퀴즈 완료/재도전 기록 초기화</button><button id="ancient-qa-back" class="full">관리자 메뉴</button>`,{wide:true});
+    panel('고대 국가 시험',`<p class="note">기존 별도 시험 세션 · 원본 학생 기록에는 저장하지 않는다.</p><p>나라: ${a.country?names[a.country]:'선택 전'} · 시기: ${a.century?a.century+'세기':'건국/정착'}</p><h3>건국과 정착</h3><div class="admin-grid">${ANCIENT_QA.map(v=>`<button data-ancient-stage="${v.id}">${v.name}</button>`).join('')}</div><h3>머무는 나라 변경</h3><div class="row">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-ancient-country="${id}">${c.name}</button>`).join('')}</div><h3>세기·지도·한강 상태</h3><div class="admin-grid">${[4,5,6].map(n=>`<button data-ancient-century="${n}">${n}세기 상태</button><button data-ancient-map="${n}">${n}세기 지도</button><button data-ancient-han="${n}">${n}세기 한강</button>`).join('')}</div><h3>나라별 거처</h3><div class="row">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-ancient-home="${id}">${c.name} 거처</button>`).join('')}</div><h3>인물 그림체</h3><button id="ancient-qa-style" class="full">기존 NPC와 전용 건국 인물 비교</button><h3>집 앞 말 쉼터</h3><div class="admin-grid">${[['none','말 없음'],['owned','말 보유'],['mounted','말 탑승'],['parked','집 앞에 세워둠 / 다시 타기']].map(([id,name])=>`<button data-ancient-horse="${id}">${name}</button>`).join('')}</div><button id="ancient-qa-home" class="full">내 거처 · 보관/전시 시험</button><button id="ancient-qa-reset-quiz" class="full">퀴즈 완료/재도전 기록 초기화</button><button id="ancient-qa-back" class="full">관리자 메뉴</button>`,{wide:true});
     document.querySelectorAll('[data-ancient-stage]').forEach(b=>b.onclick=()=>prepare(b.dataset.ancientStage));
     document.querySelectorAll('[data-ancient-country]').forEach(b=>b.onclick=()=>{if((s.progress.ancient||0)<17)prepare('chosen');chooseAncientCountry(s,b.dataset.ancientCountry,{admin:true});save();adminJump(ANCIENT_COUNTRIES[s.ancient.country].village);});
     const setup=n=>{if((s.progress.ancient||0)<19)prepare('4c');s.progress.ancient=21;syncAncient(s);setAncientCentury(s,n,{admin:true});save();};
@@ -111,6 +129,9 @@ export function createAncientUI(api) {
       adminJump(attr==='han'?'ancient-han':ANCIENT_COUNTRIES[s.ancient.country].village);
       noteAncientVisit(s,s.map);save();if(attr==='map')historicalMap();
     });
+    document.querySelectorAll('[data-ancient-home]').forEach(b=>b.onclick=()=>{prepare('4c');chooseAncientCountry(s,b.dataset.ancientHome,{admin:true});save();const c=ANCIENT_COUNTRIES[s.ancient.country];adminJump(c.village,maps[c.village].entities.find(e=>e.type==='ancientHome'));});
+    $('#ancient-qa-style').onclick=()=>{panel('기존 NPC · 건국 인물 비교',`<div class="ancient-actor-comparison">${[['farmer','기존 농민'],['elder','기존 어른'],['ancientHelperNorth','고구려 도우미'],['ancientHelperRiver','백제 도우미'],['ancientHelperPlain','신라 도우미'],['kingJumong','주몽'],['kingOnjo','온조'],['kingHyeokgeose','박혁거세'],['kingSuro','김수로']].map(([art,name])=>`<figure>${imageTag(art,name)}<figcaption>${name}</figcaption></figure>`).join('')}</div><p class="note">일반 NPC는 기존 에셋을 재사용한다. 건국 인물 얼굴은 게임용 재구성이다.</p><button id="ancient-style-back" class="full">시험 목록으로</button>`,{wide:true});$('#ancient-style-back').onclick=adminPanel;};
+    document.querySelectorAll('[data-ancient-horse]').forEach(b=>b.onclick=()=>{if((s.progress.ancient||0)<19)prepare('4c');const mode=b.dataset.ancientHorse;s.horseUnlocked=mode!=='none';s.mounted=mode==='mounted';s.horseParked=mode==='parked';s.horseField=null;save();const village=ANCIENT_COUNTRIES[s.ancient.country].village;adminJump(village,maps[village].entities.find(e=>e.type==='horseStable'));});
     $('#ancient-qa-home').onclick=()=>{if((s.progress.ancient||0)<19)prepare('4c');adminJump(ANCIENT_COUNTRIES[s.ancient.country].home);};
     $('#ancient-qa-reset-quiz').onclick=()=>{prepare('quiz');toast('건국편 확인 문제를 다시 시험할 수 있다.');};
     $('#ancient-qa-back').onclick=api.adminPanel;

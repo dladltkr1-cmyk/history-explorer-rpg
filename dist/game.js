@@ -1,4 +1,5 @@
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=43";
+import {parkHorse} from './horse-state.js?v=44';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=44";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -15,15 +16,15 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=43";
-import { ASSETS } from "./assets.js?v=43";
-import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=43';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=43';
-import {noteAncientVisit} from './ancient-state.js?v=43';
-import {createAncientUI} from './ancient-ui.js?v=43';
-import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=43';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=43';
-import {inFishingRiver,drawFishingRiver} from './waterside.js?v=43';
+} from "./state.js?v=44";
+import { ASSETS } from "./assets.js?v=44";
+import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=44';
+import {noteAncientVisit} from './ancient-state.js?v=44';
+import {createAncientUI} from './ancient-ui.js?v=44';
+import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=44';
+import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
 import { music } from "./audio.js";
@@ -112,7 +113,7 @@ const imageTag = (art, alt = "", cls = "") =>
   `<img src="${ASSETS[art] || ASSETS.chest}" alt="${esc(alt)}" class="${cls}">`;
 const currentMap=()=>ancientWorld(MAPS[s.map],s);
 const canMount=()=>s.map.startsWith('nation-') || (MAPS[s.map]?.ancient && MAPS[s.map].theme!=='room');
-const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel});
+const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel,prepareMounted});
 function toast(text) {
   $("#toast").textContent = text;
   $("#toast").style.opacity = 1;
@@ -682,6 +683,7 @@ function adminInteractions() {
     const a=b.dataset.qaInteract;
     const registered=INTERACTION_QA.find(v=>v.id===a);
     if(registered) {
+      if(registered.action==='ancient-horse'){ancientUI.adminPanel();return;}
       if(registered.action==='ancient'){ancientUI.adminPanel();return;}
       if(registered.action==='ancient-fishing'){ancientUI.prepare('4c');s.progress.ancient=21;s.ancient.century=4;s.ancient.chapter='4c';}
       for(const [id,n] of Object.entries(registered.items||{}))adminGive(id,n);
@@ -693,7 +695,7 @@ function adminInteractions() {
     if(a==='map'){nationMap();return;}
     if(a==='quiz'){const r=REGIONS.find(v=>v.id==='nations');adminPrepareQuest(r.id,r.quests.findIndex(q=>q.id==='buyeo-festival'),'near');return;}
     if(a==='border'){const r=REGIONS.find(v=>v.id==='nations');adminPrepareQuest(r.id,r.quests.findIndex(q=>q.id==='dongye-deliver'),'near');adminJump('nation-dongye-border');return;}
-    if(a==='horse'){s.horseUnlocked=false;s.horseField={map:'nation-buyeo-road',id:'horse-buyeo',until:Date.now()+600000};adminJump('nation-buyeo-road',MAPS['nation-buyeo-road'].entities.find(e=>e.id==='horse-buyeo'));return;}
+    if(a==='horse'){s.horseUnlocked=false;s.horseParked=false;s.mounted=false;s.horseField={map:'nation-buyeo-road',id:'horse-buyeo',until:Date.now()+600000};adminJump('nation-buyeo-road',MAPS['nation-buyeo-road'].entities.find(e=>e.id==='horse-buyeo'));return;}
     const artifact=Object.values(MAPS).flatMap(m=>m.entities.filter(e=>e.type==='artifact').map(e=>[m.id,e.id]))[0];
     if(a==='fire')s.artifacts=[...new Set([...s.artifacts,'fire'])];
     const lookup={npc:['nation-buyeo-village','buyeo-leader'],artifact,resource:['nation-buyeo-forest','buyeo-berries'],fire:['nation-iron-village','iron-fire'],shop:['nation-iron-village','iron-trader'],combat:['nation-buyeo-forest','buyeo-wolf']};
@@ -758,7 +760,7 @@ function hud() {
   $("#health").style.width = `${(s.hp / a.hp) * 100}%`;
   setAvatarImage($("#portrait"));
   $("#place").textContent = currentMap().name;
-  $('#mount-btn').hidden=!(s.horseUnlocked && canMount());
+  $('#mount-btn').hidden=!(s.horseUnlocked && !s.horseParked && canMount());
   $('#mount-btn').textContent=s.mounted?'내리기':'말 타기';
   $("#era").textContent = r?.name || "시간탐험대";
   $("#coins").textContent = s.coins.toLocaleString();
@@ -853,6 +855,7 @@ function travel(id, from = s.map, {fast=false} = {}) {
     toast("아직 잠긴 시대다.");
     return;
   }
+  if (s.mounted && id === 'ancient-home-' + s.ancient?.country) parkHorse(s,{enteringHome:true});
   s.map = id;
   if (!id.startsWith('nation-') && !(MAPS[id]?.ancient && MAPS[id].theme!=='room')) s.mounted = false;
   rollHorse(id);
@@ -970,7 +973,7 @@ function nationMap() {
 }
 $('#map-btn').onclick=()=>safeMenu(currentMap().ancient?ancientUI.map:nationMap);
 $('#mount-btn').onclick=async()=>{
-  if(!s.horseUnlocked || !canMount()) return;
+  if(!s.horseUnlocked || s.horseParked || !canMount()) return;
   if(!s.mounted){
     const button=$('#mount-btn');button.disabled=true;
     try {await prepareMounted(s.appearance);} catch {toast('말 그림을 불러오지 못했다. 다시 시도해 줘.');button.disabled=false;return;}
@@ -1637,7 +1640,7 @@ function interact() {
     if (s.horseUnlocked) { dialogue('말',['이 말은 이미 길들였다. 말 타기 버튼으로 탈 수 있다.'],'horseFrontIdle'); return; }
     panel('들판의 말', '<p>놀라지 않게 천천히 다가가 보자.</p><button class="primary full" id="tame-horse">천천히 다가가기</button>');
     $('#tame-horse').onclick=()=>dialogue('들판의 말',['말이 잠시 바라본다.','천천히 손을 내밀자 말이 곁에 머문다.'], 'horseFrontIdle',()=>{
-      s.horseUnlocked=true; s.horseField=null; save(); hud(); toast('희귀 말 탈것을 얻었다!');
+      s.horseUnlocked=true; s.horseParked=false; s.horseField=null; save(); hud(); toast('희귀 말 탈것을 얻었다!');
     });
     return;
   }
@@ -2406,7 +2409,7 @@ function drawObjectShadow(e, x, y, w, h) {
   const tree = ["tree", "pine", "goTree"].includes(e.art),
     building = ["prehut", "goHouse", "shelter", "storage", "palisade", "caveEntrance", "growthHouse", "growthHall", "growthGranary", "growthShed", "growthFestival"].includes(e.art),
     rock = e.art === "rock" || e.art === "dolmen";
-  if (!["player", "npc", "quiz", "shop", "enemy", "horse", "obstacle", "house", "scenery"].includes(e.type) && !rock && !building) return;
+  if (!e.actor && !["player", "npc", "quiz", "shop", "enemy", "horse", "parkedHorse", "obstacle", "house", "scenery"].includes(e.type) && !rock && !building) return;
   ctx.fillStyle = tree ? "#263f2b3a" : building ? "#2c3e2d27" : "#263f2b2e";
   const rx = tree ? 11 : building ? w * .22 : rock ? w * .21 : 10;
   const ry = building ? 4 : tree ? 5 : rock ? 5 : 4;
@@ -2598,6 +2601,7 @@ function draw() {
     }
   }
   if(m.ancient&&m.theme!=='room'){
+    if(m.country){const c=m.country;ctx.fillStyle=c==='goguryeo'?'#a6997c':c==='baekje'?'#ccbb93':'#bea775';ctx.beginPath();ctx.ellipse(6.8*T,8.5*T,c==='baekje'?3*T:2.7*T,1.8*T,0,0,Math.PI*2);ctx.fill();if(c==='goguryeo')drawSprite('rock',4*T,9*T,58,48);if(c==='silla'){ctx.fillStyle='#758252';for(const x of [4.5,5,9])ctx.fillRect(x*T,9.7*T,5,14);}}
     ctx.strokeStyle='#bca57c';ctx.lineWidth=50;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(3*T,9*T);ctx.lineTo(10*T,9*T);ctx.lineTo(13*T,11*T);ctx.lineTo(20*T,9*T);ctx.stroke();
     ctx.beginPath();ctx.moveTo(12*T,3*T);ctx.lineTo(10*T,9*T);ctx.lineTo(11*T,15*T);ctx.stroke();
   }
@@ -2709,8 +2713,9 @@ function draw() {
     let w =
         isPlayer || ["npc", "quiz", "shop", "enemy"].includes(e.type) ? 58 : 64,
       h = isPlayer || ["npc", "shop", "enemy"].includes(e.type) ? 72 : 66;
-    if(e.type==='ancientStory'&&e.king){w=64;h=84;}
-    if (e.type === 'horse') { w=88; h=88; }
+    if(e.type==='ancientStory'&&e.actor){w=58;h=72;}
+    if (e.type === 'horse' || e.type==='parkedHorse') { w=88; h=88; }
+    if(e.type==='horseStable'){w=64;h=48;}
     if (e.type==='roomLoot') {w=52;h=54;}
     if (e.type==='roomProp') {w=78;h=66;}
     if (e.type==='roomDoor') {w=55;h=57;}
@@ -2748,7 +2753,7 @@ function draw() {
       w = 70;
       h = 66;
     }
-    const fieldSize=e.type==='enemy'&&fieldSpriteSize(e.art,e.elite);
+    const fieldSize=(e.type==='enemy'||e.king)&&fieldSpriteSize(e.art,e.elite);
     if(fieldSize){w=fieldSize.w;h=fieldSize.h;}
     else if (e.type === "enemy" && e.elite) { w *= 1.13; h *= 1.13; }
     if (x + w < cam.x || x - w > cam.x + W || y < cam.y || y - h > cam.y + H)

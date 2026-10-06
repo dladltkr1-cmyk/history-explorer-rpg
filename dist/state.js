@@ -1,9 +1,9 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=43";
-import { FISHING_ITEMS } from './fishing.js?v=43';
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=44";
+import { FISHING_ITEMS } from './fishing.js?v=44';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
-import {ancientQuest} from './regions/ancient.js?v=43';
-import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=43';
+import {ancientQuest} from './regions/ancient.js?v=44';
+import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=44';
 export const MAX_LEVEL = 10,
   KEY = "history-explorer-save-v1";
 export const ITEMS = {
@@ -190,6 +190,7 @@ export function fresh(name, avatar) {
     discoveredMaps: [],
     nationMarks: [],
     horseUnlocked: false,
+    horseParked: false,
     mounted: false,
     horseField: null,
     map: "paleo-camp",
@@ -312,11 +313,14 @@ export function validate(raw) {
   s.discoveredMaps ??= [];
   s.nationMarks ??= [];
   s.horseUnlocked ??= false;
+  s.horseParked ??= false;
   s.mounted ??= false;
   s.horseField ??= null;
-  if (typeof s.horseUnlocked !== 'boolean' || typeof s.mounted !== 'boolean' ||
+  if (typeof s.horseUnlocked !== 'boolean' || typeof s.horseParked !== 'boolean' || typeof s.mounted !== 'boolean' ||
       (s.horseField !== null && (!s.horseField || !['nation-buyeo-road','nation-goguryeo-road','nation-samhan-mahan'].includes(s.horseField.map) || typeof s.horseField.id !== 'string' || !num(s.horseField.until,0,1e15)))) throw Error('말 기록을 읽을 수 없다.');
-  if (!s.horseUnlocked) s.mounted = false;
+  if (!s.horseUnlocked) { s.mounted = false; s.horseParked = false; }
+  if (s.horseUnlocked) s.horseField = null;
+  if (s.horseParked) s.mounted = false;
   if (!Array.isArray(s.discoveredMaps) || s.discoveredMaps.some(x=>typeof x!=='string' || !MAPS[x]) ||
       !Array.isArray(s.nationMarks) || s.nationMarks.some(x=>!['buyeo','goguryeo','okjeo','dongye','samhan'].includes(x)))
     throw Error('지역 기록을 읽을 수 없다.');
@@ -431,6 +435,7 @@ export function validate(raw) {
     throw Error("기력이나 음식 정보가 올바르지 않다.");
   if (!num(s.hp, 0, abilities(s).hp)) throw Error("체력 정보가 올바르지 않아.");
   validateAncient(s,ITEMS,MAPS);
+  if (!s.ancient.home.owned || !s.ancient.country) s.horseParked = false;
   if (!MAPS[s.map] || !num(s.x, 1, 22) || !num(s.y, 1, 16)) {
     s.map = "hq";
     s.x = 11;

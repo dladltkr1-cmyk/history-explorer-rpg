@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 globalThis.Image=class{set src(v){}get complete(){return false;}};
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=43');
-const {fresh,validate,advance,activeQuest,abilities,ITEMS}=await import('../dist/state.js?v=43');
-const {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_KINGS,ANCIENT_QA,ANCIENT_QUESTS,ANCIENT_QUIZZES,ancientWorld,ancientCanEnter,ancientQuest}=await import('../dist/regions/ancient.js?v=43');
-const {chooseAncientCountry,setAncientCentury,transferAncientStorage,prepareAncientQA,completeAncientChapter,noteAncientVisit}=await import('../dist/ancient-state.js?v=43');
-const {ancientMapSVG}=await import('../dist/ancient-ui.js?v=43');
-const {INTERACTION_QA,FISHING_SITES,prepareContentQA}=await import('../dist/regions/fishing-content.js?v=43');
-const {inFishingRiver}=await import('../dist/waterside.js?v=43');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=44');
+const {fresh,validate,advance,activeQuest,abilities,ITEMS}=await import('../dist/state.js?v=44');
+const {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_KINGS,ANCIENT_QA,ANCIENT_QUESTS,ANCIENT_QUIZZES,ancientWorld,ancientCanEnter,ancientQuest}=await import('../dist/regions/ancient.js?v=44');
+const {chooseAncientCountry,setAncientCentury,transferAncientStorage,prepareAncientQA,completeAncientChapter,noteAncientVisit}=await import('../dist/ancient-state.js?v=44');
+const {ancientMapImage}=await import('../dist/ancient-ui.js?v=44');
+const {INTERACTION_QA,FISHING_SITES,prepareContentQA}=await import('../dist/regions/fishing-content.js?v=44');
+const {inFishingRiver}=await import('../dist/waterside.js?v=44');
 const era=REGIONS.find(r=>r.id==='ancient'),growth=REGIONS.find(r=>r.id==='nations');
 for(const r of REGIONS.slice(0,5)){
  const s=fresh('이전 시대 저장','boy'),index=Math.floor(r.quests.length/2);delete s.ancient;
@@ -40,10 +40,25 @@ for(const [country,c]of Object.entries(ANCIENT_COUNTRIES)) {
  assert.ok(transferAncientStorage(s,ITEMS,'food',5,false));assert.equal(s.inventory.food,7);assert.equal(s.ancient.home.storage.food,0);s.map='hq';assert.equal(transferAncientStorage(s,ITEMS,'food',1,true),false);
  for(const n of [4,5,6]){s.ancient.century=n;const m=ancientWorld(MAPS['ancient-han'],s);assert.equal(m.entities.find(e=>e.countryReturn).to,c.village);assert.equal(m.entities.find(e=>e.centuryState==='sign').banner,ANCIENT_MAPS[n].han);assert.notEqual(m.entities.find(e=>e.centuryState==='sign').lines.length,0);}
 }
-assert.equal(new Set([4,5,6].map(n=>ancientMapSVG(n))).size,3);assert.deepEqual([4,5,6].map(n=>ANCIENT_MAPS[n].han),['baekje','goguryeo','silla']);assert.equal(MAPS['ancient-han'].entities.find(e=>e.centuryState==='sign').lines.length,0,'shared definitions remain immutable');
+assert.equal(new Set([4,5,6].map(n=>ancientMapImage(n))).size,3);assert.deepEqual([4,5,6].map(n=>ANCIENT_MAPS[n].han),['baekje','goguryeo','silla']);assert.equal(MAPS['ancient-han'].entities.find(e=>e.centuryState==='sign').lines.length,0,'shared definitions remain immutable');
 for(const q of ANCIENT_QA){const s=fresh('시험','boy');const r=prepareContentQA(s,era,q);assert.ok(MAPS[r.map].entities.some(e=>e.id===r.target));s.map=r.map;assert.equal(validate(JSON.parse(JSON.stringify(s))).map,r.map);assert.equal(s.progress.ancient,q.index);if(q.index>=17)assert.equal(s.ancient.country,'baekje');}
 for(const m of era.maps){assert.ok(m.ancient);for(const e of m.entities){assert.ok(!inFishingRiver(m,e.x,e.y),'land interaction '+e.id);if(e.to)assert.ok(MAPS[e.to],'linked map '+e.id);assert.ok(!m.obstacles.some(o=>Math.abs(o.x-e.x)<.65&&Math.abs(o.y-e.y)<.6),'tree overlap '+e.id);}}
-for(const [id,k]of Object.entries(ANCIENT_KINGS)){if(k.available){const file=await readFile(new URL('../dist/assets/ancient/'+({jumong:'jumong',onjo:'onjo',hyeokgeose:'hyeokgeose',suro:'suro'}[id])+'.svg',import.meta.url),'utf8');assert.ok(file.includes('<svg'));assert.ok(era.maps.some(m=>m.entities.some(e=>e.king===id&&e.legend)));}else assert.equal(k.art,null);}
+for(const [id,k]of Object.entries(ANCIENT_KINGS)){if(k.available){const file=await readFile(new URL('../dist/assets/ancient/'+({jumong:'jumong',onjo:'onjo',hyeokgeose:'hyeokgeose',suro:'suro'}[id])+'-v44.png',import.meta.url));assert.equal(file.subarray(1,4).toString(),'PNG');assert.ok(era.maps.some(m=>m.entities.some(e=>e.king===id&&e.legend)));}else assert.equal(k.art,null);}
 assert.equal(ANCIENT_CHAPTERS.filter(c=>c.ready).length,2);assert.ok(INTERACTION_QA.some(v=>v.action==='ancient'));assert.ok(FISHING_SITES.some(v=>v.map==='ancient-han'));
 for(const [id,q]of Object.entries(ANCIENT_QUIZZES)){const e=MAPS['ancient-origins'].entities.find(e=>e.quiz===id);assert.ok(!e.name.includes(q.options[q.answer]));assert.equal(q.intro,undefined);assert.ok(!MAPS['ancient-origins'].name.includes('온조'));}
 console.log('Ancient verified: era-5 unlock gate; legacy defaults/code preservation; 21 real event steps × 3 countries; country lock/equal stats; home item conservation; independent 4/5/6 maps and Han overlays; QA fixtures; linked land targets; dedicated founder assets; unfinished chapters stay locked.');
+
+const {parkHorse,retrieveHorse}=await import('../dist/horse-state.js?v=44');
+const {createHash}=await import('node:crypto');
+const hashes={4:'f2ef95a9e9f5e10cb91ddd44a829796a22ffc041feb2105c096f607eb385f5b2',5:'f7da545927b312dd190627dcc69c12e72d5fc1e497f61be896a0ac1b6ba9810f',6:'93582fdef1d9dc06618d9833ea85020020b4ca55484bf6ae83148cd28a4e41c3'};
+for(const n of [4,5,6]){const image=ANCIENT_MAPS[n].image;assert.equal(createHash('sha256').update(await readFile(new URL('../dist'+image,import.meta.url))).digest('hex'),hashes[n]);const html=ancientMapImage(n);assert.ok(html.includes('<img'));assert.ok(!html.includes('<svg'));assert.ok(html.includes('ancient-map-overlay'));}
+for(const [country,c]of Object.entries(ANCIENT_COUNTRIES)){
+ const st=fresh('말 검수','boy');st.completedRegions=REGIONS.slice(0,5).map(r=>r.id);st.unlockedRegions=REGIONS.map(r=>r.id);prepareAncientQA(st,{index:21,map:c.village,target:'ancient-helper'},{country});st.map=c.village;
+ assert.equal(parkHorse(st),false);st.horseUnlocked=true;st.mounted=true;assert.equal(parkHorse(st),true);
+ for(const n of [4,5,6]){setAncientCentury(st,n,{admin:true});const resumed=validate(JSON.parse(JSON.stringify(st)));assert.equal(resumed.horseParked,true);assert.equal(resumed.mounted,false);assert.equal(ancientWorld(MAPS[c.village],resumed).entities.filter(e=>e.type==='parkedHorse').length,1);assert.equal(ancientWorld(MAPS['ancient-han'],resumed).entities.filter(e=>e.type==='parkedHorse').length,0);}
+ assert.equal(retrieveHorse(st),true);assert.equal(st.mounted,true);assert.equal(ancientWorld(MAPS[c.village],st).entities.filter(e=>e.type==='parkedHorse').length,0);assert.equal(retrieveHorse(st),false);
+ st.map='ancient-han';assert.equal(parkHorse(st),false);assert.equal(parkHorse(st,{enteringHome:true}),true);delete st.horseParked;assert.equal(validate(st).horseParked,false);
+}
+console.log('v44: 3 exact original JPG hashes, image/overlay separation; 3 homes × 3 century parked-save restoration; no duplicate horse, retrieve and legacy defaults.');
+
+const {ASSETS}=await import('../dist/assets.js?v=44');for(const king of Object.values(ANCIENT_KINGS).filter(v=>v.available)){assert.ok(ASSETS[king.art].endsWith('-v44.png'));}assert.equal(ASSETS.ancientHelperNorth,ASSETS.farmer);assert.equal(ASSETS.ancientHelperRiver,ASSETS.shopkeeper);assert.equal(ASSETS.ancientHelperPlain,ASSETS.elder);

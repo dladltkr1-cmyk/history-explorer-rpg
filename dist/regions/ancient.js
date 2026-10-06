@@ -15,9 +15,9 @@ export const ANCIENT_CHAPTERS=[
 ];
 // A century view shows a representative later phase, never one border for 100 years.
 export const ANCIENT_MAPS={
-  4:{title:'4세기 지도',phase:'4세기 후반 · 백제의 성장',han:'baekje',hanLabel:'백제 중심의 한강 유역',caption:'한강을 중심으로 백제가 성장하고 바닷길로 교류했다.',regions:[{id:'goguryeo',x:58,y:26,rx:23,ry:18},{id:'baekje',x:49,y:65,rx:14,ry:23},{id:'silla',x:71,y:78,rx:9,ry:12},{id:'gaya',x:62,y:88,rx:6,ry:8}],routes:['sea']},
-  5:{title:'5세기 지도',phase:'5세기 후반 · 고구려의 남진',han:'goguryeo',hanLabel:'고구려가 확보한 한강 유역',caption:'장수왕은 평양으로 도읍을 옮겼다. 475년 한성을 차지하며 남쪽으로 나아갔다.',regions:[{id:'goguryeo',x:57,y:37,rx:25,ry:30},{id:'baekje',x:49,y:78,rx:11,ry:13},{id:'silla',x:69,y:75,rx:10,ry:15},{id:'gaya',x:61,y:89,rx:6,ry:7}],routes:['south']},
-  6:{title:'6세기 지도',phase:'6세기 후반 · 신라의 성장',han:'silla',hanLabel:'신라가 확보한 한강 유역',caption:'백제와 신라가 한강 유역을 되찾은 뒤, 553년 신라가 한강 하류를 차지했다.',regions:[{id:'goguryeo',x:57,y:30,rx:24,ry:23},{id:'baekje',x:46,y:78,rx:10,ry:14},{id:'silla',x:64,y:71,rx:17,ry:25},{id:'gaya',x:61,y:91,rx:4,ry:4}],routes:['han']},
+  4:{image:'/assets/ancient/map-baekje-original.jpg',originalName:'역사 백지도_삼국 시대(백제 전성기).jpg',title:'4세기 지도',phase:'4세기 후반 · 백제의 성장',han:'baekje',hanLabel:'백제 중심의 한강 유역',caption:'한강을 중심으로 백제가 성장하고 바닷길로 교류했다.'},
+  5:{image:'/assets/ancient/map-goguryeo-original.jpg',originalName:'역사 백지도_삼국 시대(고구려 전성기).jpg',title:'5세기 지도',phase:'5세기 후반 · 고구려의 남진',han:'goguryeo',hanLabel:'고구려가 확보한 한강 유역',caption:'장수왕은 평양으로 도읍을 옮겼다. 475년 한성을 차지하며 남쪽으로 나아갔다.'},
+  6:{image:'/assets/ancient/map-silla-original.jpg',originalName:'역사 백지도_삼국 시대(신라 전성기).jpg',title:'6세기 지도',phase:'6세기 후반 · 신라의 성장',han:'silla',hanLabel:'신라가 확보한 한강 유역',caption:'백제와 신라가 한강 유역을 되찾은 뒤, 553년 신라가 한강 하류를 차지했다.'},
 };
 // Extension contracts only. No future minigame is exposed as playable in phase 1.
 export const ANCIENT_ACTIVITIES={
@@ -60,7 +60,7 @@ export const ANCIENT_QUESTS=[
   q('ancient-4c-next','4세기의 다음 이야기를 기다리자.','ancient-home-baekje','ancient-chapters','ancient:4c-full',{location:'home',available:false,xp:0,detail:'근초고왕의 본격 이야기는 다음 업데이트에서 이어진다. 지금은 거처와 강가를 둘러볼 수 있다.'}),
 ];
 export const ANCIENT_QA=[
-  ['opening','고대 국가 시작',0],['goguryeo','고구려 건국 이야기',1],['baekje','백제 건국 이야기',4],['silla','신라 건국 이야기',7],['gaya','가야 건국 이야기',10],['quiz','건국편 퀴즈 직전',14],['choice','나라 선택 직전',16],['chosen','나라 선택 완료',17],['helper','내 거처 안내 직전',17],['home','내 거처 획득',18],['4c','4세기 시작',19],
+  ['opening','고대 국가 시작',0],['jumong','주몽 바로 만나기',2],['onjo','온조 바로 만나기',6],['hyeokgeose','박혁거세 바로 만나기',8],['suro','김수로 바로 만나기',11],['goguryeo','고구려 건국 이야기',1],['baekje','백제 건국 이야기',4],['silla','신라 건국 이야기',7],['gaya','가야 건국 이야기',10],['quiz','건국편 퀴즈 직전',14],['choice','나라 선택 직전',16],['chosen','나라 선택 완료',17],['helper','내 거처 안내 직전',17],['home','내 거처 획득',18],['4c','4세기 시작',19],
 ].map(([id,name,index])=>({id,name,index,quest:ANCIENT_QUESTS[index].id,map:ANCIENT_QUESTS[index].map,target:ANCIENT_QUESTS[index].target}));
 const qa={name:'고대 국가 건국과 정착',stages:ANCIENT_QA,items:[]};
 for(const [index,quest]of ANCIENT_QUESTS.entries())quest.qa={...qa,stages:[{id:'current',name:'선택 퀘스트 직전',index,quest:quest.id,map:quest.map,target:quest.target},...ANCIENT_QA]};
@@ -122,9 +122,10 @@ for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
   maps.push(place(c.village,c.name+'의 거점 마을','ancient-'+(id==='goguryeo'?'north':id==='baekje'?'river':'plain'),[
     story('ancient-helper',10,8,'마을 도우미',c.helperArt,[c.welcome,'집의 보관 공간과 화로, 이야기 책상을 써 보렴.']),
     entity('ancient-own-home','ancientHome',6,7,'내 거처',{art:c.art,solid:true,to:c.home}),
+    entity('ancient-horse-post','horseStable',7.8,9.8,'말 쉼터',{art:'ancientHorsePost'}),
     entity('ancient-village-house','scenery',17,5,'이웃의 집',{art:'ancientVillageHouse',solid:true}),
     entity('ancient-fire-'+id,'rest',14,11,'마을 화로',{art:'campfire'}),
-    entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:c.helperArt}),
+    entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:'shopkeeper'}),
     exit('ancient-han-door-'+id,21,9,'강가로','ancient-han'),exit('ancient-hq-'+id,11,15,'탐험 본부','hq'),
   ],{entryAt:17,country:id,ground:c.ground,trees:id==='goguryeo'?[[3,3],[3,12],[18,3],[19,14],[15,3]]:[[3,3],[3,13],[20,3],[20,14]]}));
   const room=place(c.home,'내 거처 · '+c.name,'room',[
@@ -152,6 +153,7 @@ export const ancient={id:'ancient',name:'고대 국가',subtitle:'나라를 선�
 export function ancientWorld(base,s) {
   if(!base?.ancient)return base;
   const a=s.ancient,c=ANCIENT_COUNTRIES[a?.country],era=ANCIENT_MAPS[a?.century||4];
+  if(base.id===c?.village && a.home.owned && s.horseUnlocked && s.horseParked) return {...base,entities:[...base.entities,{id:'ancient-my-horse',type:'parkedHorse',x:7.8,y:9.5,name:'내 말',art:'horseLeftIdle'}]};
   if(base.id!=='ancient-han')return base;
   return {...base,name:'한강 유역 · '+(a?.century||4)+'세기',entities:base.entities.map(e=>{
     if(e.countryReturn)return {...e,to:c?.village||'ancient-origins'};
