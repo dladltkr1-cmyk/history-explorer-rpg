@@ -138,7 +138,7 @@ export function craftDecor(s,id){
 export function meetsLifeRequirements(s,{homeLevel=1,reputation=0,produced={},paddy=false}={}){
   const h=s.ancient?.home;return Boolean(h?.owned&&h.level>=homeLevel&&h.reputation>=reputation&&(!paddy||h.paddies>0)&&Object.entries(produced).every(([id,n])=>(h.harvested[id]||0)>=n));
 }
-export function roomLayout(level){const [w,h]=HOME_LEVELS[level].room;return {w,h,start:{x:w/2,y:h-2.8},points:{'ancient-home-exit':[w/2,h-1.7],'ancient-storage':[2.3,2.9],'ancient-home-fire':[w-2.6,h-2.5],'ancient-chapters':[w/2,2.7],'ancient-display':[w-2.2,2.8],'ancient-bed':[2.3,h-2.5],'ancient-jars':[w-2.5,h-4.3],'life-board':[w/2,h-4.1]}};}
+export function roomLayout(level){const [w,h]=HOME_LEVELS[level].room;return {w,h,start:{x:w/2+1.3,y:h-2.8},points:{'ancient-home-exit':[w/2,h-1.7],'ancient-storage':[2.3,2.9],'ancient-home-fire':[w-2.6,h-2.5],'ancient-chapters':[w/2,2.7],'ancient-display':[w-2.2,2.8],'ancient-bed':[2.3,h-2.5],'ancient-jars':[w-2.5,h-4.3],'life-board':[w/2,h-4.1]}};}
 export function plotPosition(id){const n=Number(id.split('-')[1])-1;return id.startsWith('paddy')?[17+n*2.5,13.3]:[6+(n%4)*2.5,10.5+Math.floor(n/4)*3];}
 export function decorPosition(slot,level){const [w,h]=HOME_LEVELS[level].room;return slot.area==='yard'?slot.at:[slot.at[0]*w,slot.wall?1.9:slot.at[1]*h];}
 export function setLifeLevel(home,level){

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 globalThis.Image=class{set src(v){}get complete(){return false;}};
-const {fresh,validate,ITEMS,abilities}=await import('../dist/state.js?v=48');
-import {MAPS,REGIONS} from '../dist/regions/index.js?v=48';
-import {ANCIENT_COUNTRIES,ancientWorld} from '../dist/regions/ancient.js?v=48';
-import {prepareAncientQA,setAncientCentury} from '../dist/ancient-state.js?v=48';
-import {CROPS,DECOR,DECOR_SLOTS,HOME_LEVELS,activePlots,plotState,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,craftDecor,meetsLifeRequirements,setLifeLevel,roomLayout} from '../dist/homestead.js?v=48';
-import {salePrice,sellItem} from '../dist/economy.js?v=48';
-import {ASSETS} from '../dist/assets.js?v=48';
+const {fresh,validate,ITEMS,abilities}=await import('../dist/state.js?v=48.1');
+import {MAPS,REGIONS} from '../dist/regions/index.js?v=48.1';
+import {ANCIENT_COUNTRIES,ancientWorld} from '../dist/regions/ancient.js?v=48.1';
+import {prepareAncientQA,setAncientCentury} from '../dist/ancient-state.js?v=48.1';
+import {CROPS,DECOR,DECOR_SLOTS,HOME_LEVELS,activePlots,plotState,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,craftDecor,meetsLifeRequirements,setLifeLevel,roomLayout} from '../dist/homestead.js?v=48.1';
+import {salePrice,sellItem} from '../dist/economy.js?v=48.1';
+import {ASSETS} from '../dist/assets.js?v=48.1';
 const trial=country=>{const s=fresh('생활 검수','boy');s.completedRegions=REGIONS.slice(0,5).map(r=>r.id);s.unlockedRegions=REGIONS.map(r=>r.id);prepareAncientQA(s,'4c',{country});s.map=ANCIENT_COUNTRIES[country].home;return s;};
 const now=Date.now();
 for(const [country,countryDef]of Object.entries(ANCIENT_COUNTRIES)){
@@ -31,7 +31,7 @@ for(const [country,countryDef]of Object.entries(ANCIENT_COUNTRIES)){
 }
 const old=trial('baekje');old.personalCode='HE123456';old.inventory.food=17;old.map='ancient-home-baekje';old.x=18;old.y=13;
 for(const key of ['lifeRevision','level','fields','paddies','seeds','plots','decorations','placements','reputation','harvested','starterGranted'])delete old.ancient.home[key];
-const migrated=validate(old);assert.equal(migrated.personalCode,old.personalCode);assert.equal(migrated.inventory.food,17);assert.equal(migrated.progress.ancient,19);assert.equal(migrated.map,old.map);assert.deepEqual([migrated.x,migrated.y],[5,5.2]);assert.equal(migrated.ancient.home.level,1);const seeds=structuredClone(migrated.ancient.home.seeds);assert.deepEqual(validate(migrated).ancient.home.seeds,seeds,'starter grant is once only');
+const migrated=validate(old);assert.equal(migrated.personalCode,old.personalCode);assert.equal(migrated.inventory.food,17);assert.equal(migrated.progress.ancient,19);assert.equal(migrated.map,old.map);assert.deepEqual([migrated.x,migrated.y],[roomLayout(1).start.x,roomLayout(1).start.y]);assert.equal(migrated.ancient.home.level,1);const seeds=structuredClone(migrated.ancient.home.seeds);assert.deepEqual(validate(migrated).ancient.home.seeds,seeds,'starter grant is once only');
 for(const corrupt of [s=>s.ancient.home.level=5,s=>s.ancient.home.reputation=-1,s=>s.ancient.home.seeds.millet=1.5,s=>s.ancient.home.seeds.mystery=1,s=>s.ancient.home.plots.pop(),s=>s.ancient.home.plots[0]={id:'field-1',crop:'ricecrop',plantedAt:now},s=>s.ancient.home.plots[0].plantedAt=-1,s=>s.ancient.home.placements['room-2']='woodBox']){const bad=trial('baekje');corrupt(bad);assert.throws(()=>validate(bad));}
 for(const [key,file]of Object.entries(ASSETS).filter(([key])=>key.startsWith('life-'))){const contents=await readFile(new URL('../dist'+file.split('?')[0],import.meta.url),'utf8');assert.ok(contents.startsWith('<svg'));assert.ok(!contents.includes('<script'));}
 assert.equal(salePrice(ITEMS.fish),6);assert.equal(salePrice(ITEMS.hide),15);assert.equal(salePrice(ITEMS.food),11);

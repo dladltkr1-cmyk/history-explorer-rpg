@@ -1,5 +1,5 @@
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=48';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=48.1';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -130,7 +130,7 @@ for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
     exit('ancient-han-door-'+id,21,9,'강가로','ancient-han'),exit('ancient-hq-'+id,11,15,'탐험 본부','hq'),
   ],{entryAt:17,country:id,ground:c.ground,trees:id==='goguryeo'?[[3,3],[3,12],[18,3],[19,14],[15,3]]:[[3,3],[3,13],[20,3],[20,14]]}));
   const room=place(c.home,'내 거처 · '+c.name,'room',[
-    exit('ancient-home-exit',11,15,'마당으로',c.village),
+    exit('ancient-home-exit',11,15,'마을로',c.village),
     entity('ancient-storage','ancientStorage',6,6,'보관 공간',{art:'roomShelf'}),
     entity('ancient-home-fire','rest',17,10,'거처의 화로',{art:'campfire'}),
     story('ancient-chapters',12,5,'이야기 책상','ancientDesk',[]),

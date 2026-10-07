@@ -1,6 +1,6 @@
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=48';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=48";
+import {parkHorse} from './horse-state.js?v=48.1';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=48.1";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -17,16 +17,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=48";
-import { ASSETS } from "./assets.js?v=48";
+} from "./state.js?v=48.1";
+import { ASSETS } from "./assets.js?v=48.1";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=48';
-import {noteAncientVisit} from './ancient-state.js?v=48';
-import {createAncientUI} from './ancient-ui.js?v=48';
-import {createHomesteadUI} from './homestead-ui.js?v=48';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=48';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=48.1';
+import {noteAncientVisit} from './ancient-state.js?v=48.1';
+import {createAncientUI} from './ancient-ui.js?v=48.1';
+import {createHomesteadUI} from './homestead-ui.js?v=48.1';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=48.1';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=48';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=48.1';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -44,7 +44,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=48";
+} from "./economy.js?v=48.1";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
