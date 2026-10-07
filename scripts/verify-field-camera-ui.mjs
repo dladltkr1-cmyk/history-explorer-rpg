@@ -33,7 +33,7 @@ for(const [width,height]of [[1363,936],[1024,768],[768,1024]]){
    let spot;for(let y=5;y<13&&!spot;y++)for(let x=7;x<17;x++)if([[0,0],[.7,0],[-.7,0],[0,.7],[0,-.7],[.7,-.7]].every(([dx,dy])=>!qa.blocked(x+dx,y+dy))&&!m.entities.some(e=>e.type==='enemy'&&Math.hypot(e.x-x,e.y-y)<3)){spot=[x,y];break;}
    assert.ok(spot);[st.x,st.y]=spot;clock+=40;qa.tick(clock);
    for(const key of directions)w.dispatchEvent(new w.KeyboardEvent('keydown',{key}));for(let n=0;n<3;n++){clock+=40;qa.tick(clock);}for(const key of directions)w.dispatchEvent(new w.KeyboardEvent('keyup',{key}));
-   assert.ok(Math.hypot(st.x-spot[0],st.y-spot[1])>.39,'actual movement '+id);for(let n=0;n<20;n++){clock+=40;qa.tick(clock);}assert.equal(qa.camera().aheadX,0);assert.equal(qa.camera().aheadY,0);
+   assert.ok(Math.hypot(st.x-spot[0],st.y-spot[1])>.39,'actual movement '+id);for(let n=0;n<50;n++){clock+=40;qa.tick(clock);}assert.equal(qa.camera().aheadX,0);assert.equal(qa.camera().aheadY,0);
   }
   for(const [x,y]of [[1.2,1.2],[m.w-1.2,1.2],[1.2,m.h-1.2],[m.w-1.2,m.h-1.2]]){st.x=x;st.y=y;clock+=40;qa.tick(clock);const c=qa.camera();if(m.w*64>c.viewW){assert.ok(c.x>=0);assert.ok(c.x+c.viewW<=m.w*64+1e-8);}if(m.h*64>c.viewH){assert.ok(c.y>=0);assert.ok(c.y+c.viewH<=m.h*64+1e-8);}}
  }

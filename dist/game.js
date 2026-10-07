@@ -1,4 +1,4 @@
-import {createFieldCamera} from './field-camera.js?v=46';
+import {createFieldCamera} from './field-camera.js?v=47';
 import {parkHorse} from './horse-state.js?v=44.2';
 import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=44.2";
 import {
