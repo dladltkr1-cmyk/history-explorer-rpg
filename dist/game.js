@@ -1,6 +1,6 @@
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=44.2';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=44.2";
+import {parkHorse} from './horse-state.js?v=48';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=48";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -17,14 +17,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=44.2";
-import { ASSETS } from "./assets.js?v=44.2";
+} from "./state.js?v=48";
+import { ASSETS } from "./assets.js?v=48";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=44.2';
-import {noteAncientVisit} from './ancient-state.js?v=44.2';
-import {createAncientUI} from './ancient-ui.js?v=44.2';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=48';
+import {noteAncientVisit} from './ancient-state.js?v=48';
+import {createAncientUI} from './ancient-ui.js?v=48';
+import {createHomesteadUI} from './homestead-ui.js?v=48';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=48';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=46';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=48';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -42,7 +44,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js";
+} from "./economy.js?v=48";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -117,6 +119,7 @@ const imageTag = (art, alt = "", cls = "") =>
 const currentMap=()=>ancientWorld(MAPS[s.map],s);
 const canMount=()=>s.map.startsWith('nation-') || (MAPS[s.map]?.ancient && MAPS[s.map].theme!=='room');
 const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel,prepareMounted});
+const homesteadUI=createHomesteadUI({$,esc,panel,imageTag,save,hud,toast,travel,finishEvent,state:()=>s,admin:()=>adminMode,adminPanel,adminJump,prepareAncient:stage=>ancientUI.prepare(stage),asset:art=>ASSETS[art],sell:(id,n)=>sellItem(s,ITEMS,id,n),selling,setCleanup:fn=>{stopFishing=fn;},refreshWorld:()=>{fieldCamera.reset();if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const start=roomLayout(s.ancient.home.level).start;s.x=start.x;s.y=start.y;}}});
 function toast(text) {
   $("#toast").textContent = text;
   $("#toast").style.opacity = 1;
@@ -690,6 +693,7 @@ function adminInteractions() {
     if(registered) {
       if(registered.action==='ancient-horse'){ancientUI.adminPanel();return;}
       if(registered.action==='ancient'){ancientUI.adminPanel();return;}
+      if(registered.action==='homestead'){homesteadUI.adminPanel();return;}
       if(registered.action==='ancient-fishing'){ancientUI.prepare('4c');s.progress.ancient=21;s.ancient.century=4;s.ancient.chapter='4c';}
       for(const [id,n] of Object.entries(registered.items||{}))adminGive(id,n);
       const target=MAPS[registered.map].entities.find(e=>e.id===registered.target);
@@ -773,7 +777,7 @@ function hud() {
     ? `${(s.progress[r.id] || 0) + 1} / ${r.quests.length}`
     : "";
   $("#quest-title").textContent =
-    (r?.id==='ancient'&&!q?`${s.ancient.century}세기 · 다음 이야기 준비 중`:q?.title) || (s.map === "hq" ? "시대의 문으로 가 보자." : "자유 탐험");
+    (r?.id==='ancient'&&!q?`거처 ${s.ancient.home.level}단계 · 밭과 살림을 가꾸자.`:q?.title) || (s.map === "hq" ? "시대의 문으로 가 보자." : "자유 탐험");
   const paleoStatus = r?.id === "paleolithic" && q
     ? `\n주먹도끼 ${s.artifacts.includes("handaxe") ? "✓" : "·"}  뗀석기 ${s.artifacts.includes("flint") ? "✓" : "·"}\n불의 사용 ${s.artifacts.includes("fire") ? "✓" : "·"}  음식 조리 ${s.completedQuests.includes("paleo-cook") ? "✓" : "·"}`
     : "";
@@ -877,13 +881,13 @@ function travel(id, from = s.map, {fast=false} = {}) {
   );
   s.x = roomReturn ? roomReturn.x : !fast && back
     ? back.x + (back.x < 5 ? 1 : back.x > 19 ? -1 : 0)
-    : MAPS[id].start.x;
+    : currentMap().start.x;
   s.y = roomReturn ? roomReturn.y : !fast && back
     ? back.y + (back.y < 4 ? 1 : back.y > 13 ? -1 : 0)
-    : MAPS[id].start.y;
+    : currentMap().start.y;
   if (blocked(s.x, s.y)) {
-    s.x = MAPS[id].start.x;
-    s.y = MAPS[id].start.y;
+    s.x = currentMap().start.x;
+    s.y = currentMap().start.y;
   }
   if (fast) {
     const m=MAPS[id], sx=s.x, sy=s.y;
@@ -916,6 +920,7 @@ function menu() {
   $("#requests").onclick = requestsMenu;
   $('#ancient-records-menu')?.addEventListener('click',ancientUI.records);
   $('#ancient-chapters-menu')?.addEventListener('click',ancientUI.chapters);
+  if(currentMap().ancient&&s.ancient.home.owned){const button=document.createElement('button');button.id='life-home-menu';button.textContent='내 거처 · 생활 관리';$('.menu-grid').prepend(button);button.onclick=()=>{if(!['ancient-home-'+s.ancient.country,'ancient-yard-'+s.ancient.country].includes(s.map))travel(ANCIENT_COUNTRIES[s.ancient.country].home);if(s.map===ANCIENT_COUNTRIES[s.ancient.country].home)finishEvent('ancient:home');homesteadUI.open();};}
   $("#settings").onclick = settings;
   $("#home").onclick = () => travel("hq");
   if (adminMode) $("#admin-menu").onclick = adminPanel;
@@ -1605,6 +1610,7 @@ function nearby() {
       (e) =>
         e.type !== "scenery" &&
         e.type !== "roomProp" &&
+        e.type !== "lifeDecor" &&
         !(e.type==='roomLoot' && s.opened.includes(e.id)) &&
         !(e.type==='story' && !e.collect && activeQuest(s)?.target!==e.id && e.id!=='dongye-sign') &&
         (!['berry','loot','chest'].includes(e.type) || resourceReady(s,e)) &&
@@ -1625,6 +1631,7 @@ function interact() {
     return;
   }
   const q = activeQuest(s);
+  if(currentMap().ancient&&homesteadUI.interact(e))return;
   if(currentMap().ancient&&ancientUI.interact(e,q))return;
   if(e.type==='fishingSpot'){fishingMenu(e);return;}
   if(e.type==='fishingBranch') {
@@ -2528,6 +2535,18 @@ function drawNationTerrain(m,T) {
   }
   if(m.nationVisual==='iron'&&m.id==='nation-iron-field')field(4,4,5,3);
 }
+function drawLifeYard(m,T){
+  const h=s.ancient.home,d=HOME_LEVELS[h.level],p=HOME_PALETTES[s.ancient.country];
+  const left=12-d.yard[0]/2,top=9-d.yard[1]/2,right=12+d.yard[0]/2,bottom=9+d.yard[1]/2;
+  ctx.fillStyle='#baa780';ctx.beginPath();ctx.roundRect(left*T,top*T,d.yard[0]*T,d.yard[1]*T,28);ctx.fill();
+  ctx.fillStyle='#cbbb96';ctx.fillRect(11.55*T,7*T,.9*T,(bottom-7)*T);
+  ctx.strokeStyle=p.wood;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(left*T,top*T);ctx.lineTo(right*T,top*T);ctx.lineTo(right*T,bottom*T);ctx.moveTo(left*T,top*T);ctx.lineTo(left*T,bottom*T);ctx.stroke();
+  for(let y=top;y<=bottom;y+=1.4)for(const x of [left,right]){ctx.fillStyle=p.wood;ctx.fillRect(x*T-3,y*T-15,6,24);ctx.fillStyle='#b79d6b';ctx.fillRect(x*T-4,y*T-15,8,3);}
+  ctx.fillStyle='#8f866c';for(let x=left+.4;x<right;x+=1.1)if(Math.abs(x-12)>1){ctx.fillRect(x*T,bottom*T-5,22,10);ctx.fillStyle='#b3a483';ctx.fillRect(x*T+4,bottom*T-7,15,4);ctx.fillStyle='#8f866c';}
+  if(h.level>=2){ctx.fillStyle='#9c8b66';ctx.fillRect(15.8*T,7*T,3.5*T,1.8*T);ctx.fillStyle='#c7b98c';ctx.fillRect(16*T,7.2*T,3*T,1.3*T);}
+  if(h.level>=3){ctx.strokeStyle='#9b8767';ctx.lineWidth=3;ctx.strokeRect(18.5*T,8*T,2.8*T,2*T);}
+  ctx.fillStyle='#d3c9a5';ctx.fillRect(10.8*T,6.2*T,2.4*T,.45*T);
+}
 function draw(dt = 0) {
   const W = innerWidth,
     H = innerHeight,
@@ -2658,6 +2677,7 @@ function draw(dt = 0) {
     ctx.fillRect(15*T,11.5*T,5*T,2*T);
   }
   if (m.nationVisual) drawNationTerrain(m,T);
+  if(m.lifeYard)drawLifeYard(m,T);
   if(m.fishingPond) {
     const p=m.fishingPond;
     ctx.fillStyle='#799981';ctx.beginPath();ctx.ellipse(p.x*T,p.y*T,(p.rx+.22)*T,(p.ry+.2)*T,-.15,0,Math.PI*2);ctx.fill();
@@ -2708,7 +2728,7 @@ function draw(dt = 0) {
     objects.push({id:'buyeo-returned',x:14,y:5,type:'npc',name:'돌아온 사람',art:'farmer'});
   if (m.id==='nation-samhan-field' && !s.completedQuests.includes('samhan-deliver'))
     objects=objects.filter(o=>o.id!=='samhan-grainstack');
-  objects.sort((a, b) => a.y - b.y);
+  objects.sort((a, b) => Number(Boolean(b.floor))-Number(Boolean(a.floor)) || a.y - b.y);
   for (const e of objects) {
     let x = e.x * T,
       y = e.y * T;
@@ -2740,6 +2760,10 @@ function draw(dt = 0) {
       w = 170;
       h = 145;
     }
+    if(e.lifeStage){[w,h]=HOME_LEVELS[e.lifeStage].house;}
+    if(e.type==='farmPlot'){w=112;h=100;}
+    if(e.type==='homestead'){w=e.id==='life-workbench'?86:65;h=e.id==='life-workbench'?68:56;}
+    if(e.type==='lifeDecor'){w=e.floor?82:48;h=e.floor?45:48;}
     if (e.art==='growthHall' || e.art==='growthFestival') { w=195; h=142; }
     if (e.art==='growthGranary' || e.art==='growthShed' || e.art==='growthFish') { w=122; h=106; }
     if (['iron-workshop','goguryeo-mainhouse','goguryeo-smallhouse','goguryeo-family','okjeo-home'].includes(e.id)) {
@@ -2797,6 +2821,7 @@ function draw(dt = 0) {
       drawSprite(e.art, x, y + bob, w, h);
       ctx.filter = "none";
     }
+    if(e.type==='farmPlot'&&e.ready){ctx.fillStyle='#f4e5aa';ctx.beginPath();ctx.arc(x+36,y-h+13,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4f6f43';ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillText('✓',x+36,y-h+18);}
     if (e.type === "shop") {
       drawSprite("chest", x + 27, y + 4, 34, 34);
       drawSprite("berries", x - 25, y + 4, 28, 28);
@@ -2827,6 +2852,8 @@ function draw(dt = 0) {
         "ancientHome",
         "ancientStorage",
         "ancientDisplay",
+        "homestead",
+        "farmPlot",
         "quiz",
         "horse",
         "house",

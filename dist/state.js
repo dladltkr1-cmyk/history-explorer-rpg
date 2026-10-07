@@ -1,9 +1,10 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=44.2";
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=48";
 import { FISHING_ITEMS } from './fishing.js?v=44.2';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
-import {ancientQuest} from './regions/ancient.js?v=44.2';
-import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=44.2';
+import {ancientQuest} from './regions/ancient.js?v=48';
+import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=48';
+import {CROPS} from './homestead.js?v=48';
 export const MAX_LEVEL = 10,
   KEY = "history-explorer-save-v1";
 export const ITEMS = {
@@ -141,6 +142,9 @@ ITEMS.fish.risk = { chance: 0.2, damage: 5 };
 for (const item of Object.values(ITEMS))
   if (item.kind === "food") item.sellable = true;
 for (const [id,item] of Object.entries(FISHING_ITEMS)) ITEMS[id]={...item,kind:'material',price:0,sellable:false,questOnly:true};
+ITEMS.barley={name:'보리',kind:'material',price:10,sellable:true,art:'life-crop-barley',text:'밭에서 수확한 곡식 · 판매'};
+ITEMS.lumber={name:'목재',kind:'material',price:8,sellable:true,art:'life-lumber',text:'거처 확장 · 작업대 재료'};
+for(const [id,c]of Object.entries(CROPS)){ITEMS[c.item].salePrice=c.sale;ITEMS[c.item].sellable=true;ITEMS[c.item].art='life-crop-'+id;}
 export const STACK_IDS = Object.keys(ITEMS).filter((id) =>
   ["food", "material"].includes(ITEMS[id].kind),
 );

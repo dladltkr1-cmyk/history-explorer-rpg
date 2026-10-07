@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=44.2');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=44.2');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=44.2');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=48');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=48');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=48');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 let source=await readFile(root+'/dist/game.js','utf8');source=source.replace(/from (["'])(\.\/[^"']+)\1/g,(_,q,p)=>'from '+q+new URL(p,'file://'+root+'/dist/').href+q);

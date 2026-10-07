@@ -1,6 +1,6 @@
-import {parkHorse,retrieveHorse} from './horse-state.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=44.2';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=44.2';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=48';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=48';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=48';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.
@@ -21,7 +21,7 @@ export function createAncientUI(api) {
     const s=state();
     if(s.ancient.country&&!isAdmin()){toast('이미 머물 나라를 정했다.');return;}
     if((s.progress.ancient||0)!==16&&!isAdmin()){toast('네 건국 이야기와 확인 문제를 먼저 마치자.');return;}
-    panel('어느 나라에 머물까?',`<p>머무는 마을은 달라도 세 나라와 가야의 역사를 모두 배우게 된다.</p><div class="ancient-country-cards">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-country="${id}">${imageTag(c.art,c.name+'의 작은 거처')}<b>${c.name}</b><small>${id==='goguryeo'?'산기슭의 거점':id==='baekje'?'강으로 이어진 거점':'들판의 거점'}</small></button>`).join('')}</div><p class="note">어느 나라를 골라도 공격력·방어력·체력은 같다.</p>`,{wide:true});
+    panel('어느 나라에 머물까?',`<p>머무는 마을은 달라도 세 나라와 가야의 역사를 모두 배우게 된다.</p><div class="ancient-country-cards">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-country="${id}">${imageTag('life-home-'+id+'-1',c.name+'의 작은 거처')}<b>${c.name}</b><small>${id==='goguryeo'?'산기슭의 거점':id==='baekje'?'강으로 이어진 거점':'들판의 거점'}</small></button>`).join('')}</div><p class="note">어느 나라를 골라도 공격력·방어력·체력은 같다.</p>`,{wide:true});
     document.querySelectorAll('[data-country]').forEach(b=>b.onclick=()=>{
       const id=b.dataset.country,c=ANCIENT_COUNTRIES[id];
       panel(c.name+'에서 시작할까?',`<p>확정하면 이 나라에 내 거처를 마련한다.<br>이후에도 다른 나라의 필수 이야기를 함께 경험한다.</p><div class="row"><button id="country-back">다시 고르기</button><button class="primary" id="country-confirm">시작하기</button></div>`);
@@ -86,8 +86,9 @@ export function createAncientUI(api) {
     if(e.type==='ancientDisplay'){display();return true;}
     if(e.type==='ancientHome') {
       if(!s.ancient.home.owned){dialogue('내 거처',['먼저 마을 도우미를 만나 보자.'],e.art);return true;}
-      panel('내 거처',`${imageTag(e.art,'나의 작은 거처','ancient-house-preview')}<p>작은 마당을 지나 집 안으로 들어간다.</p><button id="ancient-enter-home" class="primary full">들어가기</button>`);
-      $('#ancient-enter-home').onclick=()=>{travel(e.to);finishEvent('ancient:home');};return true;
+      panel('내 거처',`${imageTag(e.art,'나의 거처','ancient-house-preview')}<p>${s.ancient.home.level}단계 거처 · 밭 ${s.ancient.home.fields}칸 · 평판 ${s.ancient.home.reputation}<br>집 안에는 보관 공간과 화로, 생활 책상이 있어.<br>내 마당에서는 씨앗을 심고 작물을 수확할 수 있어.</p><div class="row"><button id="ancient-enter-home" class="primary full">집 안으로</button><button id="ancient-enter-yard">내 마당으로</button></div>`);
+      $('#ancient-enter-home').onclick=()=>{travel(e.to);finishEvent('ancient:home');};
+      $('#ancient-enter-yard').onclick=()=>travel('ancient-yard-'+s.ancient.country);return true;
     }
     if(e.type==='quiz'&&e.quiz?.startsWith('ancient-')) {
       if(q?.event!=='quiz:'+e.quiz){dialogue(e.name,['먼저 지금의 이야기 임무를 마치자.'],e.art);return true;}

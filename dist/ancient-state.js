@@ -1,14 +1,17 @@
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=44.2';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=48';
+import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=48';
 
 export const ANCIENT_EXHIBITS={}; // Register sourced culture records here with their content update.
 export const ANCIENT_EXTENSIONS=['field','workbench','storage','culture','horse'];
-export function freshAncient(){return {revision:1,country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[]}};}
+export function freshAncient(){return {revision:1,country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
 export function syncAncient(s) {
   s.ancient??=freshAncient();const a=s.ancient,p=s.progress.ancient||0;
+  ensureLife(a.home);
   a.records=ANCIENT_QUESTS.slice(0,p).map(q=>q.record).filter(Boolean);
   a.quest=ANCIENT_QUESTS[p]?.id||null;
   if(p>=16&&!a.completedChapters.includes('origins'))a.completedChapters.push('origins');
   if(p>=18)a.home.owned=true;
+  grantLifeStarter(s);
   if(p>=20){a.century??=4;a.chapter=a.century+'c';if(!a.completedChapters.includes('settlement'))a.completedChapters.push('settlement');}
   else {a.century=null;a.chapter=p>=16?'settlement':'origins';}
 }
@@ -19,7 +22,7 @@ export function validateAncient(s,items,maps) {
   if(raw===undefined||raw===null)s.ancient=freshAncient();
   else {
     if(!plain(raw)||raw.revision!==1)throw Error('고대 국가 기록을 읽을 수 없다.');
-    const a={...freshAncient(),...raw,home:{...freshAncient().home,...raw.home},maps:{...freshAncient().maps,...raw.maps}};
+    const a={...freshAncient(),...raw,home:{owned:false,storage:{},exhibits:[],extensions:[],...raw.home},maps:{...freshAncient().maps,...raw.maps}};
     if((a.country!==null&&!Object.hasOwn(ANCIENT_COUNTRIES,a.country))||!([null,4,5,6].includes(a.century))||!ANCIENT_CHAPTERS.some(c=>c.id===a.chapter)||
       !list(a.records,['goguryeo','baekje','silla','gaya'])||!list(a.carry,['trail','branch','cord'])||!list(a.completedChapters,ANCIENT_CHAPTERS.map(c=>c.id))||!plain(a.home)||typeof a.home.owned!=='boolean'||!plain(a.home.storage)||
       !list(a.home.exhibits,Object.keys(ANCIENT_EXHIBITS))||!list(a.home.extensions,ANCIENT_EXTENSIONS)||!plain(a.maps))throw Error('고대 국가의 거처나 진행 기록이 올바르지 않다.');
@@ -27,6 +30,7 @@ export function validateAncient(s,items,maps) {
     for(const century of [4,5,6])if(!list(a.maps[century],Object.keys(maps).filter(id=>id.startsWith('ancient-'))))throw Error('고대 국가 지도 기록이 올바르지 않다.');
     s.ancient=a;
   }
+  validateLife(s.ancient.home);
   const p=s.progress.ancient||0;
   if(p>=17&&!s.ancient.country)throw Error('머무는 나라 기록이 없다.');
   if(p<16&&s.ancient.country)throw Error('건국 이야기를 먼저 완료해야 한다.');
@@ -36,6 +40,7 @@ export function validateAncient(s,items,maps) {
   s.unlockedRegions=s.unlockedRegions.filter(id=>id!=='ancient');
   if(unlocked)s.unlockedRegions.push('ancient');
   if(s.map.startsWith('ancient-')&&(!unlocked||!ancientCanRestore(s,maps[s.map]))) {s.map='hq';s.x=11;s.y=10;s.mounted=false;}
+  if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const d=roomLayout(s.ancient.home.level);if(s.x>d.w-2||s.y>d.h-2||s.x<1||s.y<1){s.x=d.start.x;s.y=d.start.y;}}
 }
 function ancientCanRestore(s,m){const a=s.ancient;return m&&(s.progress.ancient||0)>=(m.entryAt||0)&&(!m.country||m.country===a.country)&&(m.theme!=='room'||a.home.owned);}
 export function ancientEventAllowed(s,q,event) {
