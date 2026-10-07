@@ -702,6 +702,10 @@
 [hidden]{display:none!important}
 .elite-enemy img{filter:sepia(.28) saturate(1.2);transform:scale(1.1)}
 
+/* At bounded map edges, reveal the player without moving the camera outside. */
+#hud .player-panel,#hud .story-hud,#hud #quest,#hud .mini-wrap,#hud .hud-buttons,#hud #dpad,#hud #interact{transition:opacity .14s ease-out}
+#hud .field-player-behind{opacity:.18}
+#hud .hud-buttons.field-player-behind,#hud #dpad.field-player-behind,#hud #interact.field-player-behind{opacity:.42}
 /* Compact game HUD. The world retains the largest share of the viewport. */
 #hud header{top:10px;left:14px;right:14px;align-items:center;gap:10px}
 #hud .player-panel{min-width:0;width:auto;max-width:430px;gap:9px;padding:5px 10px 5px 5px;border-width:2px;border-radius:11px;box-shadow:0 3px 0 #294b3820}

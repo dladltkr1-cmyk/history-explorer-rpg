@@ -42,6 +42,13 @@ for(const [width,height]of [[1363,936],[1024,768],[768,1024]]){
 for(const [id,map]of [['camera-field','nation-iron-field'],['camera-village','nation-buyeo-village'],['camera-path','nation-goguryeo-road'],['camera-room','room-buyeo-house-a']]){qa.menu();click('[data-admin-menu="interaction"]');click('[data-qa-interact="'+id+'"]');assert.equal(qa.state().map,map);assert.equal(qa.blocked(qa.state().x,qa.state().y),false);}
 // Reach and enter a real building through the unchanged interaction button, then return.
 qa.travel('nation-buyeo-village');qa.field();const house=qa.currentMap().entities.find(e=>e.to==='room-buyeo-house-a');assert.ok(house);approach(house);click('#enter-house');assert.equal(qa.state().map,'room-buyeo-house-a');clock+=40;qa.tick(clock);assert.equal(qa.camera().zoom,1);approach(qa.currentMap().entities.find(e=>e.type==='roomDoor'));assert.equal(qa.state().map,'nation-buyeo-village');clock+=40;qa.tick(clock);assert.equal(qa.camera().zoom,1.18);
+// Reproduce the observed top-left HUD overlap without moving the camera past the map edge.
+const playerPanel=document.querySelector('.player-panel');const originalRect=playerPanel.getBoundingClientRect;
+playerPanel.getBoundingClientRect=()=>({left:14,right:332,top:10,bottom:73,width:318,height:63});
+globalThis.innerWidth=1363;globalThis.innerHeight=936;qa.travel('nation-iron-field');qa.state().x=1.3;qa.state().y=1.3;qa.field();qa.draw(.04);
+assert.equal(qa.camera().x,0);assert.equal(qa.camera().y,0);assert.ok(playerPanel.classList.contains('field-player-behind'),'edge player is revealed through HUD');
+qa.menu();qa.draw(.04);assert.ok(!playerPanel.classList.contains('field-player-behind'),'menus retain full HUD opacity');qa.field();qa.state().x=11;qa.state().y=10;qa.draw(.04);assert.ok(!playerPanel.classList.contains('field-player-behind'),'HUD restored when player leaves overlap');playerPanel.getBoundingClientRect=originalRect;
+qa.travel('nation-buyeo-village');qa.field();
 const st=qa.state();let spot;for(let y=5;y<13&&!spot;y++)for(let x=6;x<16;x++)if([0,.5,1,1.5,2,2.5,3].every(dx=>!qa.blocked(x+dx,y))){spot=[x,y];break;}assert.ok(spot);const distances=[];
 for(const mounted of [false,true]){[st.x,st.y]=spot;st.mounted=mounted;st.horseParked=false;qa.field();w.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight'}));for(let n=0;n<10;n++){clock+=40;qa.tick(clock);}w.dispatchEvent(new w.KeyboardEvent('keyup',{key:'ArrowRight'}));distances.push(st.x-spot[0]);assert.equal(qa.camera().zoom,1.18);}
 assert.ok(Math.abs(distances[0]-1.4)<1e-8);assert.ok(Math.abs(distances[1]-2.24)<1e-8);click('#mount-btn');assert.equal(st.mounted,false);

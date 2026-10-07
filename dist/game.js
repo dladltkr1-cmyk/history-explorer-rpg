@@ -2437,7 +2437,19 @@ function playerSafeArea(W, H) {
   // Small landscape tablets still keep one character-sized clear corridor.
   const l = Math.min(left, W * .42), r = Math.max(right, W * .58);
   const b = Math.max(bottom, H * .48), t = Math.min(top, b - 90);
-  return safeArea = {w:W,h:H,left:l,right:r,top:t,bottom:b};
+  const panels = ['.player-panel','.story-hud','#quest','.mini-wrap','.hud-buttons','#dpad','#interact']
+    .map(selector=>{const element=$(selector);return {element,rect:element.getBoundingClientRect()};});
+  return safeArea = {w:W,h:H,left:l,right:r,top:t,bottom:b,panels};
+}
+function revealPlayerBehindHUD(safe) {
+  const x=(s.x*64-cam.x)*cam.zoom, y=(s.y*64-cam.y)*cam.zoom;
+  const width=(s.mounted&&canMount()?70:56)*cam.zoom;
+  const height=(s.mounted&&canMount()?105:75)*cam.zoom;
+  for(const {element,rect}of safe.panels||[]){
+    const overlaps=playing&&!screen&&rect.width>0&&rect.height>0&&
+      x+width/2>rect.left&&x-width/2<rect.right&&y+32*cam.zoom>rect.top&&y-height<rect.bottom;
+    element.classList.toggle('field-player-behind',overlaps);
+  }
 }
 function drawNationTerrain(m,T) {
   const poly=(pts,color)=>{ctx.fillStyle=color;ctx.beginPath();pts.forEach(([x,y],i)=>i?ctx.lineTo(x*T,y*T):ctx.moveTo(x*T,y*T));ctx.closePath();ctx.fill();};
@@ -2525,6 +2537,7 @@ function draw(dt = 0) {
   const safe = playing ? playerSafeArea(W,H) : {left:0,right:W,top:0,bottom:H};
   cam = fieldCamera.update({map:m,width:W,height:H,x:s.x,y:s.y,
     direction:playing && !screen ? cameraDirection : {x:0,y:0},dt,playing,safe});
+  revealPlayerBehindHUD(playing?safe:playerSafeArea(W,H));
   const ground = m.ground || (m.theme === 'room' ? (m.roomPalette?.border || '#514337') : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
     : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id) ? "#748664"
     : m.id.startsWith("paleo-") ? "#a89e77"
