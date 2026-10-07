@@ -1,3 +1,4 @@
+import {createFieldCamera} from './field-camera.js?v=46';
 import {parkHorse} from './horse-state.js?v=44.2';
 import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=44.2";
 import {
@@ -23,7 +24,7 @@ import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDes
 import {noteAncientVisit} from './ancient-state.js?v=44.2';
 import {createAncientUI} from './ancient-ui.js?v=44.2';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=44.2';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=46';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -98,6 +99,8 @@ let s = fresh("탐험가", "boy"),
   questPinned = false,
   questPeekTimer,
   stopFishing = null;
+const fieldCamera = createFieldCamera();
+let cameraDirection = {x:0,y:0};
 s.map = "paleo-camp";
 s.x = 11;
 s.y = 9;
@@ -233,6 +236,7 @@ function dialogue(name, lines, art = "elder", done = () => {}) {
   show();
 }
 function start(state) {
+  fieldCamera.reset();
   s = state;
   s.discoveredMaps ??= [];
   s.nationMarks ??= [];
@@ -536,6 +540,7 @@ function adminExit() {
 function adminBack() { $('#admin-back').onclick=adminPanel; }
 function adminJump(id,target=null) {
   if (!MAPS[id]) return;
+  fieldCamera.reset();
   s.unlockedRegions=REGIONS.map(r=>r.id);
   s.map=id;
   if (!s.discoveredMaps.includes(id)) s.discoveredMaps.push(id);
@@ -857,6 +862,7 @@ function travel(id, from = s.map, {fast=false} = {}) {
   }
   if (s.mounted && id === 'ancient-home-' + s.ancient?.country) parkHorse(s,{enteringHome:true});
   s.map = id;
+  fieldCamera.reset();
   if (!id.startsWith('nation-') && !(MAPS[id]?.ancient && MAPS[id].theme!=='room')) s.mounted = false;
   rollHorse(id);
   let discovery='';
@@ -2510,23 +2516,15 @@ function drawNationTerrain(m,T) {
   }
   if(m.nationVisual==='iron'&&m.id==='nation-iron-field')field(4,4,5,3);
 }
-function draw() {
+function draw(dt = 0) {
   const W = innerWidth,
     H = innerHeight,
     m = currentMap(),
     T = 64;
   ctx.imageSmoothingEnabled = false;
   const safe = playing ? playerSafeArea(W,H) : {left:0,right:W,top:0,bottom:H};
-  let usualX = Math.max(
-    0,
-    Math.min(m.w * T - W, s.x * T - W * (playing ? 0.5 : 0.65)),
-  );
-  let usualY = Math.max(0, Math.min(m.h * T - H, s.y * T - H * 0.56));
-  if (W > m.w * T) usualX = (m.w * T - W) / 2;
-  if (H > m.h * T) usualY = (m.h * T - H) / 2;
-  // Allow the camera, but never the player, past map bounds when HUD overlaps an edge.
-  cam.x = Math.max(s.x*T-safe.right, Math.min(s.x*T-safe.left, usualX));
-  cam.y = Math.max(s.y*T-safe.bottom, Math.min(s.y*T-safe.top, usualY));
+  cam = fieldCamera.update({map:m,width:W,height:H,x:s.x,y:s.y,
+    direction:playing && !screen ? cameraDirection : {x:0,y:0},dt,playing,safe});
   const ground = m.ground || (m.theme === 'room' ? (m.roomPalette?.border || '#514337') : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
     : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id) ? "#748664"
     : m.id.startsWith("paleo-") ? "#a89e77"
@@ -2540,6 +2538,7 @@ function draw() {
   ctx.fillStyle = ground;
   ctx.fillRect(0, 0, W, H);
   ctx.save();
+  ctx.scale(cam.zoom, cam.zoom);
   ctx.translate(-cam.x, -cam.y);
   ctx.fillStyle = ground;
   ctx.fillRect(0, 0, m.w*T, m.h*T);
@@ -2756,7 +2755,7 @@ function draw() {
     const fieldSize=fieldSpriteSize(e.art,e.elite);
     if(fieldSize){w=fieldSize.w;h=fieldSize.h;}
     else if (e.type === "enemy" && e.elite) { w *= 1.13; h *= 1.13; }
-    if (x + w < cam.x || x - w > cam.x + W || y < cam.y || y - h > cam.y + H)
+    if (x + w < cam.x || x - w > cam.x + cam.viewW || y < cam.y || y - h > cam.y + cam.viewH)
       continue;
     drawObjectShadow(e, x, y, w, h);
     if (isPlayer) {
@@ -2903,6 +2902,7 @@ function tick(t) {
   clock += dt;
   invuln = Math.max(0, invuln - dt);
   moving = false;
+  cameraDirection = {x:0,y:0};
   if (playing && !screen) {
     spawnClock += dt;
     if (spawnClock > 1) {
@@ -2920,6 +2920,7 @@ function tick(t) {
       let speed = ((s.mounted && canMount() ? 5.6 : 3.5) * (adminMode && s.adminSpeed ? 1.5 : 1) * dt) / (dx && dy ? Math.SQRT2 : 1);
       if (!blocked(s.x + dx * speed, s.y)) s.x += dx * speed;
       if (!blocked(s.x, s.y + dy * speed)) s.y += dy * speed;
+      cameraDirection = {x:s.x-oldX,y:s.y-oldY};
       saveClock += dt;
       if (saveClock > 3) {
         save();
@@ -2945,7 +2946,7 @@ function tick(t) {
       if (e) startBattle(e);
     }
   }
-  draw();
+  draw(dt);
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
