@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createFieldCamera,fieldZoom,FIELD_ZOOM} from '../dist/field-camera.js';
-const {MAPS}=await import('../dist/regions/index.js?v=48.1');
+const {MAPS}=await import('../dist/regions/index.js?v=49');
 const sizes=[[1363,936],[1920,1080],[1024,768],[768,1024],[1180,820]];
 for(const [width,height]of sizes)for(const map of Object.values(MAPS)){
  const camera=createFieldCamera();const zoom=fieldZoom(map,width,height);

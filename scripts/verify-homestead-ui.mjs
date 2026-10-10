@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=48.1');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=48.1');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=48.1');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=49');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=49');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=49');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 const intervals=new Map();let intervalId=0;globalThis.setInterval=(fn,ms)=>{intervals.set(++intervalId,{fn,ms});return intervalId;};globalThis.clearInterval=n=>intervals.delete(n);
@@ -25,10 +25,10 @@ const click=selector=>{const el=document.querySelector(selector);assert.ok(el,se
 function finishDialogue(){let count=0;while(document.querySelector('#next-dialogue')){assert.ok(count++<10);click('#next-dialogue');}}
 function approach(e){const st=qa.state();const spots=[[e.x-1.2,e.y],[e.x+1.2,e.y],[e.x,e.y+1.2],[e.x,e.y-1.2]];const p=spots.find(([x,y])=>!qa.blocked(x,y));assert.ok(p,'safe interaction spot '+e.id);st.x=p[0];st.y=p[1];qa.field();clock+=40;qa.tick(clock);click('#interact');}
 
-const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=48.1');
-const {HOME_LEVELS,CROPS,plotState}=await import(root+'/dist/homestead.js?v=48.1');
-const {salePrice}=await import(root+'/dist/economy.js?v=48.1');
-const {ITEMS}=await import(root+'/dist/state.js?v=48.1');
+const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=49');
+const {HOME_LEVELS,CROPS,plotState}=await import(root+'/dist/homestead.js?v=49');
+const {salePrice}=await import(root+'/dist/economy.js?v=49');
+const {ITEMS}=await import(root+'/dist/state.js?v=49');
 const initial=localStorage.getItem('history-explorer-save-v1');qa.login();
 const pulse=()=>{for(const entry of intervals.values())if(entry.ms===500)entry.fn();};
 const lifeTimers=()=>[...intervals.values()].filter(v=>v.ms===500).length;
@@ -37,14 +37,14 @@ const tab=name=>click('[data-life-tab="'+name+'"]');
 for(const [width,height]of [[1363,936],[1024,768],[768,1024]]){
  globalThis.innerWidth=width;globalThis.innerHeight=height;
  for(const [country,c]of Object.entries(ANCIENT_COUNTRIES)){
-  prepareAncientQA(qa.state(),'4c',{country});let st=qa.state();st.coins=4000;st.inventory.lumber=30;st.ancient.home.level=1;st.ancient.home.fields=2;st.ancient.home.paddies=0;st.ancient.home.plots.forEach(p=>{p.crop=null;p.plantedAt=0;});st.ancient.home.placements={'yard-1':'clayJar','room-1':'reedMat'};for(const id of Object.keys(CROPS)){st.ancient.home.seeds[id]=10;st.inventory[CROPS[id].item]=0;}
+  prepareAncientQA(qa.state(),'4c',{country});let st=qa.state();st.coins=4000;st.inventory.lumber=30;st.ancient.home.commerce.tools.sickle=true;st.ancient.home.level=1;st.ancient.home.fields=2;st.ancient.home.paddies=0;st.ancient.home.plots.forEach(p=>{p.crop=null;p.plantedAt=0;});st.ancient.home.placements={'yard-1':'clayJar','room-1':'reedMat'};for(const id of Object.keys(CROPS)){st.ancient.home.seeds[id]=10;st.inventory[CROPS[id].item]=0;}
   qa.travel(c.home);open();assert.equal(document.querySelectorAll('[data-life-plot]').length,2);assert.equal(lifeTimers(),1);
   click('[data-life-plot="field-1"]');click('[data-life-plant="millet"]');assert.equal(st.ancient.home.seeds.millet,9);assert.equal(st.ancient.home.plots[0].crop,'millet');
   click('[data-life-plot="field-1"]');assert.equal(document.querySelector('#life-pick').disabled,true);clock+=179999;pulse();assert.equal(document.querySelector('#life-pick').disabled,true);clock+=1;pulse();assert.equal(document.querySelector('#life-pick').disabled,false);click('#life-pick');assert.equal(st.inventory.millet,4);assert.equal(lifeTimers(),1);
   tab('market');assert.equal(lifeTimers(),0);assert.equal(document.querySelector('[data-life-buy-seed="ricecrop"]').disabled,true);const beforeSale=st.coins;click('[data-life-sell="millet"]');click('#life-sell-all');assert.equal(st.coins,beforeSale+12);assert.equal(st.inventory.millet,0);
   const seedBefore=st.ancient.home.seeds.millet;click('[data-life-buy-seed="millet"]');assert.equal(st.ancient.home.seeds.millet,seedBefore+1);assert.equal(st.coins,beforeSale+10);
   tab('farm');click('[data-life-plot="field-2"]');click('[data-life-plant="barnyard"]');const planted=structuredClone(st.ancient.home.plots[1]);
-  for(const level of [2,3,4]){tab('growth');const before=st.coins,lumber=st.inventory.lumber;click('#life-upgrade');click('#life-upgrade-confirm');assert.equal(st.ancient.home.level,level);assert.equal(st.coins,before-HOME_LEVELS[level].coins);assert.equal(st.inventory.lumber,lumber-HOME_LEVELS[level].lumber);assert.deepEqual(st.ancient.home.plots[1],planted);assert.equal(qa.currentMap().w,HOME_LEVELS[level].room[0]);assert.equal(qa.blocked(st.x,st.y),false);tab('farm');assert.equal(document.querySelectorAll('[data-life-plot]').length,HOME_LEVELS[level].fields);}
+  for(const level of [2,3,4]){st.ancient.home.reputation=level===2?8:level===3?22:45;st.ancient.home.commerce.completed=level===2?0:level===3?4:10;tab('growth');const before=st.coins,lumber=st.inventory.lumber;click('#life-upgrade');click('#life-upgrade-confirm');assert.equal(st.ancient.home.level,level);assert.equal(st.coins,before-HOME_LEVELS[level].coins);assert.equal(st.inventory.lumber,lumber-HOME_LEVELS[level].lumber);assert.deepEqual(st.ancient.home.plots[1],planted);assert.equal(qa.currentMap().w,HOME_LEVELS[level].room[0]);assert.equal(qa.blocked(st.x,st.y),false);tab('farm');assert.equal(document.querySelectorAll('[data-life-plot]').length,HOME_LEVELS[level].fields);}
   tab('growth');click('#life-open-paddy');click('#life-open-paddy');assert.equal(st.ancient.home.paddies,2);tab('farm');assert.equal(document.querySelectorAll('[data-life-plot]').length,10);
   for(const [i,[id,crop]]of Object.entries(Object.entries(CROPS))){const target=crop.kind==='paddy'?'paddy-1':'field-'+(Number(i)+3);click('[data-life-plot="'+target+'"]');click('[data-life-plant="'+id+'"]');}
   const growing=structuredClone(st.ancient.home.plots);clock+=8*60000;qa.start(validate(structuredClone(st)));st=qa.state();assert.deepEqual(st.ancient.home.plots,growing);open();pulse();assert.ok(document.querySelectorAll('.life-plot.ready').length>=5);click('#life-harvest-all');for(const crop of Object.values(CROPS))assert.ok(st.inventory[crop.item]>=4);assert.ok(st.ancient.home.reputation>=7);

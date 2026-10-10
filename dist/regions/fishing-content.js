@@ -1,7 +1,7 @@
 import {entity,person,exit} from './common.js';
 import {inFishingRiver,pathDistance} from '../waterside.js?v=44.2';
 import {FISHING_MATERIALS} from '../fishing.js?v=44.2';
-import {prepareAncientQA} from '../ancient-state.js?v=48.1';
+import {prepareAncientQA} from '../ancient-state.js?v=49';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [
@@ -29,7 +29,7 @@ export const FISHING_TEST_MODES = [
   {id:'failure-rest',name:'낚시 실패 후 재도전',rest:false},
 ];
 export const INTERACTION_QA = [
-  {id:'homestead',name:'내 거처 · 농사/성장/꾸미기 시험',map:'ancient-home-baekje',target:'life-board',action:'homestead'},
+  {id:'homestead',name:'내 거처 · 농사/부탁/도구/수레/꾸미기 시험',map:'ancient-home-baekje',target:'life-board',action:'homestead'},
   {id:'camera-field',name:'카메라 · 넓은 들판',map:'nation-iron-field',target:null,action:'camera'},
   {id:'camera-village',name:'카메라 · 작은 마을',map:'nation-buyeo-village',target:null,action:'camera'},
   {id:'camera-path',name:'카메라 · 좁은 산길',map:'nation-goguryeo-road',target:null,action:'camera'},

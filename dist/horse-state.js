@@ -11,7 +11,7 @@ export function parkHorse(s, { enteringHome = false } = {}) {
   return true;
 }
 export function retrieveHorse(s) {
-  if (!hasHorseHome(s) || !s.horseParked || s.map !== 'ancient-village-' + s.ancient.country) return false;
+  if (s.ancient?.home?.commerce?.cart.active || !hasHorseHome(s) || !s.horseParked || s.map !== 'ancient-village-' + s.ancient.country) return false;
   s.horseParked = false;
   s.mounted = true;
   s.horseField = null;

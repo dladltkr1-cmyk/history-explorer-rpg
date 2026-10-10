@@ -2,8 +2,8 @@ import prehistoric from './prehistoric.js';import gojoseon from './gojoseon.js';
 import {paleolithic,bronze,expand} from './expansion.js';
 import {addExploration} from './exploration.js?v=44.2';
 import {growth} from './nations.js?v=37.1';
-import {addFishing} from './fishing-content.js?v=48.1';
-import {ancient} from './ancient.js?v=48.1';
+import {addFishing} from './fishing-content.js?v=49';
+import {ancient} from './ancient.js?v=49';
 expand(prehistoric,gojoseon);
 // Keep each era's story objects and optional activities in their own period.
 const neoCave=prehistoric.maps.find(m=>m.id==='pre-cave');
@@ -38,3 +38,6 @@ export const HUB=map('hq','탐험 본부','hq',[entity('era-gate','gate',12,5,'�
 export const MAPS=Object.fromEntries([HUB,...REGIONS.flatMap(r=>r.maps)].map(m=>[m.id,m]));
 export const ARTIFACTS=REGIONS.flatMap(r=>r.artifacts);
 export const regionOf=mapId=>REGIONS.find(r=>r.maps.some(m=>m.id===mapId));
+
+// Exit labels name their destination rather than suggesting a conflicting screen direction.
+for(const m of Object.values(MAPS))for(const e of m.entities){if(e.type==='exit'&&/[동서남북]쪽/.test(e.name)&&MAPS[e.to])e.name=MAPS[e.to].name.replace(/[동서남북]쪽\s*/g,'').replace(/ ·.*$/,'')+'으로';}

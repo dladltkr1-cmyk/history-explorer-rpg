@@ -1,3 +1,4 @@
+import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=49';
 // Shared life content: no quest/map initialization and no wall-clock mutation on render.
 export const CROPS = {
   millet:{name:'조',item:'millet',minutes:3,sale:3,seed:2,yield:4,kind:'field',color:'#c8ab57'},
@@ -8,11 +9,17 @@ export const CROPS = {
 };
 export const HOME_LEVELS = {
   1:{name:'작은 거처',fields:2,paddies:0,room:[10,8],yard:[14,12],slots:3,coins:0,lumber:0,house:[150,132]},
-  2:{name:'살림이 늘어난 집',fields:4,paddies:0,room:[12,9],yard:[16,13],slots:5,coins:90,lumber:2,house:[180,150]},
-  3:{name:'마당이 넓어진 집',fields:6,paddies:1,room:[14,10],yard:[20,14],slots:8,coins:240,lumber:4,house:[214,176]},
-  4:{name:'넉넉한 생활 거처',fields:8,paddies:2,room:[16,12],yard:[22,16],slots:12,coins:480,lumber:6,house:[248,198]},
+  2:{name:'살림이 늘어난 집',fields:4,paddies:0,room:[12,9],yard:[16,13],slots:5,coins:180,lumber:4,house:[180,150]},
+  3:{name:'마당이 넓어진 집',fields:6,paddies:1,room:[14,10],yard:[20,14],slots:8,coins:420,lumber:8,house:[214,176]},
+  4:{name:'넉넉한 생활 거처',fields:8,paddies:2,room:[16,12],yard:[22,16],slots:12,coins:850,lumber:14,house:[248,198]},
 };
 export const DECOR = {
+  fineBedding:{name:'따뜻한 누비 침구',price:75,area:'room',art:'life-fineBedding',reputation:10,floor:true},
+  grainRack:{name:'곡식 진열대',price:58,area:'both',art:'life-grainRack'},
+  woodShelf:{name:'살림 목재 선반',price:68,area:'room',art:'life-woodShelf'},
+  wovenScreen:{name:'무늬 짠 발',price:64,area:'room',art:'life-wovenScreen',wall:true},
+  yardArbor:{name:'작은 마당 그늘막',price:110,area:'yard',art:'life-yardArbor',reputation:30},
+  diningSet:{name:'정돈된 식사 자리',price:82,area:'room',art:'life-diningSet',floor:true},
   clayJar:{name:'흙빛 항아리',price:12,area:'both',art:'life-clayJar'},
   stripedJar:{name:'줄무늬 항아리',price:18,area:'both',art:'life-stripedJar'},
   darkJar:{name:'짙은 항아리',price:22,area:'both',art:'life-darkJar'},
@@ -49,8 +56,11 @@ export const HOME_PALETTES = {
 const int=(v,min=0,max=99999)=>Number.isInteger(v)&&v>=min&&v<=max;
 const plain=v=>v&&typeof v==='object'&&!Array.isArray(v);
 const counts=keys=>Object.fromEntries(keys.map(k=>[k,0]));
-export function freshLife(){return {lifeRevision:1,level:1,fields:2,paddies:0,seeds:counts(Object.keys(CROPS)),plots:PLOT_IDS.map(id=>({id,crop:null,plantedAt:0})),decorations:counts(Object.keys(DECOR)),placements:{},reputation:0,harvested:counts(Object.keys(CROPS)),starterGranted:false};}
+export function freshLife(){return {lifeRevision:2,commerce:freshCommerce(),level:1,fields:2,paddies:0,seeds:counts(Object.keys(CROPS)),plots:PLOT_IDS.map(id=>({id,crop:null,plantedAt:0})),decorations:counts(Object.keys(DECOR)),placements:{},reputation:0,harvested:counts(Object.keys(CROPS)),starterGranted:false};}
 export function ensureLife(home){
+  const old=home.lifeRevision===1;
+  if(home.commerce===undefined){home.commerce=freshCommerce();home.commerce.legacyBulkHarvest=old&&home.starterGranted===true;}
+  if(old){home.lifeRevision=2;home.reputation=Math.min(100,home.reputation||0);}
   const defaults=freshLife();for(const [key,value]of Object.entries(defaults))if(home[key]===undefined)home[key]=structuredClone(value);
   if(home.fields===undefined)home.fields=HOME_LEVELS[home.level]?.fields||2;
   return home;
@@ -60,7 +70,7 @@ export function validateLife(home){
   const legacy=home.lifeRevision===undefined;ensureLife(home);
   if(legacy&&home.level!==1)home.fields=HOME_LEVELS[home.level]?.fields||2;
   const d=HOME_LEVELS[home.level];
-  if(home.lifeRevision!==1||!int(home.level,1,4)||!d||!int(home.fields,2,d.fields)||!int(home.paddies,0,d.paddies)||!int(home.reputation,0,999999)||typeof home.starterGranted!=='boolean')throw Error('거처 성장 기록이 올바르지 않다.');
+  if(home.lifeRevision!==2||!int(home.level,1,4)||!d||!int(home.fields,2,d.fields)||!int(home.paddies,0,d.paddies)||!int(home.reputation,0,100)||typeof home.starterGranted!=='boolean')throw Error('거처 성장 기록이 올바르지 않다.');
   for(const [key,allowed]of [['seeds',CROPS],['harvested',CROPS],['decorations',DECOR]]){
     if(!plain(home[key])||Object.keys(home[key]).some(id=>!Object.hasOwn(allowed,id)))throw Error('거처 물품 기록이 올바르지 않다.');
     for(const id of Object.keys(allowed)){home[key][id]??=0;if(!int(home[key][id]))throw Error('거처 물품 개수가 올바르지 않다.');}
@@ -71,6 +81,7 @@ export function validateLife(home){
       (p.crop!==null&&(!CROPS[p.crop]||CROPS[p.crop].kind!==p.id.split('-')[0]||p.plantedAt<=0))||(p.crop===null&&p.plantedAt!==0))throw Error('작물 재배 기록이 올바르지 않다.');ids.add(p.id);
   }
   if(!plain(home.placements))throw Error('꾸미기 배치 기록이 올바르지 않다.');
+  validateCommerce(home);
   const used={};for(const [slot,id]of Object.entries(home.placements)){
     const spot=DECOR_SLOTS.find(v=>v.id===slot),item=DECOR[id];
     if(!spot||!item||DECOR_SLOTS.indexOf(spot)>=d.slots||(item.area!=='both'&&item.area!==spot.area)||(item.wall&&!spot.wall))throw Error('꾸미기 위치가 올바르지 않다.');
@@ -101,7 +112,7 @@ export function harvestCrop(s,plotId,now=Date.now()){
   if(!p||plotState(p,now).status!=='ready')return null;const id=p.crop,c=CROPS[id];
   if((s.inventory[c.item]||0)+c.yield>99999||h.harvested[id]+c.yield>99999)return null;
   s.inventory[c.item]=(s.inventory[c.item]||0)+c.yield;
-  if(Object.values(h.harvested).every(n=>n===0))h.reputation=Math.min(999999,h.reputation+1);
+  if(Object.values(h.harvested).every(n=>n===0))addReputation(h,1);
   h.harvested[id]+=c.yield;p.crop=null;p.plantedAt=0;return {id,item:c.item,count:c.yield};
 }
 export function buyLife(s,type,id,count=1){
@@ -109,7 +120,7 @@ export function buyLife(s,type,id,count=1){
   const source=type==='seed'?CROPS:type==='decor'?DECOR:null;
   const item=source?.[id],price=type==='seed'?item?.seed:item?.price;
   if(type==='seed'&&id==='ricecrop'&&!h.paddies)return false;
-  if(!item||s.coins<price*count)return false;const inv=type==='seed'?h.seeds:h.decorations;
+  if(!item||(item.reputation&&h.reputation<item.reputation)||s.coins<price*count)return false;const inv=type==='seed'?h.seeds:h.decorations;
   if((inv[id]||0)+count>99999)return false;s.coins-=price*count;inv[id]=(inv[id]||0)+count;return true;
 }
 export function buyLumber(s,count=1){
@@ -118,8 +129,8 @@ export function buyLumber(s,count=1){
 }
 export function upgradeHome(s){
   if(!atHome(s))return false;const h=s.ancient.home,d=HOME_LEVELS[h.level+1];
-  if(!d||s.coins<d.coins||(s.inventory.lumber||0)<d.lumber)return false;
-  s.coins-=d.coins;s.inventory.lumber-=d.lumber;h.level++;h.fields=d.fields;h.reputation=Math.min(999999,h.reputation+2);return true;
+  if(!d||!canGrow(s)||s.coins<d.coins||(s.inventory.lumber||0)<d.lumber)return false;
+  s.coins-=d.coins;s.inventory.lumber-=d.lumber;h.level++;h.fields=d.fields;addReputation(h,2);return true;
 }
 export function openPaddy(s){
   if(!atHome(s))return false;const h=s.ancient.home,max=HOME_LEVELS[h.level].paddies,price=h.paddies?45:30;
@@ -144,4 +155,10 @@ export function decorPosition(slot,level){const [w,h]=HOME_LEVELS[level].room;re
 export function setLifeLevel(home,level){
   if(!HOME_LEVELS[level])return false;home.level=level;home.fields=HOME_LEVELS[level].fields;home.paddies=Math.min(home.paddies,HOME_LEVELS[level].paddies);
   for(const id of Object.keys(home.placements))if(!DECOR_SLOTS.slice(0,HOME_LEVELS[level].slots).some(v=>v.id===id))delete home.placements[id];return true;
+}
+
+export function plantBatch(s,ids,cropId,now=Date.now()) {
+ const h=s.ancient?.home,c=CROPS[cropId];if(!atHome(s)||!h.commerce.tools.seedBag||!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length||!c||h.seeds[cropId]<ids.length||!Number.isFinite(now)||now<=0)return false;
+ const plots=ids.map(id=>activePlots(h).find(p=>p.id===id));if(plots.some(p=>!p||p.crop||p.id.split('-')[0]!==c.kind))return false;
+ for(const id of ids)plantCrop(s,id,cropId,now);return true;
 }

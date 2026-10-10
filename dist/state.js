@@ -1,10 +1,10 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=48.1";
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=49";
 import { FISHING_ITEMS } from './fishing.js?v=44.2';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
-import {ancientQuest} from './regions/ancient.js?v=48.1';
-import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=48.1';
-import {CROPS} from './homestead.js?v=48.1';
+import {ancientQuest} from './regions/ancient.js?v=49';
+import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=49';
+import {CROPS} from './homestead.js?v=49';
 export const MAX_LEVEL = 10,
   KEY = "history-explorer-save-v1";
 export const ITEMS = {

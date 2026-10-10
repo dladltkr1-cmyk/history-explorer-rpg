@@ -1,5 +1,5 @@
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=48.1';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=49';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -91,7 +91,7 @@ const maps=[
     story('ancient-g-trace',6,8,'새들이 감싼 흔적','ancientEgg',['[건국 이야기] 새가 알을 지켰다는 이야기가 전해진다.','흔적을 살펴보고 기록해 보자.']),
     king('king-jumong',11,6,'jumong',['옛사람들은 주몽이 알에서 태어나 활을 잘 쏘았다는 이야기를 전했어.','주몽은 졸본에 고구려를 세운 인물로 알려져 있어.','동물과 하늘의 도움을 이야기하며 왕을 특별하고 신성하게 나타내 나라의 시작을 설명했지.']),
     story('ancient-g-place',17,11,'산 아래의 터','ancientMarker',['이곳은 이야기 속 졸본의 터다.','주몽과 졸본을 함께 기록했다.']),
-    exit('ancient-river-door',21,9,'남쪽으로 이어진 길','ancient-origin-river'),
+    exit('ancient-river-door',21,9,'큰 강의 길로','ancient-origin-river'),
     entity('ancient-n-rock','scenery',16,4,'산기슭 바위',{art:'rock',solid:true}),
   ],{entryAt:1,ground:'#8a9c81'}),
   place('ancient-origin-river','큰 강의 길 · 건국 이야기','ancient-river',[
@@ -99,14 +99,14 @@ const maps=[
     story('ancient-b-trail',6,10,'일행의 길 표식','ancientMarker',['온조 일행이 고구려에서 남쪽으로 내려왔다는 이야기가 전해진다.','길 표식을 챙겨 강가에서 새 터를 찾아보자.']),
     story('ancient-b-water',19,7,'새 터를 보는 자리','ancientMarker',['넓은 강과 이어진 길이 보인다.','온조가 백제를 세운 한강 유역을 살펴보았다.']),
     king('king-onjo',12,12,'onjo',['새 터를 살폈구나. 길 표식을 전해 줘서 고맙다.','온조가 고구려에서 내려와 한강 유역에 백제를 세웠다는 이야기가 전해져.']),
-    exit('ancient-east-door',12,15,'동쪽 들판','ancient-origin-east'),
+    exit('ancient-east-door',12,15,'들판의 건국 이야기로','ancient-origin-east'),
   ],{...ANCIENT_HAN_TERRAIN,entryAt:4}),
   place('ancient-origin-east','동쪽 들판 · 건국 이야기','ancient-plain',[
     exit('ancient-east-back',12,2,'큰 강의 길','ancient-origin-river'),
     story('ancient-s-trace',7,7,'우물 곁의 흔적','ancientEgg',['[건국 이야기] 옛사람들은 특별한 알이 나타났다는 이야기를 전했어.','이 장면은 확인된 출생 사실이 아니라 건국 이야기다.']),
     king('king-hyeokgeose',13,5,'hyeokgeose',['옛사람들은 박혁거세가 알에서 태어났다는 이야기를 전했어.','박혁거세는 경주 지역에 신라를 세운 인물로 알려져 있어.']),
     story('ancient-s-place',17,11,'들판의 터','ancientMarker',['이야기 속 경주 지역의 터다.','박혁거세와 경주를 함께 기록했다.']),
-    exit('ancient-south-door',21,9,'남쪽 모임 자리','ancient-origin-south'),
+    exit('ancient-south-door',21,9,'모임 자리로','ancient-origin-south'),
     entity('ancient-well','scenery',6,5,'우물',{art:'ancientWell',solid:true}),
   ],{entryAt:7}),
   place('ancient-origin-south','남쪽 모임 자리 · 건국 이야기','ancient-plain',[
@@ -124,6 +124,8 @@ for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
     story('ancient-helper',10,8,'마을 도우미',c.helperArt,[c.welcome,'씨앗과 목재, 작은 살림을 준비했어. 마당에서 심고, 돌아와 수확해 보렴.','집 안 생활 책상에서 씨앗을 사고 집을 키울 수 있어. 이야기 책상도 그대로야.']),
     entity('ancient-own-home','ancientHome',6,7,'내 거처',{art:c.art,solid:true,to:c.home}),
     entity('ancient-horse-post','horseStable',7.8,9.8,'말 쉼터',{art:'ancientHorsePost'}),
+    entity('life-request-board','lifeRequests',11,11,'마을 부탁 게시판',{art:'life-requestBoard'}),
+    entity('life-carpenter','lifeCarpenter',19,11,'마을 목수',{art:c.helperArt,actor:true}),
     entity('ancient-village-house','scenery',17,5,'이웃의 집',{art:'ancientVillageHouse',solid:true}),
     entity('ancient-fire-'+id,'rest',14,11,'마을 화로',{art:'campfire'}),
     entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:id==='goguryeo'?'elder':'farmer'}),
@@ -155,6 +157,8 @@ maps.push(place('ancient-han','한강 유역의 강가','ancient-river',[
   story('ancient-han-sign',8,6,'강가의 표식','ancientMarker',[],{centuryState:'sign'}),
   person('ancient-han-resident',13,9,'강가 사람',[],'ancientHelperRiver',{centuryState:'resident'}),
   entity('ancient-han-shed','scenery',16,4,'강가 보관채',{art:'ancientShed',solid:true,centuryState:'building'}),
+  entity('life-han-delivery','lifeDelivery',14,7,'나루에서 받는 사람',{art:'ancientHelperRiver',actor:true}),
+  entity('life-han-workshop','lifeDelivery',17,7.5,'작업장에서 받는 사람',{art:'ancientHelperPlain',actor:true}),
   entity('ancient-han-fire','rest',10,12,'강가의 화로',{art:'campfire'}),
   entity('ancient-han-berries','berry',6,13,'열매',{art:'berries'}),
   foe('ancient-han-boar',16,13,'boar'),
@@ -166,14 +170,14 @@ export function ancientWorld(base,s) {
   const h=a?.home;
   const homeArt='life-home-'+a?.country+'-'+(h?.level||1);
   if(base.id===c?.home){
-    const layout=roomLayout(h.level),props=base.entities.map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1]}));
+    const layout=roomLayout(h.level),props=base.entities.map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1],...(e.id==='ancient-home-fire'&&h.commerce.tools.hearth?{art:'life-hearth'}:{})}));
     return {...base,...layout,name:'내 거처 · '+c.name+' · '+h.level+'단계',entities:[...props,...lifeDecor(h,'room')],obstacles:[]};
   }
   if(base.id==='ancient-yard-'+a?.country){
     return {...base,lifeYard:true,name:'내 마당 · '+c.name+' · '+h.level+'단계',entities:[...base.entities.map(e=>e.type==='ancientHome'?{...e,art:homeArt,lifeStage:h.level}:e),
       ...activePlots(h).map(p=>{const [x,y]=plotPosition(p.id),state=plotState(p);return {id:'life-'+p.id,type:'farmPlot',plotId:p.id,x,y,name:(p.id.startsWith('paddy')?'논 ':'밭 ')+p.id.split('-')[1],art:p.crop?'life-'+(state.status==='ready'?'ripe':'growing')+'-'+p.crop:'life-empty-'+p.id.split('-')[0],ready:state.status==='ready'};}),
       ...(h.level>=2?[entity('life-workbench','homestead',17,8,'작업대',{art:'life-workbench'})]:[]),
-      ...(h.level>=3?[entity('life-cart','roomProp',20,9,'수레 자리',{art:'life-cart'})]:[]),...lifeDecor(h,'yard')],};
+      ...(h.level>=3?[entity('life-cart','lifeCarpenter',20,9,h.commerce.cart.owned?'내 수레':'수레 자리',{art:h.commerce.cart.owned?'life-cart-empty':'life-cart-plan'})]:[]),...lifeDecor(h,'yard')],};
   }
   if(base.id===c?.village){const entities=base.entities.map(e=>e.type==='ancientHome'?{...e,art:homeArt,lifeStage:h.level}:e);
     if(h.owned&&s.horseUnlocked&&s.horseParked)entities.push({id:'ancient-my-horse',type:'parkedHorse',x:7.8,y:9.5,name:'내 말',art:'horseLeftIdle'});
@@ -188,7 +192,7 @@ export function ancientWorld(base,s) {
     return e;
   })};
 }
-function lifeDecor(home,area){return Object.entries(home.placements).flatMap(([slot,id])=>{const spot=DECOR_SLOTS.find(v=>v.id===slot);if(spot?.area!==area)return [];const [x,y]=decorPosition(spot,home.level);return [{id:'life-decor-'+slot,type:'lifeDecor',x,y,name:DECOR[id].name,art:DECOR[id].art,floor:id.endsWith('Mat'),wall:['wallWeave','dyedCloth'].includes(id)}];});}
+function lifeDecor(home,area){return Object.entries(home.placements).flatMap(([slot,id])=>{const spot=DECOR_SLOTS.find(v=>v.id===slot);if(spot?.area!==area)return [];const [x,y]=decorPosition(spot,home.level);return [{id:'life-decor-'+slot,type:'lifeDecor',x,y,name:DECOR[id].name,art:DECOR[id].art,floor:id.endsWith('Mat')||DECOR[id].floor,wall:DECOR[id].wall}];});}
 export function ancientQuest(q,s) {
   if(!q)return null;
   const c=ANCIENT_COUNTRIES[s.ancient?.country];
