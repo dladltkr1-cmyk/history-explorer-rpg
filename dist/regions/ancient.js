@@ -1,5 +1,6 @@
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=50';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=49';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=50';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -121,16 +122,28 @@ const maps=[
 ];
 for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
   maps.push(place(c.village,c.name+'의 거점 마을','ancient-'+(id==='goguryeo'?'north':id==='baekje'?'river':'plain'),[
-    story('ancient-helper',10,8,'마을 도우미',c.helperArt,[c.welcome,'씨앗과 목재, 작은 살림을 준비했어. 마당에서 심고, 돌아와 수확해 보렴.','집 안 생활 책상에서 씨앗을 사고 집을 키울 수 있어. 이야기 책상도 그대로야.']),
+    story('ancient-helper',10,8,'마을 도우미',c.helperArt,[c.welcome,'씨앗과 목재, 작은 살림을 준비했어. 마당에서 심고, 돌아와 수확해 보렴.','마을 북동쪽 상점가에서 씨앗과 도구를 마련하렴. 집 안에서는 밭과 살림을 관리할 수 있어.']),
     entity('ancient-own-home','ancientHome',6,7,'내 거처',{art:c.art,solid:true,to:c.home}),
     entity('ancient-horse-post','horseStable',7.8,9.8,'말 쉼터',{art:'ancientHorsePost'}),
     entity('life-request-board','lifeRequests',11,11,'마을 부탁 게시판',{art:'life-requestBoard'}),
-    entity('life-carpenter','lifeCarpenter',19,11,'마을 목수',{art:c.helperArt,actor:true}),
+    ...Object.entries(LIFE_SHOPS).map(([kind,d])=>entity(shopDoor(kind),'house',...d.at,d.name,{art:'shop-'+id+'-'+kind,solid:true,to:shopMap(id,kind),shopKind:kind,footprint:[1.3,.7]})),
+    entity('life-shop-sign','lifeShopSign',16,8.4,'상점가 안내',{art:'shop-sign'}),
+    ...WOOD_SPOTS.map(([x,y],n)=>entity(woodId(id,n+1),'lifeWood',x,y,'떨어진 목재',{art:'shop-wood-pile'})),
     entity('ancient-village-house','scenery',17,5,'이웃의 집',{art:'ancientVillageHouse',solid:true}),
     entity('ancient-fire-'+id,'rest',14,11,'마을 화로',{art:'campfire'}),
     entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:id==='goguryeo'?'elder':'farmer'}),
     exit('ancient-han-door-'+id,21,9,'강가로','ancient-han'),exit('ancient-hq-'+id,11,15,'탐험 본부','hq'),
   ],{entryAt:17,country:id,ground:c.ground,trees:id==='goguryeo'?[[3,3],[3,12],[18,3],[19,14],[15,3]]:[[3,3],[3,13],[20,3],[20,14]]}));
+  for(const [kind,d]of Object.entries(LIFE_SHOPS)){
+    const store=place(shopMap(id,kind),c.name+' · '+d.name,'room',[
+      exit('life-shop-exit',5,6.4,'상점가로',c.village),
+      entity(kind==='wood'?'life-carpenter':'life-merchant-'+kind,'lifeMerchant',SHOP_MERCHANT.x,SHOP_MERCHANT.y,d.merchant,{art:'shop-merchant-'+kind,actor:true,shopKind:kind}),
+      entity('life-shop-counter','roomProp',5,2.8,'진열대',{art:'shop-counter-'+kind}),
+      entity('life-shop-left','roomProp',2.1,4.4,'가게 물품',{art:'shop-prop-'+kind}),
+      entity('life-shop-right','roomProp',7.8,3.8,'작업과 진열',{art:'shop-prop-'+kind}),
+    ],{country:id,entryAt:18,shopKind:kind,roomPalette:{border:'#574c3e',floor:HOME_PALETTES[id].wall?[HOME_PALETTES[id].wall,'#c7b18c','#bca57f']:['#c7b18c']}});
+    Object.assign(store,{w:10,h:8,start:{x:6.3,y:5.2},obstacles:[],returnTo:{map:c.village,x:d.at[0],y:d.at[1]+1.0}});maps.push(store);
+  }
   const room=place(c.home,'내 거처 · '+c.name,'room',[
     exit('ancient-home-exit',11,15,'마을로',c.village),
     entity('ancient-storage','ancientStorage',6,6,'보관 공간',{art:'roomShelf'}),
@@ -179,7 +192,7 @@ export function ancientWorld(base,s) {
       ...(h.level>=2?[entity('life-workbench','homestead',17,8,'작업대',{art:'life-workbench'})]:[]),
       ...(h.level>=3?[entity('life-cart','lifeCarpenter',20,9,h.commerce.cart.owned?'내 수레':'수레 자리',{art:h.commerce.cart.owned?'life-cart-empty':'life-cart-plan'})]:[]),...lifeDecor(h,'yard')],};
   }
-  if(base.id===c?.village){const entities=base.entities.map(e=>e.type==='ancientHome'?{...e,art:homeArt,lifeStage:h.level}:e);
+  if(base.id===c?.village){const entities=base.entities.map(e=>e.type==='ancientHome'?{...e,art:homeArt,lifeStage:h.level}:e.type==='lifeWood'?{...e,art:woodReady(s,e.id)?'shop-wood-pile':'shop-wood-empty',ready:woodReady(s,e.id)}:e);
     if(h.owned&&s.horseUnlocked&&s.horseParked)entities.push({id:'ancient-my-horse',type:'parkedHorse',x:7.8,y:9.5,name:'내 말',art:'horseLeftIdle'});
     return {...base,entities};
   }

@@ -30,3 +30,5 @@
 #defeat-result{position:absolute;z-index:3;left:50%;top:50%;transform:translate(-50%,-42%);width:min(430px,88vw);padding:30px;background:#fffdf1;color:#17383b;border:3px solid #efe7c9;border-radius:20px;text-align:center;opacity:0;transition:opacity .35s ease,transform .35s ease;pointer-events:none}
 #defeat.result #defeat-result{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}#defeat-result h2{margin:0 0 12px;font-size:28px}#defeat-result p{font-size:20px;margin:0 0 24px;color:#6b5742}#defeat-result button{width:100%}
 @media(max-width:760px){#intro-skip{right:12px;top:12px;font-size:13px}.intro-scene-1 #intro-player{left:14%}.intro-scene-2 #intro-player{left:23%}#intro-caption{bottom:8%;padding:13px 21px}}
+
+.life-bundle-buttons{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.life-bundle-buttons button{min-height:44px;flex:1 1 95px}.life-shop-grid article>div{min-width:0}.life-shop-grid small{overflow-wrap:anywhere}

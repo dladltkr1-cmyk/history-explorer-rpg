@@ -1,4 +1,5 @@
-import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=49';
+import {atLifeShop} from './life-shops.js?v=50';
+import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=50';
 // Shared life content: no quest/map initialization and no wall-clock mutation on render.
 export const CROPS = {
   millet:{name:'조',item:'millet',minutes:3,sale:3,seed:2,yield:4,kind:'field',color:'#c8ab57'},
@@ -116,7 +117,7 @@ export function harvestCrop(s,plotId,now=Date.now()){
   h.harvested[id]+=c.yield;p.crop=null;p.plantedAt=0;return {id,item:c.item,count:c.yield};
 }
 export function buyLife(s,type,id,count=1){
-  if(!atHome(s)||!int(count,1,10))return false;const h=s.ancient.home;
+  if(!atLifeShop(s,type==='seed'?'seed':type==='decor'?'decor':'')||!int(count,1,10))return false;const h=s.ancient.home;
   const source=type==='seed'?CROPS:type==='decor'?DECOR:null;
   const item=source?.[id],price=type==='seed'?item?.seed:item?.price;
   if(type==='seed'&&id==='ricecrop'&&!h.paddies)return false;
@@ -124,16 +125,16 @@ export function buyLife(s,type,id,count=1){
   if((inv[id]||0)+count>99999)return false;s.coins-=price*count;inv[id]=(inv[id]||0)+count;return true;
 }
 export function buyLumber(s,count=1){
-  if(!atHome(s)||!int(count,1,10)||s.coins<count*8||(s.inventory.lumber||0)+count>99999)return false;
+  if(!atLifeShop(s,'wood')||!int(count,1,10)||s.coins<count*8||(s.inventory.lumber||0)+count>99999)return false;
   s.coins-=count*8;s.inventory.lumber=(s.inventory.lumber||0)+count;return true;
 }
 export function upgradeHome(s){
-  if(!atHome(s))return false;const h=s.ancient.home,d=HOME_LEVELS[h.level+1];
+  if(!atLifeShop(s,'wood'))return false;const h=s.ancient.home,d=HOME_LEVELS[h.level+1];
   if(!d||!canGrow(s)||s.coins<d.coins||(s.inventory.lumber||0)<d.lumber)return false;
   s.coins-=d.coins;s.inventory.lumber-=d.lumber;h.level++;h.fields=d.fields;addReputation(h,2);return true;
 }
 export function openPaddy(s){
-  if(!atHome(s))return false;const h=s.ancient.home,max=HOME_LEVELS[h.level].paddies,price=h.paddies?45:30;
+  if(!atLifeShop(s,'wood'))return false;const h=s.ancient.home,max=HOME_LEVELS[h.level].paddies,price=h.paddies?45:30;
   if(h.paddies>=max||s.coins<price)return false;s.coins-=price;h.paddies++;return true;
 }
 export function placeDecor(s,slot,id){

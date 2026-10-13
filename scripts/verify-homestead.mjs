@@ -1,14 +1,17 @@
+import {shopMap} from '../dist/life-shops.js?v=50';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 globalThis.Image=class{set src(v){}get complete(){return false;}};
-const {fresh,validate,ITEMS,abilities}=await import('../dist/state.js?v=49');
-import {MAPS,REGIONS} from '../dist/regions/index.js?v=49';
-import {ANCIENT_COUNTRIES,ancientWorld} from '../dist/regions/ancient.js?v=49';
-import {prepareAncientQA,setAncientCentury} from '../dist/ancient-state.js?v=49';
-import {CROPS,DECOR,DECOR_SLOTS,HOME_LEVELS,activePlots,plotState,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,craftDecor,meetsLifeRequirements,setLifeLevel,roomLayout} from '../dist/homestead.js?v=49';
-import {salePrice,sellItem} from '../dist/economy.js?v=49';
-import {ASSETS} from '../dist/assets.js?v=49';
+const {fresh,validate,ITEMS,abilities}=await import('../dist/state.js?v=50');
+import {MAPS,REGIONS} from '../dist/regions/index.js?v=50';
+import {ANCIENT_COUNTRIES,ancientWorld} from '../dist/regions/ancient.js?v=50';
+import {prepareAncientQA,setAncientCentury} from '../dist/ancient-state.js?v=50';
+import {CROPS,DECOR,DECOR_SLOTS,HOME_LEVELS,activePlots,plotState,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,craftDecor,meetsLifeRequirements,setLifeLevel,roomLayout} from '../dist/homestead.js?v=50';
+import {salePrice,sellItem} from '../dist/economy.js?v=50';
+import {ASSETS} from '../dist/assets.js?v=50';
 const trial=country=>{const s=fresh('생활 검수','boy');s.completedRegions=REGIONS.slice(0,5).map(r=>r.id);s.unlockedRegions=REGIONS.map(r=>r.id);prepareAncientQA(s,'4c',{country});s.map=ANCIENT_COUNTRIES[country].home;return s;};
+const visit=(s,k)=>Object.assign(s,{map:shopMap(s.ancient.country,k),x:5,y:4.9});
+const home=s=>s.map='ancient-home-'+s.ancient.country;
 const now=Date.now();
 for(const [country,countryDef]of Object.entries(ANCIENT_COUNTRIES)){
  const s=trial(country),h=s.ancient.home,stats=abilities(s);assert.equal(s.saveVersion,3);assert.equal(h.level,1);assert.equal(activePlots(h).length,2);assert.equal(h.reputation,0);assert.equal(h.starterGranted,true);assert.equal(h.seeds.millet,2);assert.equal(s.inventory.lumber,2);
@@ -17,13 +20,13 @@ for(const [country,countryDef]of Object.entries(ANCIENT_COUNTRIES)){
  assert.equal(harvestCrop(s,'field-1',now+179999),null);assert.equal(plotState(h.plots[0],now+180000).status,'ready');
  assert.equal(harvestCrop(s,'field-1',now+180000).count,4);assert.equal(harvestCrop(s,'field-1',now+180000),null);assert.equal(h.reputation,1);assert.equal(h.harvested.millet,4);
  assert.equal(sellItem(s,ITEMS,'millet',4),12);assert.equal(s.coins,12);assert.equal(sellItem(s,ITEMS,'millet',4),0);
- assert.equal(buyLife(s,'seed','millet'),true);assert.equal(s.coins,10);assert.equal(buyLife(s,'seed','ricecrop'),false);assert.equal(buyLumber(s),true);assert.equal(s.coins,2);
+ visit(s,'seed');assert.equal(buyLife(s,'seed','millet'),true);assert.equal(s.coins,10);assert.equal(buyLife(s,'seed','ricecrop'),false);visit(s,'wood');assert.equal(buyLumber(s),true);assert.equal(s.coins,2);home(s);
  // Exact upgrade debit, persistent planted crops and country-independent capabilities.
  assert.equal(plantCrop(s,'field-2','barnyard',now),true);s.coins=2000;s.inventory.lumber=40;
- for(const level of [2,3,4]){h.reputation=level===2?8:level===3?22:45;h.commerce.completed=level===2?0:level===3?4:10;const before=s.coins,wood=s.inventory.lumber,d=HOME_LEVELS[level];assert.equal(upgradeHome(s),true);assert.equal(h.level,level);assert.equal(h.fields,d.fields);assert.equal(s.coins,before-d.coins);assert.equal(s.inventory.lumber,wood-d.lumber);assert.deepEqual(h.plots[1],{id:'field-2',crop:'barnyard',plantedAt:now});assert.equal(activePlots(h).length,d.fields+h.paddies);}
- assert.equal(upgradeHome(s),false);assert.equal(h.reputation,47);assert.deepEqual(abilities(s),stats);assert.equal(openPaddy(s),true);assert.equal(openPaddy(s),true);assert.equal(openPaddy(s),false);assert.equal(activePlots(h).length,10);
+ for(const level of [2,3,4]){h.reputation=level===2?8:level===3?22:45;h.commerce.completed=level===2?0:level===3?4:10;const before=s.coins,wood=s.inventory.lumber,d=HOME_LEVELS[level];visit(s,'wood');assert.equal(upgradeHome(s),true);home(s);assert.equal(h.level,level);assert.equal(h.fields,d.fields);assert.equal(s.coins,before-d.coins);assert.equal(s.inventory.lumber,wood-d.lumber);assert.deepEqual(h.plots[1],{id:'field-2',crop:'barnyard',plantedAt:now});assert.equal(activePlots(h).length,d.fields+h.paddies);}
+ assert.equal(upgradeHome(s),false);assert.equal(h.reputation,47);assert.deepEqual(abilities(s),stats);visit(s,'wood');assert.equal(openPaddy(s),true);assert.equal(openPaddy(s),true);assert.equal(openPaddy(s),false);home(s);assert.equal(activePlots(h).length,10);
  for(const [i,[id,c]]of Object.entries(Object.entries(CROPS))){h.seeds[id]=2;const plot=c.kind==='paddy'?'paddy-1':'field-'+(Number(i)+3);assert.equal(plantCrop(s,plot,id,now),true);assert.equal(plantCrop(s,plot,c.kind==='paddy'?'millet':'ricecrop',now),false);const p=h.plots.find(p=>p.id===plot);assert.equal(plotState(p,now+c.minutes*60000-1).status,'growing');assert.equal(plotState(p,now+c.minutes*60000).status,'ready');const resumed=validate(JSON.parse(JSON.stringify(s)));assert.deepEqual(resumed.ancient.home.plots,h.plots);assert.equal(harvestCrop(s,plot,now+c.minutes*60000).count,4);assert.equal(salePrice(ITEMS[c.item]),c.sale);assert.equal(sellItem(s,ITEMS,c.item,4),4*c.sale);}
- assert.equal(placeDecor(s,'yard-1','reedMat'),false);assert.equal(placeDecor(s,'room-2','clayJar'),false,'cannot place one owned jar twice');assert.equal(buyLife(s,'decor','clayJar'),true);assert.equal(placeDecor(s,'room-2','clayJar'),true);assert.equal(placeDecor(s,'room-2',null),true);assert.equal(h.decorations.clayJar,2);assert.equal(craftDecor(s,'woodBox'),true);assert.equal(h.decorations.woodBox,1);assert.equal(placeDecor(s,'yard-2','woodBox'),true);
+ assert.equal(placeDecor(s,'yard-1','reedMat'),false);assert.equal(placeDecor(s,'room-2','clayJar'),false,'cannot place one owned jar twice');visit(s,'decor');assert.equal(buyLife(s,'decor','clayJar'),true);home(s);assert.equal(placeDecor(s,'room-2','clayJar'),true);assert.equal(placeDecor(s,'room-2',null),true);assert.equal(h.decorations.clayJar,2);assert.equal(craftDecor(s,'woodBox'),true);assert.equal(h.decorations.woodBox,1);assert.equal(placeDecor(s,'yard-2','woodBox'),true);
  assert.equal(meetsLifeRequirements(s,{homeLevel:4,reputation:7,produced:{millet:4},paddy:true}),true);assert.equal(meetsLifeRequirements(s,{reputation:100}),false);
  const life=JSON.stringify(h);for(const century of [4,5,6]){assert.equal(setAncientCentury(s,century,{admin:true}),true);assert.equal(JSON.stringify(s.ancient.home),life);assert.deepEqual(validate(JSON.parse(JSON.stringify(s))).ancient.home,h);}
  for(const level of [1,2,3,4]){setLifeLevel(h,level);for(const map of [ancientWorld(MAPS[countryDef.home],s),ancientWorld(MAPS['ancient-yard-'+country],s)]){assert.equal(map.entities.some(e=>e.id==='life-board'||e.id==='life-yard-board'),true);for(const e of map.entities){if(e.type==='lifeDecor')continue;assert.ok(e.x>=1&&e.x<map.w-1&&e.y>=1&&e.y<map.h-1,'inside '+level+' '+e.id);assert.ok(!map.obstacles.some(o=>Math.abs(o.x-e.x)<.65&&Math.abs(o.y-e.y)<.6),'obstacle-free '+e.id);}assert.ok(map.entities.every(e=>!e.to||MAPS[e.to]));}assert.equal(ancientWorld(MAPS[countryDef.home],s).w,HOME_LEVELS[level].room[0]);}
