@@ -1,7 +1,7 @@
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=50';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=50.1';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=50';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=50";
+import {parkHorse} from './horse-state.js?v=50.1';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=50.1";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -18,16 +18,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=50";
-import { ASSETS } from "./assets.js?v=50";
+} from "./state.js?v=50.1";
+import { ASSETS } from "./assets.js?v=50.1";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=50';
-import {noteAncientVisit} from './ancient-state.js?v=50';
-import {createAncientUI} from './ancient-ui.js?v=50';
-import {createHomesteadUI} from './homestead-ui.js?v=50';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=50';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=50.1';
+import {noteAncientVisit} from './ancient-state.js?v=50.1';
+import {createAncientUI} from './ancient-ui.js?v=50.1';
+import {createHomesteadUI} from './homestead-ui.js?v=50.1';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=50.1';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=50';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=50.1';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -45,7 +45,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=50";
+} from "./economy.js?v=50.1";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -889,6 +889,7 @@ function travel(id, from = s.map, {fast=false} = {}) {
   s.y = roomReturn ? roomReturn.y : !fast && back
     ? back.y + (back.y < currentMap().h*.25 ? 1 : back.y > currentMap().h*.72 ? -1 : 0)
     : currentMap().start.y;
+  if(MAPS[id].shopKind){s.x=currentMap().start.x;s.y=currentMap().start.y;}
   if (blocked(s.x, s.y)) {
     s.x = currentMap().start.x;
     s.y = currentMap().start.y;
@@ -2759,7 +2760,7 @@ function draw(dt = 0) {
     if(e.type==='horseStable'){w=64;h=48;}
     if (e.type==='roomLoot') {w=52;h=54;}
     if (e.type==='roomProp') {w=78;h=66;}
-    if (e.type==='roomDoor') {w=55;h=57;}
+    if (e.type==='roomDoor'||e.id==='life-shop-exit') {w=55;h=57;}
     if (e.id === 'dongye-sign') { w=30; h=25; }
     if (e.type === "obstacle") {
       w = e.art === "rock" ? 78 : 110;

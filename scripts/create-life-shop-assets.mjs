@@ -1,5 +1,5 @@
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
-import {HOME_PALETTES} from '../dist/homestead.js?v=50';
+import {HOME_PALETTES} from '../dist/homestead.js?v=50.1';
 const root=new URL('../dist/assets/shops/',import.meta.url);await mkdir(root,{recursive:true});
 const p=(d,f,s='#624c35',w=3)=>`<path d="${d}" fill="${f}" stroke="${s}" stroke-width="${w}"/>`,l=(d,c='#dbc29c',w=2)=>p(d,'none',c,w),r=(x,y,w,h,f)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${f}" stroke="#624c35" stroke-width="3"/>`,e=(x,y,rx,ry,f,s='none')=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${s}" stroke-width="2"/>`;
 const svg=(b,w=256,h=224)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><g stroke-linecap="round" stroke-linejoin="round">${b}</g></svg>`;
@@ -29,7 +29,7 @@ for(const kind of Object.keys(role)){
  const base=kind==='seed'?'farmer':kind==='wood'?'elder':'shopkeeper';
  const data=(await readFile(new URL('../dist/assets/npc/'+base+'.png',import.meta.url))).toString('base64');
  const prop=kind==='seed'?sack(105,190):kind==='tool'?tools(114,176):kind==='wood'?logs(87,206):p('M90 164H131V216L110 209L90 217Z','#a66956')+l('M95 175H126 M95 188H126','#d9b58d',3);
- await writeFile(new URL('merchant-'+kind+'.svg',root),svg(`<image href="data:image/png;base64,${data}" x="12" y="0" width="132" height="236" preserveAspectRatio="xMidYMax meet"/>`+prop,160,240));
+ await writeFile(new URL('merchant-'+kind+'.svg',root),svg(`<svg x="12" y="0" width="132" height="236" viewBox="${base==='shopkeeper'?'0 0 116 240':'64 15 128 225'}" preserveAspectRatio="xMidYMax meet"><image href="data:image/png;base64,${data}" width="${base==='shopkeeper'?116:256}" height="${base==='shopkeeper'?240:256}"/></svg>`+prop,160,240));
 }
 await writeFile(new URL('wood-pile.svg',root),svg(logs(83,105)+l('M29 130L93 144 M51 146L122 126','#92734c',5),160,160));
 await writeFile(new URL('wood-empty.svg',root),svg(l('M38 128L90 141 M68 144L116 132','#928163',3)+e(82,142,53,5,'#a39a79'),160,160));

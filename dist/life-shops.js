@@ -3,7 +3,7 @@ export const LIFE_SHOPS={
  seed:{name:'씨앗 가게',at:[11.5,3.8],merchant:'씨앗 상인',line:'밭에는 잡곡을, 논에는 벼를 심어 보렴.',art:'seeds'},
  tool:{name:'생활도구 가게',at:[12.8,7.2],merchant:'생활도구 상인',line:'농사와 조리를 조금 편하게 해 주는 도구들이야.',art:'tools'},
  wood:{name:'목공소',at:[20.3,3.8],merchant:'마을 목수',line:'목재와 집 확장, 수레 제작을 이곳에서 맡고 있어.',art:'wood'},
- decor:{name:'살림 가게',at:[20.3,7.2],merchant:'살림 상인',line:'집과 마당에 어울리는 살림을 골라 보렴.',art:'decor'},
+ decor:{name:'살림 가게',at:[18,7.6],merchant:'살림 상인',line:'집과 마당에 어울리는 살림을 골라 보렴.',art:'decor'},
 };
 export const SHOP_MERCHANT={x:5,y:3.6};
 export const shopMap=(country,kind)=>'ancient-shop-'+country+'-'+kind;

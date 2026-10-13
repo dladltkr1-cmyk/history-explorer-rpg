@@ -1,6 +1,6 @@
-import {LIFE_SHOPS,shopMap,atLifeShop,woodReady,collectWood,woodId} from './life-shops.js?v=50';
-import {CROPS,DECOR,HOME_LEVELS,setLifeLevel,buyLife,buyLumber,upgradeHome,openPaddy} from './homestead.js?v=50';
-import {canGrow,UPGRADE_GATES} from './life-progression.js?v=50';
+import {LIFE_SHOPS,shopMap,atLifeShop,woodReady,collectWood,woodId} from './life-shops.js?v=50.1';
+import {CROPS,DECOR,HOME_LEVELS,setLifeLevel,buyLife,buyLumber,upgradeHome,openPaddy} from './homestead.js?v=50.1';
+import {canGrow,UPGRADE_GATES} from './life-progression.js?v=50.1';
 export function createLifeShopUI(api){
  const {$,panel,imageTag,toast,save,hud,esc}=api,s=()=>api.state(),h=()=>s().ancient.home;
  const done=text=>{save();hud();toast(text);};
@@ -23,7 +23,7 @@ export function createLifeShopUI(api){
  function interact(e){if(e.type==='lifeMerchant'){show(e.shopKind);return true;}if(e.type==='lifeWood'){gather(e);return true;}if(e.type==='lifeShopSign'){panel('마을 상점가',`<p>씨앗·생활도구·목공소·살림 가게가 마을 북동쪽에 모여 있어.</p>${Object.entries(LIFE_SHOPS).map(([k,d])=>`<button data-store-guide="${k}" class="full">${d.name} 방향 보기</button>`).join('')}`);document.querySelectorAll('[data-store-guide]').forEach(b=>b.onclick=()=>guide(b.dataset.storeGuide));return true;}return false;}
  function adminPanel(){if(!api.admin())return;panel('상점가 · 목재 시험',`<p class="note">학생 원본과 분리된 관리자 시험 상태야. 상인 가까이로 이동한 뒤 실제 버튼으로 검사해.</p><div class="admin-section"><h3>세 나라 상점가</h3>${[['goguryeo','고구려'],['baekje','백제'],['silla','신라']].map(([c,n])=>`<button data-shop-qa-country="${c}">${n} 상점가</button>`).join('')}</div><div class="admin-section"><h3>가게 방문</h3>${Object.entries(LIFE_SHOPS).map(([k,d])=>`<button data-shop-qa-visit="${k}">${d.name}</button>`).join('')}</div><div class="admin-section"><h3>구매 조건·기존 기능</h3>${[['ready','엽전·재료·평판 준비'],['poor','엽전·재료 부족'],['rep','평판 부족'],['owned','이미 보유한 도구'],['growth','거처 확장 직전'],['cart','수레 제작 직전'],['decor','18종 가구·배치 확인'],['wood','목재 채집 가능'],['wait','목재 재생 대기'],['reset','목재 재생시간 초기화']].map(([k,n])=>`<button data-shop-qa-case="${k}">${n}</button>`).join('')}</div><button id="shop-qa-back" class="full">관리자 메뉴</button>`,{wide:true});
   document.querySelectorAll('[data-shop-qa-country]').forEach(b=>b.onclick=()=>{api.prepareAncient('4c');s().ancient.country=b.dataset.shopQaCountry;api.adminJump('ancient-village-'+s().ancient.country,{x:16,y:8.5});});
-  document.querySelectorAll('[data-shop-qa-visit]').forEach(b=>b.onclick=()=>{if(!h().owned)api.prepareAncient('4c');api.adminJump(shopMap(s().ancient.country,b.dataset.shopQaVisit),{x:5,y:4.9});});
+  document.querySelectorAll('[data-shop-qa-visit]').forEach(b=>b.onclick=()=>{if(!h().owned)api.prepareAncient('4c');api.adminJump(shopMap(s().ancient.country,b.dataset.shopQaVisit),{x:5,y:3.6});});
   document.querySelectorAll('[data-shop-qa-case]').forEach(b=>b.onclick=()=>{if(!h().owned)api.prepareAncient('4c');const k=b.dataset.shopQaCase;
     if(['ready','growth','cart'].includes(k)){s().coins=3000;s().inventory.lumber=30;s().inventory.hide=10;h().reputation=45;h().commerce.completed=10;h().harvested.millet=4;}
     if(k==='poor'){s().coins=0;s().inventory.lumber=0;s().inventory.hide=0;}
