@@ -11,11 +11,12 @@ import {LIFE_ORDERS,LIFE_TOOLS,ensureOrders,deliverOrder,buyTool,canGrow} from '
 import {sellItem,salePrice} from '../dist/economy.js?v=50.1';
 for(const [id,c]of Object.entries(CROPS))console.log(`${c.name}: sale ${c.sale*4}, seed ${c.seed}, net ${c.sale*4-c.seed}, net/min ${((c.sale*4-c.seed)/c.minutes).toFixed(2)}`);
 const shopping=(s,kind,action)=>{const loc={map:s.map,x:s.x,y:s.y};Object.assign(s,{map:shopMap(s.ancient.country,kind),x:5,y:4.9});try{return action();}finally{Object.assign(s,loc);}};
-for(const freeWood of [false,true])for(const supplemental of [0,3]){
+for(const freeWood of [false,true,'sell-excess'])for(const supplemental of [0,3]){
  const s=fresh('경제 검수','boy');s.completedRegions=REGIONS.slice(0,5).map(r=>r.id);s.unlockedRegions=REGIONS.map(r=>r.id);prepareAncientQA(s,'4c',{country:'baekje'});s.coins=0;s.inventory.lumber=2;s.inventory.fishingrod=0;const h=s.ancient.home;const snapshot=async label=>{if(!process.env.LIFE_QA_SNAPSHOT_DIR||supplemental||freeWood)return;const copy=structuredClone(s),real=Date.now();for(const p of copy.ancient.home.plots)if(p.crop)p.plantedAt=real-Math.max(0,now-p.plantedAt);copy.updatedAt=real;await writeFile(process.env.LIFE_QA_SNAPSHOT_DIR+'/'+label+'.json',JSON.stringify(copy));};let now=Date.now(),start=now,last=now,firstSale=false;const milestones={};let completedIncome=0,sales=0,supplement=0;
  ensureOrders(s);
  for(let cycle=0;cycle<500&&h.level<4;cycle++){
   if(freeWood){s.map='ancient-village-baekje';for(const [i,[x,y]]of WOOD_SPOTS.entries()){s.x=x;s.y=y+1;collectWood(s,woodId('baekje',i+1),now);}}
+  if(freeWood==='sell-excess'){const reserve=(HOME_LEVELS[h.level+1]?.lumber||0)+(h.commerce.tools.seedBag?0:2);const excess=Math.max(0,s.inventory.lumber-reserve);if(excess)sales+=sellItem(s,ITEMS,'lumber',excess);}
   s.map='ancient-home-baekje';for(const p of activePlots(h))harvestCrop(s,p.id,now);
   s.map='ancient-village-baekje';for(let pass=0;pass<6;pass++)for(const o of [...h.commerce.orders]){const r=deliverOrder(s,o.id);if(r)completedIncome+=r.reward;}
   // Sell excess while preserving each available farming order's requirements.
