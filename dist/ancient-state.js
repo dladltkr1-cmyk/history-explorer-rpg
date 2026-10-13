@@ -1,9 +1,10 @@
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=50.1';
-import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=50.1';
+import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=51';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=51';
+import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=51';
 
 export const ANCIENT_EXHIBITS={}; // Register sourced culture records here with their content update.
 export const ANCIENT_EXTENSIONS=['field','workbench','storage','culture','horse'];
-export function freshAncient(){return {revision:1,country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
+export function freshAncient(){return {revision:1,history:freshHanHistory(),country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
 export function syncAncient(s) {
   s.ancient??=freshAncient();const a=s.ancient,p=s.progress.ancient||0;
   ensureLife(a.home);
@@ -12,6 +13,7 @@ export function syncAncient(s) {
   if(p>=16&&!a.completedChapters.includes('origins'))a.completedChapters.push('origins');
   if(p>=18)a.home.owned=true;
   grantLifeStarter(s);
+  for(const event of Object.keys(HAN_EVENT_QUESTS))completeHanHistoricalEvent(s,event);
   if(p>=20){a.century??=4;a.chapter=a.century+'c';if(!a.completedChapters.includes('settlement'))a.completedChapters.push('settlement');}
   else {a.century=null;a.chapter=p>=16?'settlement':'origins';}
 }
@@ -31,6 +33,7 @@ export function validateAncient(s,items,maps) {
     s.ancient=a;
   }
   validateLife(s.ancient.home);
+  validateHanHistory(s.ancient);
   const p=s.progress.ancient||0;
   if(p>=17&&!s.ancient.country)throw Error('머무는 나라 기록이 없다.');
   if(p<16&&s.ancient.country)throw Error('건국 이야기를 먼저 완료해야 한다.');

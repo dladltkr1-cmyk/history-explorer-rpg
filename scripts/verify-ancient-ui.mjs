@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=50.1');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=50.1');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=50.1');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=51');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=51');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=51');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 let source=await readFile(root+'/dist/game.js','utf8');source=source.replace(/from (["'])(\.\/[^"']+)\1/g,(_,q,p)=>'from '+q+new URL(p,'file://'+root+'/dist/').href+q);
@@ -59,7 +59,7 @@ for(const [country,c]of Object.entries(ANCIENT_COUNTRIES)){
 const originalText=localStorage.getItem('history-explorer-save-v1');const before=JSON.parse(originalText);qa.login();
 function ancientMenu(){qa.menu();click('[data-admin-menu="interaction"]');click('[data-qa-interact="ancient"]');}
 for(const fixture of ANCIENT_QA){ancientMenu();click('[data-ancient-stage="'+fixture.id+'"]');assert.equal(qa.state().progress.ancient,fixture.index);assert.equal(qa.blocked(qa.state().x,qa.state().y),false);assert.equal(qa.targetEntity()?.id,activeQuest(qa.state())?.target);}
-for(const country of Object.keys(ANCIENT_COUNTRIES)){ancientMenu();click('[data-ancient-country="'+country+'"]');assert.equal(qa.state().ancient.country,country);for(const n of [4,5,6]){ancientMenu();click('[data-ancient-map="'+n+'"]');assert.ok(document.querySelector('.ancient-history-map').getAttribute('aria-label').includes(n+'세기'));ancientMenu();click('[data-ancient-han="'+n+'"]');assert.equal(qa.state().map,'ancient-han');assert.equal(qa.state().ancient.century,n);clock+=40;qa.tick(clock);assert.equal(qa.currentMap().entities.find(e=>e.centuryState==='sign').banner,{4:'baekje',5:'goguryeo',6:'silla'}[n]);}}
+for(const country of Object.keys(ANCIENT_COUNTRIES)){ancientMenu();click('[data-ancient-country="'+country+'"]');assert.equal(qa.state().ancient.country,country);for(const n of [4,5,6]){ancientMenu();click('[data-ancient-map="'+n+'"]');assert.ok(document.querySelector('.ancient-history-map').getAttribute('aria-label').includes(n+'세기'));ancientMenu();click('[data-ancient-han="'+n+'"]');assert.equal(qa.state().map,'ancient-han');assert.equal(qa.state().ancient.century,n);clock+=40;qa.tick(clock);assert.equal(qa.currentMap().entities.find(e=>e.centuryState==='sign').banner,'baekje');}}
 for(const country of Object.keys(ANCIENT_COUNTRIES)){ancientMenu();click('[data-ancient-home="'+country+'"]');assert.equal(qa.state().ancient.country,country);assert.equal(qa.state().ancient.home.owned,true);assert.equal(qa.state().map,ANCIENT_COUNTRIES[country].village);}
 for(const mode of ['none','owned','mounted','parked']){ancientMenu();click('[data-ancient-horse="'+mode+'"]');assert.equal(qa.state().horseUnlocked,mode!=='none');assert.equal(qa.state().horseParked,mode==='parked');assert.equal(qa.state().mounted,mode==='mounted');assert.equal(qa.blocked(qa.state().x,qa.state().y),false);}
 ancientMenu();click('#ancient-qa-style');assert.equal(document.querySelectorAll('.ancient-actor-comparison figure').length,9);

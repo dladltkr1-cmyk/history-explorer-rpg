@@ -1,10 +1,11 @@
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=50.1';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=51';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=51';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=50.1';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=51';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
-  baekje:{name:'백제',village:'ancient-village-baekje',home:'ancient-home-baekje',art:'ancientHomeRiver',helperArt:'ancientHelperRiver',color:'#a87558',ground:'#b6b18a',welcome:'강으로 이어지는 길이 가까워. 이 작은 집에서 쉬어 가렴.'},
+  baekje:{name:'백제',village:'ancient-village-baekje',home:'ancient-home-baekje',art:'ancientHomeRiver',helperArt:'ancientHelperRiver',color:'#a87558',ground:'#b6b18a',welcome:'여기는 백제 남쪽 내륙의 생활마을이야. 마을 물길은 한강과 다른 작은 하천이란다.'},
   silla:{name:'신라',village:'ancient-village-silla',home:'ancient-home-silla',art:'ancientHomePlain',helperArt:'ancientHelperPlain',color:'#907d47',ground:'#b4b38c',welcome:'마을의 작은 집을 준비했어. 마당과 보관 자리를 둘러보렴.'},
 };
 export const ANCIENT_CHAPTERS=[
@@ -121,7 +122,7 @@ const maps=[
   ],{entryAt:10}),
 ];
 for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
-  maps.push(place(c.village,c.name+'의 거점 마을','ancient-'+(id==='goguryeo'?'north':id==='baekje'?'river':'plain'),[
+  maps.push(place(c.village,c.name+' · '+VILLAGE_GEOGRAPHY[id].label,'ancient-'+(id==='goguryeo'?'north':id==='baekje'?'river':'plain'),[
     story('ancient-helper',10,8,'마을 도우미',c.helperArt,[c.welcome,'씨앗과 목재, 작은 살림을 준비했어. 마당에서 심고, 돌아와 수확해 보렴.','마을 북동쪽 상점가에서 씨앗과 도구를 마련하렴. 집 안에서는 밭과 살림을 관리할 수 있어.']),
     entity('ancient-own-home','ancientHome',6,7,'내 거처',{art:c.art,solid:true,to:c.home}),
     entity('ancient-horse-post','horseStable',7.8,9.8,'말 쉼터',{art:'ancientHorsePost'}),
@@ -132,7 +133,7 @@ for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
     entity('ancient-village-house','scenery',17,5,'이웃의 집',{art:'ancientVillageHouse',solid:true}),
     entity('ancient-fire-'+id,'rest',14,11,'마을 화로',{art:'campfire'}),
     entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:id==='goguryeo'?'elder':'farmer'}),
-    exit('ancient-han-door-'+id,21,9,'강가로','ancient-han'),exit('ancient-hq-'+id,11,15,'탐험 본부','hq'),
+    exit('ancient-han-door-'+id,21,9,'한강으로 향하는 여행길','ancient-han'),exit('ancient-hq-'+id,11,15,'탐험 본부','hq'),
   ],{entryAt:17,country:id,ground:c.ground,trees:id==='goguryeo'?[[3,3],[3,12],[18,3],[19,14],[15,3]]:[[3,3],[3,13],[20,3],[20,14]]}));
   for(const [kind,d]of Object.entries(LIFE_SHOPS)){
     const store=place(shopMap(id,kind),c.name+' · '+d.name,'room',[
@@ -179,7 +180,7 @@ maps.push(place('ancient-han','한강 유역의 강가','ancient-river',[
 export const ancient={id:'ancient',name:'고대 국가',subtitle:'나라를 선택하고 거처에서 이어지는 이야기',start:'ancient-origins',village:'ancient-origins',unlock:null,quests:ANCIENT_QUESTS,maps,artifacts:[],requests:[],shop:['ironSword','ironArmor','ironCharm','food','berries','cookedfish','rice']};
 export function ancientWorld(base,s) {
   if(!base?.ancient)return base;
-  const a=s.ancient,c=ANCIENT_COUNTRIES[a?.country],era=ANCIENT_MAPS[a?.century||4];
+  const a=s.ancient,c=ANCIENT_COUNTRIES[a?.country],era=hanPhase(s);
   const h=a?.home;
   const homeArt='life-home-'+a?.country+'-'+(h?.level||1);
   if(base.id===c?.home){
@@ -197,13 +198,14 @@ export function ancientWorld(base,s) {
     return {...base,entities};
   }
   if(base.id!=='ancient-han')return base;
-  return {...base,name:'한강 유역 · '+(a?.century||4)+'세기',entities:base.entities.map(e=>{
+  return {...base,name:'한강 유역 · '+era.name,entities:[...base.entities.map(e=>{
     if(e.countryReturn)return {...e,to:c?.village||'ancient-origins'};
-    if(e.centuryState==='sign')return {...e,lines:[era.hanLabel,era.caption],banner:era.han};
-    if(e.centuryState==='resident')return {...e,art:ANCIENT_COUNTRIES[era.han].helperArt,lines:[era.caption,'세기마다 이 강가의 모습과 이야기가 달라진다.']};
-    if(e.centuryState==='building')return {...e,art:'ancientShed',banner:era.han};
+    if(e.centuryState==='sign')return {...e,lines:[era.name,era.text],banner:era.country};
+    if(e.centuryState==='resident')return {...e,art:ANCIENT_COUNTRIES[era.country].helperArt,lines:[era.text,'내 거처는 이 한강 지역과 떨어진 생활마을에 있어.']};
+    if(e.centuryState==='building')return {...e,art:'ancientShed',banner:era.country};
+    if(e.type==='lifeDelivery')return {...e,art:ANCIENT_COUNTRIES[e.id==='life-han-workshop'&&era.secondary?era.secondary:era.country].helperArt};
     return e;
-  })};
+  }),{id:'ancient-han-guard',type:'ancientStory',x:5.4,y:7.3,name:'나루 경비',art:'han-guard-'+era.country,lines:[era.text,'나루로 향하는 길은 이쪽이야.'],actor:true},{id:'ancient-han-standard',type:'scenery',x:18.8,y:6.1,name:era.secondary?'상류·하류의 두 표식':'나루의 표식',art:'han-standard-'+(era.secondary?'alliance':era.country)}]};
 }
 function lifeDecor(home,area){return Object.entries(home.placements).flatMap(([slot,id])=>{const spot=DECOR_SLOTS.find(v=>v.id===slot);if(spot?.area!==area)return [];const [x,y]=decorPosition(spot,home.level);return [{id:'life-decor-'+slot,type:'lifeDecor',x,y,name:DECOR[id].name,art:DECOR[id].art,floor:id.endsWith('Mat')||DECOR[id].floor,wall:DECOR[id].wall}];});}
 export function ancientQuest(q,s) {

@@ -1,4 +1,4 @@
-import {atLifeShop} from './life-shops.js?v=50.1';
+import {atLifeShop} from './life-shops.js?v=51';
 // Additive life progression. No historical quest, combat, server or currency contract changes.
 export const UPGRADE_GATES={2:{reputation:8,requests:0,harvest:true},3:{reputation:22,requests:4},4:{reputation:45,requests:10}};
 export const LIFE_TOOLS={
@@ -18,8 +18,8 @@ export const LIFE_ORDERS={
  mixed:{name:'여럿이 나누는 잡곡',items:{millet:4,barnyard:4},value:28,rep:4,level:3,reputation:30,art:'life-grainRack'},
 };
 export const TRANSPORTS={
- grain:{name:'한강 나루의 곡식 운송',items:{millet:12,barnyard:8},value:68,rep:5,target:'life-han-delivery',map:'ancient-han',art:'life-cart-loaded',text:'마을 동쪽 강가 길 → 한강 나루의 받는 사람'},
- workshop:{name:'강가 작업장의 보리와 가죽',items:{barley:12,hide:2},value:90,rep:4,target:'life-han-workshop',map:'ancient-han',art:'life-cart-loaded',text:'마을 동쪽 강가 길 → 강가 작업장의 받는 사람'},
+ grain:{name:'한강 나루의 곡식 운송',items:{millet:12,barnyard:8},value:68,rep:5,target:'life-han-delivery',map:'ancient-han',art:'life-cart-loaded',text:'마을 동쪽 여행길 → 한강 나루의 받는 사람'},
+ workshop:{name:'강가 작업장의 보리와 가죽',items:{barley:12,hide:2},value:90,rep:4,target:'life-han-workshop',map:'ancient-han',art:'life-cart-loaded',text:'마을 동쪽 여행길 → 강가 작업장의 받는 사람'},
 };
 export const CART_RECIPE={coins:350,materials:{lumber:6,hide:2}};
 export const reputationName=n=>n<10?'새로 온 사람':n<30?'마을에 익숙한 사람':n<55?'믿음받는 사람':n<80?'이름난 사람':'마을의 신뢰를 얻은 사람';

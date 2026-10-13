@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#142d32" />
     <title>시간탐험대 — 역사 탐험 RPG</title>
     <link rel="stylesheet" href="/style.css" />
-    <link rel="stylesheet" href="/revision.css?v=50.1" />
+    <link rel="stylesheet" href="/revision.css?v=51" />
   </head>
   <body>
     <main id="game">
@@ -33,7 +33,7 @@
           <div class="player-panel">
             <img id="portrait" alt="내 캐릭터" />
             <div class="player-data">
-              <div class="player-identity"><b id="name"> </b><span id="level"> </span><div id="wallet">◈ <b id="coins"> </b> <span>엽전</span></div></div>
+              <div class="player-identity"><b id="name"> </b><span id="level"> </span><div id="reputation-hud" hidden>★ 평판 <b>0</b><span id="reputation-gain" hidden></span></div><div id="wallet">◈ <b id="coins"> </b> <span>엽전</span></div></div>
               <div class="player-meters"><div class="meter"><small id="hp"> </small><div class="health-track"><i id="health"> </i></div></div><div class="meter"><small id="energy">기력 20 / 20</small><div class="health-track energy-track"><i id="energy-fill"></i></div></div></div>
             </div>
           </div>
@@ -102,6 +102,6 @@
         <div id="defeat-result" role="dialog" aria-modal="true"></div>
       </section>
     </main>
-    <script type="module" src="/game.js?v=50.1"></script>
+    <script type="module" src="/game.js?v=51"></script>
   </body>
 </html>

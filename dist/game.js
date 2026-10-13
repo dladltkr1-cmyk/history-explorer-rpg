@@ -1,7 +1,8 @@
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=50.1';
+import {reputationDetails} from './ancient-history.js?v=51';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=51';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=50.1';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=50.1";
+import {parkHorse} from './horse-state.js?v=51';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=51";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -18,16 +19,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=50.1";
-import { ASSETS } from "./assets.js?v=50.1";
+} from "./state.js?v=51";
+import { ASSETS } from "./assets.js?v=51";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=50.1';
-import {noteAncientVisit} from './ancient-state.js?v=50.1';
-import {createAncientUI} from './ancient-ui.js?v=50.1';
-import {createHomesteadUI} from './homestead-ui.js?v=50.1';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=50.1';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=51';
+import {noteAncientVisit} from './ancient-state.js?v=51';
+import {createAncientUI} from './ancient-ui.js?v=51';
+import {createHomesteadUI} from './homestead-ui.js?v=51';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=51';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=50.1';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=51';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -45,7 +46,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=50.1";
+} from "./economy.js?v=51";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -123,6 +124,7 @@ const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,to
 let lifeShopGuide=null;
 const homesteadUI=createHomesteadUI({$,esc,panel,close,guideShop:kind=>{lifeShopGuide={kind,country:s.ancient.country};toast('마을 북동쪽 · '+LIFE_SHOPS[kind].name+'를 찾아보자.');},items:ITEMS,cooking:COOKING,cook:(id,n)=>cookItem(s,id,n),rest:()=>{const cozy=Object.values(s.ancient.home.placements).includes('fineBedding');s.hp=Math.max(s.hp,Math.ceil(abilities(s).hp*(cozy?.4:.3)));s.energy=20;save();hud();restMenu({art:'campfire'});},restoreTrial:()=>{s=validate(structuredClone(s));},imageTag,save,hud,toast,travel,finishEvent,state:()=>s,admin:()=>adminMode,adminPanel,adminJump,prepareAncient:stage=>ancientUI.prepare(stage),asset:art=>ASSETS[art],sell:(id,n)=>sellItem(s,ITEMS,id,n),selling,setCleanup:fn=>{stopFishing=fn;},refreshWorld:()=>{fieldCamera.reset();if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const start=roomLayout(s.ancient.home.level).start;s.x=start.x;s.y=start.y;}}});
 function toast(text) {
+  if(!$("#reputation-gain")?.hidden)text=text.replace(/(?: · |, )?평판 \+\d+/g,'');
   $("#toast").textContent = text;
   $("#toast").style.opacity = 1;
   clearTimeout(toastTimer);
@@ -740,6 +742,7 @@ $("#quest-toggle").onclick = () => {
   questPinned = open;
   setQuestExpanded(open);
 };
+let repObservedHome=null,repObserved=0,repGainTimer;
 function hud() {
   if (!playing) return;
   $("#energy").textContent = "기력 " + s.energy + " / 20";
@@ -776,6 +779,15 @@ function hud() {
   $('#mount-btn').textContent=s.mounted?'내리기':'말 타기';
   $("#era").textContent = r?.name || "시간탐험대";
   $("#coins").textContent = s.coins.toLocaleString();
+  const repHome=s.ancient?.home,repActive=r?.id==='ancient'&&Boolean(s.ancient?.country)&&(s.progress.ancient||0)>=17;
+  const repBadge=$('#reputation-hud');repBadge.hidden=!repActive;
+  repBadge.querySelector('b').textContent=repHome?.reputation||0;
+  if(repObservedHome===repHome&&repActive&&!adminMode&&repHome.reputation>repObserved){
+    const gain=$('#reputation-gain');gain.textContent='★ 평판 +'+(repHome.reputation-repObserved);gain.hidden=false;
+    clearTimeout(repGainTimer);repGainTimer=setTimeout(()=>{gain.hidden=true;},3200);
+  }
+  if(!repActive||adminMode||repObservedHome!==repHome)$('#reputation-gain').hidden=true;
+  repObservedHome=repHome;repObserved=repHome?.reputation||0;
   $("#quest-count").textContent = q
     ? `${(s.progress[r.id] || 0) + 1} / ${r.quests.length}`
     : "";
@@ -1056,10 +1068,11 @@ function inventory(tab = "food") {
   $('#craft-needle')?.addEventListener('click',()=>{if(makeNeedle(s)){save();hud();inventory('other');feedback('뼈를 다듬어 뼈바늘을 만들었다.','item');if(rodReady(s))toast(fishingObjective(s));}else toast('기술자에게 낚싯대 이야기를 먼저 들어 보자.');});
 }
 function profile() {
-  const a = abilities(s);
+  const a = abilities(s),h=s.ancient?.home,rep=Boolean(s.ancient?.country)&&(s.progress.ancient||0)>=17,reputation=rep?reputationDetails(h.reputation):null;
+  const repInfo=rep?`<section class="profile-reputation"><h3>★ 생활 평판</h3><b>현재 평판: ${h.reputation} / 100</b><div class="reputation-track" role="progressbar" aria-label="생활 평판" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${h.reputation}"><i style="width:${h.reputation}%"></i></div><p>칭호: ${reputation.name}<br>다음 단계: ${reputation.next}${h.reputation===100?'':`<br>다음 단계까지: ${reputation.remaining}점`}</p><small>마을 부탁과 운송, 사람 돕기를 통해 평판을 올릴 수 있어.<br>생활의 신뢰를 나타내며 신분이나 골품과는 달라.</small></section>`:'';
   panel(
     "나",
-    `<div class="profile-head"><img id="profile-avatar" alt="내 캐릭터"><h2>${esc(s.nickname)} · Lv.${s.level}</h2></div><p>개인 코드 <strong>${esc(s.personalCode || "없음")}</strong></p><div class="stats"><div><b>${s.hp}/${a.hp}</b><small>HP</small></div><div><b>${s.energy}/20</b><small>기력</small></div><div><b>${a.attack}</b><small>공격</small></div><div><b>${a.defense}</b><small>방어</small></div></div><p>경험치 ${s.xp} / ${s.level === MAX_LEVEL ? "최대" : xpNeed(s.level)}</p>${["weapon", "clothes", "accessory"].map((kind, i) => `<div class="item">${s.equipment[kind] ? itemIcon(s.equipment[kind]) : '<span class="empty-slot">—</span>'}<div class="info"><small>${["무기", "방어구", "장신구"][i]}</small><b>${ITEMS[s.equipment[kind]]?.name || "장착한 장비 없음"}</b><small>${ITEMS[s.equipment[kind]]?.text || ""}</small></div></div>`).join("")}`,
+    `<div class="profile-head"><img id="profile-avatar" alt="내 캐릭터"><h2>${esc(s.nickname)} · Lv.${s.level}</h2></div><p>개인 코드 <strong>${esc(s.personalCode || "없음")}</strong></p><div class="stats"><div><b>${s.hp}/${a.hp}</b><small>HP</small></div><div><b>${s.energy}/20</b><small>기력</small></div><div><b>${a.attack}</b><small>공격</small></div><div><b>${a.defense}</b><small>방어</small></div></div><p>경험치 ${s.xp} / ${s.level === MAX_LEVEL ? "최대" : xpNeed(s.level)}</p>${repInfo}${["weapon", "clothes", "accessory"].map((kind, i) => `<div class="item">${s.equipment[kind] ? itemIcon(s.equipment[kind]) : '<span class="empty-slot">—</span>'}<div class="info"><small>${["무기", "방어구", "장신구"][i]}</small><b>${ITEMS[s.equipment[kind]]?.name || "장착한 장비 없음"}</b><small>${ITEMS[s.equipment[kind]]?.text || ""}</small></div></div>`).join("")}`,
   );
   setAvatarImage($("#profile-avatar"));
 }
@@ -1713,7 +1726,7 @@ function interact() {
     });
   } else if (e.type === "inspect") {
     dialogue(e.name, e.lines, e.art, () => finishEvent("inspect:" + e.id));
-  } else if (e.type === "exit") travel(e.to);
+  } else if (e.type === "exit") {if(e.id.startsWith("ancient-han-door-")||e.id==='ancient-han-return')ancientUI.journey(e);else travel(e.to);}
   else if (e.type === "gate") eraMenu();
   else if (e.type === "shop") merchant(e);
   else if (e.type === "archive") codex();

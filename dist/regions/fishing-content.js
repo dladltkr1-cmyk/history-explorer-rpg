@@ -1,7 +1,7 @@
 import {entity,person,exit} from './common.js';
 import {inFishingRiver,pathDistance} from '../waterside.js?v=44.2';
 import {FISHING_MATERIALS} from '../fishing.js?v=44.2';
-import {prepareAncientQA} from '../ancient-state.js?v=50.1';
+import {prepareAncientQA} from '../ancient-state.js?v=51';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [
@@ -36,7 +36,7 @@ export const INTERACTION_QA = [
   {id:'camera-path',name:'카메라 · 좁은 산길',map:'nation-goguryeo-road',target:null,action:'camera'},
   {id:'camera-room',name:'카메라 · 작은 실내 (10×8)',map:'room-buyeo-house-a',target:null,action:'camera'},
   {id:'ancient-horse',name:'내 거처 · 말 맡기기/데려오기 시험',map:'ancient-village-baekje',target:'ancient-horse-post',action:'ancient-horse'},
-  {id:'ancient',name:'고대 국가 · 건국/나라/거처/세기/지도 시험',map:'ancient-origins',target:'ancient-guide',action:'ancient'},
+  {id:'ancient',name:'고대 국가 · 평판/여행/한강 사건/건국 시험',map:'ancient-origins',target:'ancient-guide',action:'ancient'},
   {id:'ancient-bank',name:'고대 국가 강가 · 기존 낚시 시험',map:'ancient-han',target:'ancient-fishing',items:{fishingrod:1},action:'ancient-fishing',modes:FISHING_TEST_MODES},
   {id:'fishing',name:'낚시 미니게임 테스트',map:'neo-river',target:'neo-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES},
   {id:'bronze-bank',name:'청동기 외곽 강가 낚시',map:'bronze-outskirts',target:'bronze-fishing',items:{fishingrod:1},action:'fishing',modes:FISHING_TEST_MODES},

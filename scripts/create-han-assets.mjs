@@ -1,0 +1,11 @@
+import {readFile,writeFile} from 'node:fs/promises';
+const dir=new URL('../dist/assets/ancient/',import.meta.url),face=(await readFile(new URL('../dist/assets/npc/farmer.png',import.meta.url))).toString('base64');
+const colors={goguryeo:['#657f82','#a5babb'],baekje:['#a87558','#ddba92'],silla:['#907d47','#d5bf7f']};
+for(const [id,[color,light]]of Object.entries(colors)){
+ const body=`<svg xmlns="http://www.w3.org/2000/svg" width="160" height="240" viewBox="0 0 160 240"><g stroke-linejoin="round" stroke-linecap="round"><svg x="12" y="0" width="132" height="236" viewBox="64 15 128 225" preserveAspectRatio="xMidYMax meet"><image href="data:image/png;base64,${face}" width="256" height="256"/></svg><path d="M51 114L79 131L107 114L118 164L99 174L82 168L58 177L43 162Z" fill="${color}" stroke="#5e4c38" stroke-width="3"/><path d="M54 137L108 157M106 135L64 157" stroke="${light}" stroke-width="4"/><path d="M47 168L108 164" stroke="#634831" stroke-width="7"/><path d="M130 221V51" stroke="#886443" stroke-width="5"/><path d="M130 50L124 29L137 29Z" fill="#abb7af" stroke="#5d6457" stroke-width="2"/></g></svg>`;
+ await writeFile(new URL('guard-'+id+'.svg',dir),body);
+ const flag=`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="140" viewBox="0 0 100 140"><ellipse cx="44" cy="127" rx="30" ry="7" fill="#423624" opacity=".15"/><path d="M35 125V18" stroke="#846545" stroke-width="6"/><path d="M39 21Q61 14 82 26L80 76Q57 64 39 74Z" fill="${color}" stroke="#66543b" stroke-width="3"/><path d="M49 32L70 57M69 32L49 57" stroke="${light}" stroke-width="3"/><path d="M24 126H46L40 107H29Z" fill="#bba17b" stroke="#776043" stroke-width="3"/></svg>`;
+ await writeFile(new URL('standard-'+id+'.svg',dir),flag);
+}
+await writeFile(new URL('standard-alliance.svg',dir),`<svg xmlns="http://www.w3.org/2000/svg" width="100" height="140" viewBox="0 0 100 140"><path d="M22 127V18M67 127V34" stroke="#846545" stroke-width="5"/><path d="M25 21L56 29L53 72L25 66Z" fill="#a87558" stroke="#66543b" stroke-width="3"/><path d="M70 38L96 46L94 86L70 80Z" fill="#907d47" stroke="#66543b" stroke-width="3"/><path d="M32 38L48 51M77 52L89 64" stroke="#ddc79c" stroke-width="3"/></svg>`);
+console.log('Han assets: 3 matching farmer-based guards and 4 riverbank standards. Game palette, not historical national flags.');
