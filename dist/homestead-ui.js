@@ -1,8 +1,8 @@
-import {createLifeShopUI} from './life-shop-ui.js?v=51.1';
-import {createLifeCommerceUI} from './life-commerce-ui.js?v=51.1';
-import {UPGRADE_GATES,reputationName,canGrow,hasBulkHarvest} from './life-progression.js?v=51.1';
-import {CROPS,HOME_LEVELS,DECOR,DECOR_SLOTS,activePlots,plotState,atHome,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,craftDecor,setLifeLevel,freshLife,grantLifeStarter} from './homestead.js?v=51.1';
-import {ANCIENT_COUNTRIES} from './regions/ancient.js?v=51.1';
+import {createLifeShopUI} from './life-shop-ui.js?v=51.2';
+import {createLifeCommerceUI} from './life-commerce-ui.js?v=51.2';
+import {UPGRADE_GATES,reputationName,canGrow,hasBulkHarvest} from './life-progression.js?v=51.2';
+import {CROPS,HOME_LEVELS,DECOR,DECOR_SLOTS,activePlots,plotState,atHome,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,craftDecor,setLifeLevel,freshLife,grantLifeStarter} from './homestead.js?v=51.2';
+import {ANCIENT_COUNTRIES} from './regions/ancient.js?v=51.2';
 export function createHomesteadUI(api){
   const {$,panel,imageTag,toast,save,hud,travel,esc}=api,s=()=>api.state(),home=()=>s().ancient.home;
   const commerce=createLifeCommerceUI({...api,openFarm:()=>farm(),resetLife:()=>Object.assign(home(),freshLife()),grantStarter:()=>grantLifeStarter(s())});

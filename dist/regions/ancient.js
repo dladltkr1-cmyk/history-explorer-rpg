@@ -1,7 +1,7 @@
-import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=51.1';
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=51.1';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=51.2';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=51.2';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=51.1';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=51.2';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},

@@ -1,7 +1,7 @@
-import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=51.1';
-import {parkHorse,retrieveHorse} from './horse-state.js?v=51.1';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=51.1';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=51.1';
+import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=51.2';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=51.2';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=51.2';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=51.2';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.
@@ -129,7 +129,7 @@ export function createAncientUI(api) {
     if(!nearHanJourney(s,e)){toast('마을의 여행길 또는 한강의 귀환길에 가까이 가 보자.');return;}
     const village=`⌂ ${names[country]} · ${VILLAGE_GEOGRAPHY[country].label}`,han='≈ 역사 속 한강 유역';
     const stops=outbound?[village,han]:[han,village];
-    const route=outbound?VILLAGE_GEOGRAPHY[country].route:VILLAGE_GEOGRAPHY[country].route.split(' → ').reverse().join(' → ');
+    const route=outbound?VILLAGE_GEOGRAPHY[country].route:VILLAGE_GEOGRAPHY[country].backRoute;
     panel(outbound?'한강으로 향하는 여행':'내 생활마을로 돌아가기',`<div class="han-journey"><small>출발</small><span>${stops[0]}</span><i>↓ 길과 고개를 지나 ↓</i><small>도착</small><span>${stops[1]}</span></div><p>${esc(route)}</p><p class="note">멀리 떨어진 두 지역을 여행하는 길이야. 내 집과 밭은 생활마을에 그대로 있어.</p>${s.ancient.home.commerce.cart.active?'<p>수레를 끌고 이 여행길을 따라 이동해. 나루에서 직접 납품하자.</p>':''}<button id="han-journey-go" class="primary full">${outbound?'여행길을 따라 한강으로':'원래 마을로 돌아가기'}</button>`);
     $('#han-journey-go').onclick=()=>{if(!nearHanJourney(state(),e)||state().ancient.country!==country)return;close();travel(to);};
   }

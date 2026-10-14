@@ -1,6 +1,6 @@
-import {LIFE_SHOPS,shopMap,atLifeShop,woodReady,collectWood,woodId} from './life-shops.js?v=51.1';
-import {CROPS,DECOR,HOME_LEVELS,setLifeLevel,buyLife,buyLumber,upgradeHome,openPaddy} from './homestead.js?v=51.1';
-import {canGrow,UPGRADE_GATES} from './life-progression.js?v=51.1';
+import {LIFE_SHOPS,shopMap,atLifeShop,woodReady,collectWood,woodId} from './life-shops.js?v=51.2';
+import {CROPS,DECOR,HOME_LEVELS,setLifeLevel,buyLife,buyLumber,upgradeHome,openPaddy} from './homestead.js?v=51.2';
+import {canGrow,UPGRADE_GATES} from './life-progression.js?v=51.2';
 export function createLifeShopUI(api){
  const {$,panel,imageTag,toast,save,hud,esc}=api,s=()=>api.state(),h=()=>s().ancient.home;
  const done=text=>{save();hud();toast(text);};

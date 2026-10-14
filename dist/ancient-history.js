@@ -7,7 +7,7 @@ export const HAN_PHASES={
  'alliance-551':{century:6,country:'baekje',secondary:'silla',name:'551년 · 백제·신라 확보',text:'백제와 신라가 고구려로부터 한강 유역을 되찾았어. 백제는 하류, 신라는 상류를 나누어 차지해.',events:['hansong-475','han-551']},
  'silla-post553':{century:6,country:'silla',name:'553년 이후 · 신라 중심',text:'신라가 한강 하류까지 차지했어. 한강 주변의 길과 나루에도 신라의 표식이 보여.',events:['hansong-475','han-551','han-553']},
 };
-export const VILLAGE_GEOGRAPHY={goguryeo:{label:'북쪽 본거지의 생활마을',route:'북쪽 생활마을 → 남쪽으로 이어지는 여행길 → 한강 유역'},baekje:{label:'남쪽 내륙의 생활마을',route:'남쪽 내륙 생활마을 → 북쪽으로 이어지는 여행길 → 한강 유역'},silla:{label:'경주 주변의 생활마을',route:'경주 주변 생활마을 → 서북쪽 여행길 → 한강 유역'}};
+export const VILLAGE_GEOGRAPHY={goguryeo:{label:'북쪽 본거지의 생활마을',route:'북쪽 생활마을 → 남쪽으로 이어지는 여행길 → 한강 유역',backRoute:'한강 유역 → 북쪽으로 이어지는 여행길 → 북쪽 생활마을'},baekje:{label:'남쪽 내륙의 생활마을',route:'남쪽 내륙 생활마을 → 북쪽으로 이어지는 여행길 → 한강 유역',backRoute:'한강 유역 → 남쪽으로 이어지는 여행길 → 남쪽 내륙 생활마을'},silla:{label:'경주 주변의 생활마을',route:'경주 주변 생활마을 → 서북쪽 여행길 → 한강 유역',backRoute:'한강 유역 → 동남쪽 여행길 → 경주 주변 생활마을'}};
 export const freshHanHistory=()=>({revision:1,phase:'baekje-4',events:[]});
 export const hanPhase=s=>HAN_PHASES[s.ancient?.history?.phase]||HAN_PHASES['baekje-4'];
 export function validateHanHistory(a){

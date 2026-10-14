@@ -1,4 +1,4 @@
-import {atLifeShop} from './life-shops.js?v=51.1';
+import {atLifeShop} from './life-shops.js?v=51.2';
 // Additive life progression. No historical quest, combat, server or currency contract changes.
 export const UPGRADE_GATES={2:{reputation:8,requests:0,harvest:true},3:{reputation:22,requests:4},4:{reputation:45,requests:10}};
 export const LIFE_TOOLS={

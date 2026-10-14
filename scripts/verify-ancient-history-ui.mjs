@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=51.1');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=51.1');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=51.1');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=51.2');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=51.2');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=51.2');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 let source=await readFile(root+'/dist/game.js','utf8');source=source.replace(/from (["'])(\.\/[^"']+)\1/g,(_,q,p)=>'from '+q+new URL(p,'file://'+root+'/dist/').href+q);
@@ -25,10 +25,10 @@ function finishDialogue(){let count=0;while(document.querySelector('#next-dialog
 function approach(e){const st=qa.state();const spots=[[e.x-1.2,e.y],[e.x+1.2,e.y],[e.x,e.y+1.2],[e.x,e.y-1.2]];const p=spots.find(([x,y])=>!qa.blocked(x,y));assert.ok(p,'safe interaction spot '+e.id);st.x=p[0];st.y=p[1];qa.field();clock+=40;qa.tick(clock);click('#interact');}
 function reachable(m){const st=qa.state(),queue=[[Math.round(st.x*2)/2,Math.round(st.y*2)/2]],seen=new Set();while(queue.length){const [x,y]=queue.shift(),key=x+','+y;if(seen.has(key)||qa.blocked(x,y))continue;seen.add(key);for(const [dx,dy]of [[.5,0],[-.5,0],[0,.5],[0,-.5]]){const nx=x+dx,ny=y+dy;if(nx>=1&&nx<=m.w-2&&ny>=1&&ny<=m.h-2)queue.push([nx,ny]);}}return e=>[...seen].some(k=>{const [x,y]=k.split(',').map(Number);return Math.hypot(x-e.x,y-e.y)<1.5;});}
 
-const {HAN_PHASES,hanPhase,previewHanHistory,completeHanHistoricalEvent,reputationDetails}=await import(root+'/dist/ancient-history.js?v=51.1');
-const {prepareAncientQA,setAncientCentury}=await import(root+'/dist/ancient-state.js?v=51.1');
-const {startTransport,deliverTransport,TRANSPORTS,ensureOrders,LIFE_ORDERS,orderReward}=await import(root+'/dist/life-progression.js?v=51.1');
-const {plantCrop,harvestCrop}=await import(root+'/dist/homestead.js?v=51.1');
+const {VILLAGE_GEOGRAPHY,HAN_PHASES,hanPhase,previewHanHistory,completeHanHistoricalEvent,reputationDetails}=await import(root+'/dist/ancient-history.js?v=51.2');
+const {prepareAncientQA,setAncientCentury}=await import(root+'/dist/ancient-state.js?v=51.2');
+const {startTransport,deliverTransport,TRANSPORTS,ensureOrders,LIFE_ORDERS,orderReward}=await import(root+'/dist/life-progression.js?v=51.2');
+const {plantCrop,harvestCrop}=await import(root+'/dist/homestead.js?v=51.2');
 qa.start(validate(structuredClone(original)));qa.field();const baseline=localStorage.getItem('history-explorer-save-v1');assert.equal(document.querySelector('#reputation-hud').hidden,true);
 qa.login();function ancientMenu(){qa.menu();click('[data-admin-menu="interaction"]');click('[data-qa-interact="ancient"]');}
 for(const [country,c]of Object.entries(ANCIENT_COUNTRIES)){
@@ -69,7 +69,7 @@ for(const [country,c] of Object.entries(ANCIENT_COUNTRIES)) {
   for(const [id,n]of Object.entries(job.items))assert.equal(st.inventory[id],inventory[id]-n);
   assert.equal(document.querySelector('#reputation-hud b').textContent,String(24+job.rep));assert.equal(document.querySelector('#reputation-gain').textContent,'★ 평판 +'+job.rep);
   deliver();assert.equal(st.coins,coins+Math.round(job.value*1.30));
-  approach(qa.currentMap().entities.find(e=>e.countryReturn));assert.ok(document.querySelector('.han-journey').textContent.indexOf('한강')<document.querySelector('.han-journey').textContent.indexOf(c.name));click('#han-journey-go');assert.equal(st.map,c.village);
+  approach(qa.currentMap().entities.find(e=>e.countryReturn));assert.ok(document.querySelector('.han-journey').textContent.indexOf('한강')<document.querySelector('.han-journey').textContent.indexOf(c.name));assert.ok(document.querySelector('#overlay').textContent.includes(VILLAGE_GEOGRAPHY[country].backRoute));click('#han-journey-go');assert.equal(st.map,c.village);
   ensureOrders(st);for(const n of [24,99,100]){st.ancient.home.reputation=n;qa.field();const o=st.ancient.home.commerce.orders[0],d=LIFE_ORDERS[o.key];Object.assign(st.inventory,d.items);
    approach(qa.currentMap().entities.find(e=>e.type==='lifeRequests'));const before=st.coins;click('[data-order-deliver="'+o.id+'"]');
    assert.equal(st.ancient.home.reputation,Math.min(100,n+d.rep));assert.equal(st.coins,before+orderReward(d));assert.equal(document.querySelector('#reputation-hud b').textContent,String(Math.min(100,n+d.rep)));qa.field();
