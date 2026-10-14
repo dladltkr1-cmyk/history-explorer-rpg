@@ -1,7 +1,7 @@
-import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=51';
-import {parkHorse,retrieveHorse} from './horse-state.js?v=51';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=51';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=51';
+import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=51.1';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=51.1';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=51.1';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=51.1';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.
@@ -10,10 +10,12 @@ const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c]
 const mapPoints={goguryeo:[46.5,38.5],baekje:[52,68.5],silla:[68,72],han:[52,61]};
 const framePoint=([x,y])=>[(x*14.47-103)/1242*100,(y*20.48-241)/1704*100];
 export function ancientMapImage(century,{country='baekje',map='',visited=[],admin=false}={}) {
-  const d=ANCIENT_MAPS[century],c=ANCIENT_COUNTRIES[country];
+  const d=ANCIENT_MAPS[century];
+  const [startX,startY]=framePoint(mapPoints[country]),[hanX,hanY]=framePoint(mapPoints.han);
+  const route=`<svg class="ancient-travel-route" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path d="M${startX} ${startY} L${hanX} ${hanY}" vector-effect="non-scaling-stroke"/></svg><span class="ancient-route-label" style="left:${startX}%;top:${startY}%">내 생활마을</span><span class="ancient-route-label han" style="left:${hanX}%;top:${hanY}%">한강 유역</span>`;
   const sourcePoint=mapPoints[map==='ancient-han'?'han':country],point=framePoint([sourcePoint[0]+2,sourcePoint[1]+1]);
   const targets=[...Object.entries(ANCIENT_COUNTRIES).map(([id,v])=>({key:id,name:v.name+' · '+VILLAGE_GEOGRAPHY[id].label,map:v.village})),{key:'han',name:'한강 유역',map:'ancient-han'}];
-  return `<div class="ancient-map-view"><div class="row ancient-map-zoom"><button data-map-zoom="fit">전체 보기</button><button data-map-zoom="720">글자 확대</button><button data-map-zoom="1080">더 확대</button></div><p class="note">지도를 밀어서 둘러보세요. 동그란 표시는 게임의 이동 지점입니다.</p><div class="ancient-map-scroll" tabindex="0" aria-label="역사 지도 스크롤 영역"><div class="ancient-map-stage"><div class="ancient-map-crop"><img class="ancient-history-map" src="${d.image}" alt="${d.originalName}" aria-label="${d.title} · ${d.originalName}"/><div class="ancient-map-overlay">${targets.map(t=>{const [x,y]=framePoint(mapPoints[t.key]),open=(t.key===country||t.key==='han')&&(admin||visited.includes(t.map));return `<button class="ancient-map-target" data-map-target="${t.map}" style="left:${x}%;top:${y}%" ${open?'':'disabled'} aria-label="${t.name}${open?'으로 이동':' · 아직 열리지 않은 길'}" title="${t.name}${open?'':' · 잠김'}"><span>${open?'○':'◇'}</span></button>`;}).join('')}<span class="ancient-map-current" style="left:${point[0]}%;top:${point[1]}%" title="현재 위치" aria-label="현재 위치"></span></div></div></div></div></div>`;
+  return `<div class="ancient-map-view"><div class="row ancient-map-zoom"><button data-map-zoom="fit">전체 보기</button><button data-map-zoom="720">글자 확대</button><button data-map-zoom="1080">더 확대</button></div><p class="note">지도를 밀어서 둘러보세요. 동그란 표시는 게임의 이동 지점입니다. 점선은 내 마을과 한강을 잇는 여행 안내입니다.</p><div class="ancient-map-scroll" tabindex="0" aria-label="역사 지도 스크롤 영역"><div class="ancient-map-stage"><div class="ancient-map-crop"><img class="ancient-history-map" src="${d.image}" alt="${d.originalName}" aria-label="${d.title} · ${d.originalName}"/><div class="ancient-map-overlay">${route}${targets.map(t=>{const [x,y]=framePoint(mapPoints[t.key]),open=(t.key===country||t.key==='han')&&(admin||visited.includes(t.map));return `<button class="ancient-map-target" data-map-target="${t.map}" style="left:${x}%;top:${y}%" ${open?'':'disabled'} aria-label="${t.name}${open?'으로 이동':' · 아직 열리지 않은 길'}" title="${t.name}${open?'':' · 잠김'}"><span>${open?'○':'◇'}</span></button>`;}).join('')}<span class="ancient-map-current" style="left:${point[0]}%;top:${point[1]}%" title="현재 위치" aria-label="현재 위치"></span></div></div></div></div></div>`;
 }
 export function createAncientUI(api) {
   const {$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items,maps,prepareContentQA,regions}=api;
@@ -22,7 +24,7 @@ export function createAncientUI(api) {
     const s=state();
     if(s.ancient.country&&!isAdmin()){toast('이미 머물 나라를 정했다.');return;}
     if((s.progress.ancient||0)!==16&&!isAdmin()){toast('네 건국 이야기와 확인 문제를 먼저 마치자.');return;}
-    panel('어느 나라에 머물까?',`<p>머무는 마을은 달라도 세 나라와 가야의 역사를 모두 배우게 된다.</p><div class="ancient-country-cards">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-country="${id}">${imageTag('life-home-'+id+'-1',c.name+'의 작은 거처')}<b>${c.name}</b><small>${id==='goguryeo'?'산기슭의 거점':id==='baekje'?'남쪽 내륙 생활마을':'들판의 거점'}</small></button>`).join('')}</div><p class="note">어느 나라를 골라도 공격력·방어력·체력은 같다.</p>`,{wide:true});
+    panel('어느 나라에 머물까?',`<p>머무는 마을은 달라도 세 나라와 가야의 역사를 모두 배우게 된다.</p><div class="ancient-country-cards">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-country="${id}">${imageTag('life-home-'+id+'-1',c.name+'의 작은 거처')}<b>${c.name}</b><small>${VILLAGE_GEOGRAPHY[id].label}</small></button>`).join('')}</div><p class="note">어느 나라를 골라도 공격력·방어력·체력은 같다.</p>`,{wide:true});
     document.querySelectorAll('[data-country]').forEach(b=>b.onclick=()=>{
       const id=b.dataset.country,c=ANCIENT_COUNTRIES[id];
       panel(c.name+'에서 시작할까?',`<p>확정하면 이 나라에 내 거처를 마련한다.<br>이후에도 다른 나라의 필수 이야기를 함께 경험한다.</p><div class="row"><button id="country-back">다시 고르기</button><button class="primary" id="country-confirm">시작하기</button></div>`);
@@ -123,9 +125,12 @@ export function createAncientUI(api) {
     adminJump(ready.map,maps[ready.map].entities.find(e=>e.id===ready.target));
   }
   function journey(e){
-    const s=state(),country=s.ancient.country,to=e.to;
+    const s=state(),country=s.ancient.country,to=e.to,outbound=to==='ancient-han';
     if(!nearHanJourney(s,e)){toast('마을의 여행길 또는 한강의 귀환길에 가까이 가 보자.');return;}
-    panel(to==='ancient-han'?'한강으로 향하는 여행':'내 생활마을로 돌아가기',`<div class="han-journey"><span>⌂ ${names[country]} · ${VILLAGE_GEOGRAPHY[country].label}</span><i>길과 고개를 지나</i><span>≈ 역사 속 한강 유역</span></div><p>${esc(VILLAGE_GEOGRAPHY[country].route)}</p><p class="note">떨어진 지역 사이의 여행을 짧게 표현한 길이야. 정확한 역사적 주소나 축척은 아니야. 내 집과 밭은 생활마을에 그대로 있어.</p>${s.ancient.home.commerce.cart.active?'<p>수레를 끌고 이 여행길을 따라 이동해. 나루에서 직접 납품하자.</p>':''}<button id="han-journey-go" class="primary full">${to==='ancient-han'?'여행길을 따라 한강으로':'원래 마을로 돌아가기'}</button>`);
+    const village=`⌂ ${names[country]} · ${VILLAGE_GEOGRAPHY[country].label}`,han='≈ 역사 속 한강 유역';
+    const stops=outbound?[village,han]:[han,village];
+    const route=outbound?VILLAGE_GEOGRAPHY[country].route:VILLAGE_GEOGRAPHY[country].route.split(' → ').reverse().join(' → ');
+    panel(outbound?'한강으로 향하는 여행':'내 생활마을로 돌아가기',`<div class="han-journey"><small>출발</small><span>${stops[0]}</span><i>↓ 길과 고개를 지나 ↓</i><small>도착</small><span>${stops[1]}</span></div><p>${esc(route)}</p><p class="note">멀리 떨어진 두 지역을 여행하는 길이야. 내 집과 밭은 생활마을에 그대로 있어.</p>${s.ancient.home.commerce.cart.active?'<p>수레를 끌고 이 여행길을 따라 이동해. 나루에서 직접 납품하자.</p>':''}<button id="han-journey-go" class="primary full">${outbound?'여행길을 따라 한강으로':'원래 마을로 돌아가기'}</button>`);
     $('#han-journey-go').onclick=()=>{if(!nearHanJourney(state(),e)||state().ancient.country!==country)return;close();travel(to);};
   }
   function adminPanel() {

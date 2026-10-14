@@ -1,7 +1,7 @@
-import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=51';
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=51';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=51.1';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=51.1';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=51';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=51.1';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -201,7 +201,7 @@ export function ancientWorld(base,s) {
   return {...base,name:'한강 유역 · '+era.name,entities:[...base.entities.map(e=>{
     if(e.countryReturn)return {...e,to:c?.village||'ancient-origins'};
     if(e.centuryState==='sign')return {...e,lines:[era.name,era.text],banner:era.country};
-    if(e.centuryState==='resident')return {...e,art:ANCIENT_COUNTRIES[era.country].helperArt,lines:[era.text,'내 거처는 이 한강 지역과 떨어진 생활마을에 있어.']};
+    if(e.centuryState==='resident')return {...e,art:ANCIENT_COUNTRIES[era.country].helperArt,lines:[era.text,'네 거처는 이 한강 지역과 떨어진 생활마을에 있어.']};
     if(e.centuryState==='building')return {...e,art:'ancientShed',banner:era.country};
     if(e.type==='lifeDelivery')return {...e,art:ANCIENT_COUNTRIES[e.id==='life-han-workshop'&&era.secondary?era.secondary:era.country].helperArt};
     return e;

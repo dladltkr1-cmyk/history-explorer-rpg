@@ -1,8 +1,8 @@
-import {reputationDetails} from './ancient-history.js?v=51';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=51';
+import {reputationDetails} from './ancient-history.js?v=51.1';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=51.1';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=51';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=51";
+import {parkHorse} from './horse-state.js?v=51.1';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=51.1";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -19,16 +19,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=51";
-import { ASSETS } from "./assets.js?v=51";
+} from "./state.js?v=51.1";
+import { ASSETS } from "./assets.js?v=51.1";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=51';
-import {noteAncientVisit} from './ancient-state.js?v=51';
-import {createAncientUI} from './ancient-ui.js?v=51';
-import {createHomesteadUI} from './homestead-ui.js?v=51';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=51';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=51.1';
+import {noteAncientVisit} from './ancient-state.js?v=51.1';
+import {createAncientUI} from './ancient-ui.js?v=51.1';
+import {createHomesteadUI} from './homestead-ui.js?v=51.1';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=51.1';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=51';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=51.1';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -46,7 +46,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=51";
+} from "./economy.js?v=51.1";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -2783,6 +2783,7 @@ function draw(dt = 0) {
       w = 170;
       h = 145;
     }
+    if(e.id==='ancient-han-standard'){w=48;h=68;}
     if(e.lifeStage){[w,h]=HOME_LEVELS[e.lifeStage].house;}
     if(e.shopKind&&e.type==='house'){w=176;h=154;}
     if(e.type==='lifeMerchant'){w=48;h=72;}
@@ -2859,7 +2860,7 @@ function draw(dt = 0) {
       drawSprite("berries", x - 25, y + 4, 28, 28);
     }
     ctx.globalAlpha = 1;
-    if(e.banner){ctx.fillStyle=ANCIENT_COUNTRIES[e.banner].color;ctx.fillRect(x+25,y-h+15,20,15);ctx.fillStyle='#77583e';ctx.fillRect(x+24,y-h+12,3,40);}
+    if(e.banner)drawSprite('han-standard-'+e.banner,x+w*.32,y,28,40);
     if(e.type==='lifeWood'&&!e.ready){ctx.fillStyle='#6e7259';ctx.font='11px system-ui';ctx.textAlign='center';ctx.fillText('다시 생기는 중',x,y+15);}
     const mark = marker(e);
     if (mark) {
