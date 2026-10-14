@@ -26,4 +26,4 @@ export function completeHanHistoricalEvent(s,event){
 }
 export function previewHanHistory(s,phase,{admin=false}={}){if(!admin||!HAN_PHASES[phase])return false;s.ancient.history={revision:1,phase,events:[...HAN_PHASES[phase].events]};return true;}
 export function nearHanJourney(s,e){const c=s.ancient?.country;return Boolean(c&&e?.type==='exit'&&((s.map==='ancient-village-'+c&&e.id==='ancient-han-door-'+c&&e.to==='ancient-han')||(s.map==='ancient-han'&&e.id==='ancient-han-return'&&e.to==='ancient-village-'+c))&&Math.hypot(s.x-e.x,s.y-e.y)<1.8);}
-export function reputationDetails(n){const bounds=[0,10,30,55,80],names=['새로 온 사람','마을에 익숙한 사람','믿음받는 사람','이름난 사람','마을의 신뢰를 얻은 사람'];let i=bounds.findLastIndex(x=>n>=x);return {name:names[i],next:n===100?'최고 단계':i===4?'최고 단계 (100점)':names[i+1],remaining:n===100?0:(bounds[i+1]??100)-n};}
+export function reputationDetails(n){const bounds=[0,10,30,55,80],names=['새로 온 사람','마을에 익숙한 사람','믿음받는 사람','이름난 사람','마을의 신뢰를 얻은 사람'];let i=0;while(i+1<bounds.length&&n>=bounds[i+1])i++;return {name:names[i],next:n===100?'최고 단계':i===4?'최고 단계 (100점)':names[i+1],remaining:n===100?0:(bounds[i+1]??100)-n};}
