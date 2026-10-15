@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=52-reviewed');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=52-reviewed');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=52-reviewed');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=52-savefix');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=52-savefix');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=52-savefix');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 const intervals=new Map();let intervalId=0;globalThis.setInterval=(fn,ms)=>{intervals.set(++intervalId,{fn,ms});return intervalId;};globalThis.clearInterval=n=>intervals.delete(n);
@@ -25,9 +25,9 @@ const click=selector=>{const el=document.querySelector(selector);assert.ok(el,se
 function finishDialogue(){let count=0;while(document.querySelector('#next-dialogue')){assert.ok(count++<10);click('#next-dialogue');}}
 function approach(e){const st=qa.state();const spots=[[e.x-1.2,e.y],[e.x+1.2,e.y],[e.x,e.y+1.2],[e.x,e.y-1.2]];const p=spots.find(([x,y])=>!qa.blocked(x,y));assert.ok(p,'safe interaction spot '+e.id);st.x=p[0];st.y=p[1];qa.field();clock+=40;qa.tick(clock);click('#interact');}
 
-const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=52-reviewed');
-const {HOME_LEVELS,DECOR,DECOR_SLOTS,canPlaceDecor,placeDecor,decorPosition,upgradeHome,applyHomeRest}=await import(root+'/dist/homestead.js?v=52-reviewed');
-const {DECOR_VISUALS}=await import(root+'/dist/decor-spec.js?v=52-reviewed');
+const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=52-savefix');
+const {HOME_LEVELS,DECOR,DECOR_SLOTS,canPlaceDecor,placeDecor,decorPosition,upgradeHome,applyHomeRest}=await import(root+'/dist/homestead.js?v=52-savefix');
+const {DECOR_VISUALS}=await import(root+'/dist/decor-spec.js?v=52-savefix');
 qa.start(validate(structuredClone(original)));qa.field();const baseline=localStorage.getItem('history-explorer-save-v1');qa.login();
 const step=()=>{clock+=40;qa.tick(clock);};
 function openQA(){qa.decor().adminPanel();}
@@ -40,7 +40,7 @@ for(const [width,height]of [[1363,936],[1024,768],[768,1024]]){
    const slot=DECOR_SLOTS.slice(0,HOME_LEVELS[level].slots).find(v=>canPlaceDecor(st,v.id,id));if(!slot)continue;
    qa.travel('ancient-'+(slot.area==='room'?'home':'yard')+'-'+country);qa.decor().open();click('[data-decor-pick="'+id+'"]');click('[data-decor-site="'+slot.id+'"]');step();assert.ok(qa.decor().preview());const preview=qa.decor().preview();assert.equal(preview.w,DECOR_VISUALS[id].w);assert.equal(preview.h,DECOR_VISUALS[id].h);
    for(const button of document.querySelectorAll('[data-decor-site]')){assert.ok(parseFloat(button.style.left)>=24&&parseFloat(button.style.left)<=width-24);assert.ok(parseFloat(button.style.top)>78&&parseFloat(button.style.top)<height-(height<600?180:240)-30,'touch site above inventory');}
-   const unchanged=JSON.stringify(h.placements);click('#decor-cancel-preview');assert.equal(JSON.stringify(h.placements),unchanged);click('[data-decor-pick="'+id+'"]');click('[data-decor-site="'+slot.id+'"]');click('#decor-place');assert.equal(h.placements[slot.id],id);assert.equal(h.decorations[id],2);click('#decor-exit');assert.equal(qa.screen(),'');
+   const unchanged=JSON.stringify(h.placements);click('#decor-cancel-preview');assert.equal(JSON.stringify(h.placements),unchanged);click('[data-decor-pick="'+id+'"]');click('[data-decor-site="'+slot.id+'"]');click('#decor-place');assert.equal(h.placements[slot.id],id);assert.equal(h.decorations[id],2);assert.equal(validate(JSON.parse(JSON.stringify(st))).ancient.home.placements[slot.id],id,'every fresh visual placement must immediately reload');assert.equal(h.lamps[slot.id],undefined);click('#decor-exit');assert.equal(qa.screen(),'');
    const placed=qa.currentMap().entities.find(e=>e.slot===slot.id);assert.equal(placed.w,DECOR_VISUALS[id].w);assert.ok(placed.x>=1&&placed.x<qa.currentMap().w-1);if(placed.use){approachExact(placed);assert.ok(document.querySelector('.decor-use-head'));if(placed.use==='harvest')assert.equal(document.querySelectorAll('.decor-harvest>div').length,5);else if(placed.use==='lamp'){click('#decor-use');assert.equal(h.lamps[slot.id],true);approachExact(qa.currentMap().entities.find(e=>e.slot===slot.id));click('#decor-use');assert.equal(h.lamps[slot.id],false);}else{const coins=st.coins,inv=JSON.stringify(st.inventory),beforeHP=st.hp;st.hp=1;st.energy=1;click('#decor-use');assert.ok(qa.decor().pose);step();click('#decor-rise');assert.equal(qa.decor().pose,null);assert.equal(st.coins,coins);assert.equal(JSON.stringify(st.inventory),inv);if(placed.use==='rest'){assert.equal(st.hp,Math.ceil(abilities(st).hp*.4));assert.equal(st.energy,20);}else{assert.equal(st.hp,1);assert.equal(st.energy,1);}st.hp=beforeHP;}}
    qa.field();assert.equal(placeDecor(st,slot.id,null),true);assert.equal(h.decorations[id],2);assert.equal(h.lamps[slot.id],undefined);
   }
@@ -56,6 +56,7 @@ st.map='ancient-shop-baekje-wood';st.x=5;st.y=4.9;
 for(const n of [2,3,4]){assert.equal(upgradeHome(st),true);assert.equal(h.level,n);assert.equal(h.lamps['room-1'],true);assert.equal(h.placements['room-1'],'clayLamp');assert.equal(JSON.stringify(h.decorations),owned);}
 const legacy=structuredClone(st);delete legacy.ancient.home.lamps;const migrated=validate(legacy);assert.deepEqual(migrated.ancient.home.lamps,{});assert.equal(migrated.saveVersion,3);assert.equal(JSON.stringify(migrated.ancient.home.decorations),owned);
 for(const [id,d]of Object.entries(DECOR))for(const slot of DECOR_SLOTS.filter(v=>(d.area==='both'||d.area===v.area)&&(!d.wall||v.wall))){const old=structuredClone(st);old.ancient.home.placements={[slot.id]:id};old.ancient.home.lamps={};delete old.ancient.home.lamps;const back=validate(old);assert.equal(back.ancient.home.placements[slot.id],id,'grandfathered v51.2 slot '+id+' '+slot.id);}
+const early52=structuredClone(st);early52.ancient.home.lamps={'room-1':null};const repaired=validate(early52);assert.deepEqual(repaired.ancient.home.lamps,{});assert.deepEqual(repaired.ancient.home.placements,st.ancient.home.placements);assert.deepEqual(repaired.ancient.home.decorations,st.ancient.home.decorations);assert.equal(repaired.coins,st.coins);
 const restored=validate(JSON.parse(JSON.stringify(st)));assert.equal(restored.ancient.home.lamps['room-1'],true);
 for(const bad of [true,{'room-2':true},{'room-1':1}]){const corrupt=structuredClone(st);corrupt.ancient.home.lamps=bad;assert.throws(()=>validate(corrupt));}
 qa.travel(ANCIENT_COUNTRIES.baekje.home);

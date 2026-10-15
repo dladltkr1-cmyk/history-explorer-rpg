@@ -1,5 +1,5 @@
-import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=52-reviewed';
-import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=52-reviewed';
+import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=52-savefix';
+import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=52-savefix';
 export function createDecorUI(api){
  const {$,panel,imageTag,esc,save,hud,toast}=api;let mode=null,pose=null,poseTimer,legacyTrial=null;
  const state=()=>api.state(),home=()=>state().ancient.home,area=()=>state().map.includes('-yard-')?'yard':'room';
@@ -26,10 +26,10 @@ export function createDecorUI(api){
   $('#decor-cancel-preview').onclick=()=>{mode.id=null;mode.slot=null;mode.from=null;render();};
   $('#decor-remove').onclick=()=>{const slot=mode.slot;if(slot&&placeDecor(state(),slot,null)){save();hud();toast('살림을 보관했다.');mode.slot=null;render();}};
   $('#decor-place').onclick=()=>{
-   if(!mode.slot||!candidate(mode.slot))return;const h=home(),from=mode.from,oldFrom=from&&h.placements[from],oldLit=from&&h.lamps[from];
+   if(!mode.slot||!candidate(mode.slot))return;const h=home(),from=mode.from,oldFrom=from&&h.placements[from],oldLit=from?h.lamps[from]:undefined;
    if(from){delete h.placements[from];delete h.lamps[from];}
-   if(!placeDecor(state(),mode.slot,mode.id)){if(from){h.placements[from]=oldFrom;if(oldLit!==undefined)h.lamps[from]=oldLit;}return;}
-   if(oldLit!==undefined)h.lamps[mode.slot]=oldLit;save();hud();toast(DECOR[mode.id].name+' 배치 완료!');mode.from=null;mode.slot=null;mode.id=null;render();
+   if(!placeDecor(state(),mode.slot,mode.id)){if(from){h.placements[from]=oldFrom;if(typeof oldLit==='boolean')h.lamps[from]=oldLit;}return;}
+   if(typeof oldLit==='boolean')h.lamps[mode.slot]=oldLit;save();hud();toast(DECOR[mode.id].name+' 배치 완료!');mode.from=null;mode.slot=null;mode.id=null;render();
   };update();project(camera(innerWidth,innerHeight,api.map()));
  }
  function update(){if(!mode)return;for(const b of document.querySelectorAll('[data-decor-pick]'))b.setAttribute('aria-pressed',String(b.dataset.decorPick===mode.id));for(const b of document.querySelectorAll('[data-decor-site]')){b.classList.toggle('allowed',Boolean(mode.id&&candidate(b.dataset.decorSite)));b.classList.toggle('chosen',b.dataset.decorSite===mode.slot);b.setAttribute('aria-pressed',String(b.dataset.decorSite===mode.slot));}

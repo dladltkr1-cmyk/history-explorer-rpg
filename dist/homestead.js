@@ -1,6 +1,6 @@
-import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=52-reviewed';
-import {atLifeShop} from './life-shops.js?v=52-reviewed';
-import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=52-reviewed';
+import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=52-savefix';
+import {atLifeShop} from './life-shops.js?v=52-savefix';
+import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=52-savefix';
 // Shared life content: no quest/map initialization and no wall-clock mutation on render.
 export const CROPS = {
   millet:{name:'조',item:'millet',minutes:3,sale:3,seed:2,yield:4,kind:'field',color:'#c8ab57'},
@@ -84,6 +84,9 @@ export function validateLife(home){
   }
   if(!plain(home.placements))throw Error('꾸미기 배치 기록이 올바르지 않다.');
   validateCommerce(home);
+  // Repair the harmless null marker written by the first v52 visual-placement build.
+  // Ownership and placement remain intact; omitted lamp state means off.
+  if(plain(home.lamps))for(const [slot,lit]of Object.entries(home.lamps))if(lit===null&&DECOR_SLOTS.some(v=>v.id===slot)&&DECOR[home.placements[slot]])delete home.lamps[slot];
   if(!plain(home.lamps)||Object.entries(home.lamps).some(([slot,lit])=>typeof lit!=='boolean'||!DECOR_SLOTS.some(v=>v.id===slot)||!isLamp(home.placements[slot])))throw Error('등잔 기록이 올바르지 않다.');
   const used={};for(const [slot,id]of Object.entries(home.placements)){
     const spot=DECOR_SLOTS.find(v=>v.id===slot),item=DECOR[id];

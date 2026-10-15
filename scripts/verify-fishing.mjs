@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class {set src(v){} get complete(){return false;}};
 const {fresh,validate,advance,ITEMS,abilities}=await import('../dist/state.js');
-const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=52-reviewed');
-const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=52-reviewed');
+const {REGIONS,MAPS}=await import('../dist/regions/index.js?v=52-savefix');
+const {FISHING_QA,FISHING_SITES,prepareContentQA,INTERACTION_QA}=await import('../dist/regions/fishing-content.js?v=52-savefix');
 const {makeThread,pickBranch,makeNeedle,makeRod,fishingBoneDrop,createFishing,fishingPosition,pullFishing,nextFishingRound,fishingObjective,FISHING_PROFILES,fishingWait,fishingCooldown,restFishingSite,fishingSiteKey}=await import('../dist/fishing.js?v=44.2');
 const {rollDrop,cookItem,salePrice}=await import('../dist/economy.js');
 const {inFishingRiver}=await import('../dist/waterside.js');
