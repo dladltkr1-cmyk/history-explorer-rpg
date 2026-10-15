@@ -1,5 +1,5 @@
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
-import {HOME_PALETTES} from '../dist/homestead.js?v=52-furniture';
+import {HOME_PALETTES} from '../dist/homestead.js?v=52-furniture-final';
 const root=new URL('../dist/assets/shops/',import.meta.url);await mkdir(root,{recursive:true});
 const p=(d,f,s='#624c35',w=3)=>`<path d="${d}" fill="${f}" stroke="${s}" stroke-width="${w}"/>`,l=(d,c='#dbc29c',w=2)=>p(d,'none',c,w),r=(x,y,w,h,f)=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="${f}" stroke="#624c35" stroke-width="3"/>`,e=(x,y,rx,ry,f,s='none')=>`<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="${f}" stroke="${s}" stroke-width="2"/>`;
 const svg=(b,w=256,h=224)=>`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><g stroke-linecap="round" stroke-linejoin="round">${b}</g></svg>`;

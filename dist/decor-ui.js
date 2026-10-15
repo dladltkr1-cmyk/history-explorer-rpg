@@ -1,5 +1,5 @@
-import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=52-furniture';
-import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=52-furniture';
+import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=52-furniture-final';
+import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=52-furniture-final';
 export function createDecorUI(api){
  const {$,panel,imageTag,esc,save,hud,toast}=api;let mode=null,pose=null,poseTimer,legacyTrial=null;
  const state=()=>api.state(),home=()=>state().ancient.home,area=()=>state().map.includes('-yard-')?'yard':'room';
@@ -37,9 +37,9 @@ export function createDecorUI(api){
   $('#decor-choice').textContent=slot?(mode.id?DECOR[mode.id].name+' · '+slot.name+(ok?'':' · 이 자리에는 놓을 수 없어'):slot.name):'실제 공간을 보며 골라 줘.';
  }
  function camera(width,height,map){
-  if(!mode)return null;const dock=height<600?180:218,top=78;
+  if(!mode)return null;const measured=document.querySelector('#decor-mode .decor-dock')?.getBoundingClientRect().height||0;const dock=Math.max(height<600?180:240,measured)+8,top=78;
   const box=area()==='room'?{left:.7,right:map.w-.7,top:.6,bottom:map.h-.7}:{left:1.4,right:22.5,top:2.5,bottom:16.6};
-  const zoom=Math.min(1.12,(width-48)/((box.right-box.left)*64),(height-dock-top-20)/((box.bottom-box.top)*64));
+  const zoom=Math.min(1.12,(width-48)/((box.right-box.left)*64),(height-dock-top-28)/((box.bottom-box.top)*64));
   return {zoom,x:(box.left+box.right)*32-width/(2*zoom),y:box.top*64-top/zoom,viewW:width/zoom,viewH:height/zoom};
  }
  function project(cam){if(!mode)return;if(mode.map!==state().map){api.close();return;}for(const b of document.querySelectorAll('[data-decor-site]')){const slot=DECOR_SLOTS.find(v=>v.id===b.dataset.decorSite),[x,y]=decorPosition(slot,home().level,mode.id||home().placements[slot.id]);b.style.left=(x*64-cam.x)*cam.zoom+'px';b.style.top=(y*64-cam.y)*cam.zoom+'px';}}
