@@ -2,8 +2,8 @@ import prehistoric from './prehistoric.js';import gojoseon from './gojoseon.js';
 import {paleolithic,bronze,expand} from './expansion.js';
 import {addExploration} from './exploration.js?v=44.2';
 import {growth} from './nations.js?v=37.1';
-import {addFishing} from './fishing-content.js?v=52-savefix';
-import {ancient} from './ancient.js?v=52-savefix';
+import {addFishing} from './fishing-content.js?v=52-complete';
+import {ancient} from './ancient.js?v=52-complete';
 expand(prehistoric,gojoseon);
 // Keep each era's story objects and optional activities in their own period.
 const neoCave=prehistoric.maps.find(m=>m.id==='pre-cave');

@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 globalThis.Image=class{set src(v){}};
-const {fresh,validate}=await import('../dist/state.js?v=52-savefix');
-import {MAPS,REGIONS} from '../dist/regions/index.js?v=52-savefix';
-import {prepareAncientQA} from '../dist/ancient-state.js?v=52-savefix';
-import {CROPS,DECOR,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,plantCrop,harvestCrop} from '../dist/homestead.js?v=52-savefix';
-import {buyTool,commissionCart,buildCart} from '../dist/life-progression.js?v=52-savefix';
-import {LIFE_SHOPS,shopMap,SHOP_MERCHANT,atLifeShop,buyShopHide,WOOD_SPOTS,woodId,woodReady,collectWood,WOOD_REGROW_MS} from '../dist/life-shops.js?v=52-savefix';
-import {ASSETS} from '../dist/assets.js?v=52-savefix';
+const {fresh,validate}=await import('../dist/state.js?v=52-complete');
+import {MAPS,REGIONS} from '../dist/regions/index.js?v=52-complete';
+import {prepareAncientQA} from '../dist/ancient-state.js?v=52-complete';
+import {CROPS,DECOR,buyLife,buyLumber,upgradeHome,openPaddy,placeDecor,plantCrop,harvestCrop} from '../dist/homestead.js?v=52-complete';
+import {buyTool,commissionCart,buildCart} from '../dist/life-progression.js?v=52-complete';
+import {LIFE_SHOPS,shopMap,SHOP_MERCHANT,atLifeShop,buyShopHide,WOOD_SPOTS,woodId,woodReady,collectWood,WOOD_REGROW_MS} from '../dist/life-shops.js?v=52-complete';
+import {ASSETS} from '../dist/assets.js?v=52-complete';
 const visit=(s,k)=>Object.assign(s,{map:shopMap(s.ancient.country,k),x:5,y:4.9});
 const acts=[['seed',s=>buyLife(s,'seed','millet',5)],['decor',s=>buyLife(s,'decor','clayJar')],['tool',s=>buyTool(s,'seedBag')],['tool',buyShopHide],['wood',s=>buyLumber(s,5)],['wood',upgradeHome],['wood',openPaddy],['wood',commissionCart],['wood',buildCart]];
 for(const c of ['goguryeo','baekje','silla']){

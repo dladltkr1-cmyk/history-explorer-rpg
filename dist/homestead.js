@@ -1,6 +1,6 @@
-import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=52-savefix';
-import {atLifeShop} from './life-shops.js?v=52-savefix';
-import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=52-savefix';
+import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=52-complete';
+import {atLifeShop} from './life-shops.js?v=52-complete';
+import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=52-complete';
 // Shared life content: no quest/map initialization and no wall-clock mutation on render.
 export const CROPS = {
   millet:{name:'조',item:'millet',minutes:3,sale:3,seed:2,yield:4,kind:'field',color:'#c8ab57'},
@@ -176,7 +176,7 @@ export function craftDecor(s,id){
 export function meetsLifeRequirements(s,{homeLevel=1,reputation=0,produced={},paddy=false}={}){
   const h=s.ancient?.home;return Boolean(h?.owned&&h.level>=homeLevel&&h.reputation>=reputation&&(!paddy||h.paddies>0)&&Object.entries(produced).every(([id,n])=>(h.harvested[id]||0)>=n));
 }
-export function roomLayout(level){const [w,h]=HOME_LEVELS[level].room;return {w,h,start:{x:w/2+1.3,y:h-2.8},points:{'ancient-home-exit':[w/2,h-1.7],'ancient-storage':[1.7,2.8],'ancient-home-fire':[w-2.6,h-2.5],'ancient-chapters':[w/2,2.7],'ancient-display':[w-2.2,2.8],'ancient-bed':[2.8,h-2.1],'ancient-jars':[w-2.5,h-4.3],'life-board':level===1?[w/2,h-3.9]:[w/2+1.6,h-3.2]}};}
+export function roomLayout(level){const [w,h]=HOME_LEVELS[level].room;return {w,h,start:{x:w/2+1.3,y:h-2.8},points:{'ancient-home-exit':[w/2,h-1.7],'ancient-storage':[1.7,2.8],'ancient-home-fire':[w-2.6,h-2.5],'ancient-chapters':[w/2,2.7],'ancient-display':[w-2.2,2.8],'ancient-bed':[2.8,h-2.1],'ancient-jars':[w-2.5,h-4.3],'life-board':level===1?[w/2,h-3.9]:level===2?[w*.7,4.1]:[w/2+1.6,h-3.2]}};}
 export function plotPosition(id){const n=Number(id.split('-')[1])-1;return id.startsWith('paddy')?[17+n*2.5,13.3]:[6+(n%4)*2.5,10.5+Math.floor(n/4)*3];}
 export function decorPosition(slot,level,id){return decorAnchor(slot,level,HOME_LEVELS[level].room,id);}
 export function setLifeLevel(home,level){

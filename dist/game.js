@@ -1,10 +1,10 @@
-import {createDecorUI} from './decor-ui.js?v=52-savefix';
-import {DECOR_VISUALS} from './decor-spec.js?v=52-savefix';
-import {reputationDetails} from './ancient-history.js?v=52-savefix';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=52-savefix';
+import {createDecorUI} from './decor-ui.js?v=52-complete';
+import {DECOR_VISUALS} from './decor-spec.js?v=52-complete';
+import {reputationDetails} from './ancient-history.js?v=52-complete';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=52-complete';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=52-savefix';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=52-savefix";
+import {parkHorse} from './horse-state.js?v=52-complete';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=52-complete";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -21,16 +21,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=52-savefix";
-import { ASSETS } from "./assets.js?v=52-savefix";
+} from "./state.js?v=52-complete";
+import { ASSETS } from "./assets.js?v=52-complete";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=52-savefix';
-import {noteAncientVisit} from './ancient-state.js?v=52-savefix';
-import {createAncientUI} from './ancient-ui.js?v=52-savefix';
-import {createHomesteadUI} from './homestead-ui.js?v=52-savefix';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=52-savefix';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=52-complete';
+import {noteAncientVisit} from './ancient-state.js?v=52-complete';
+import {createAncientUI} from './ancient-ui.js?v=52-complete';
+import {createHomesteadUI} from './homestead-ui.js?v=52-complete';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=52-complete';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=52-savefix';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=52-complete';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -48,7 +48,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=52-savefix";
+} from "./economy.js?v=52-complete";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
