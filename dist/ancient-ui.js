@@ -1,7 +1,7 @@
-import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=52-furniture-final';
-import {parkHorse,retrieveHorse} from './horse-state.js?v=52-furniture-final';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=52-furniture-final';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=52-furniture-final';
+import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=52-reviewed';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=52-reviewed';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=52-reviewed';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=52-reviewed';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.

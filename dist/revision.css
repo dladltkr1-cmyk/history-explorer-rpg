@@ -886,3 +886,6 @@
 @media(max-height:600px){.decor-inventory>button{min-height:76px}.decor-inventory img{width:50px;height:42px}.decor-toolbar{top:5px}.decor-dock p{margin-bottom:0}.decor-toolbar strong{font-size:15px}}
 .decor-store article{grid-template-columns:112px minmax(0,1fr)}
 @media(max-width:800px){.decor-store article{grid-template-columns:100px minmax(0,1fr)}.life-shop-grid.decor-store article>img{width:96px;height:118px}}
+
+.decorating #hud,.decorating #hud *{visibility:hidden!important}
+.decor-store article small{display:block;margin-top:6px}

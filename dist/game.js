@@ -1,10 +1,10 @@
-import {createDecorUI} from './decor-ui.js?v=52-furniture-final';
-import {DECOR_VISUALS} from './decor-spec.js?v=52-furniture-final';
-import {reputationDetails} from './ancient-history.js?v=52-furniture-final';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=52-furniture-final';
+import {createDecorUI} from './decor-ui.js?v=52-reviewed';
+import {DECOR_VISUALS} from './decor-spec.js?v=52-reviewed';
+import {reputationDetails} from './ancient-history.js?v=52-reviewed';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=52-reviewed';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=52-furniture-final';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=52-furniture-final";
+import {parkHorse} from './horse-state.js?v=52-reviewed';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=52-reviewed";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -21,16 +21,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=52-furniture-final";
-import { ASSETS } from "./assets.js?v=52-furniture-final";
+} from "./state.js?v=52-reviewed";
+import { ASSETS } from "./assets.js?v=52-reviewed";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=52-furniture-final';
-import {noteAncientVisit} from './ancient-state.js?v=52-furniture-final';
-import {createAncientUI} from './ancient-ui.js?v=52-furniture-final';
-import {createHomesteadUI} from './homestead-ui.js?v=52-furniture-final';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=52-furniture-final';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=52-reviewed';
+import {noteAncientVisit} from './ancient-state.js?v=52-reviewed';
+import {createAncientUI} from './ancient-ui.js?v=52-reviewed';
+import {createHomesteadUI} from './homestead-ui.js?v=52-reviewed';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=52-reviewed';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=52-furniture-final';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=52-reviewed';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -48,7 +48,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=52-furniture-final";
+} from "./economy.js?v=52-reviewed";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -2775,7 +2775,12 @@ function draw(dt = 0) {
   if (m.id==='nation-samhan-field' && !s.completedQuests.includes('samhan-deliver'))
     objects=objects.filter(o=>o.id!=='samhan-grainstack');
   const preview=decorUI?.preview();
-  if(preview){objects=objects.filter(e=>e.type!=='lifeDecor'||(e.slot!==preview.slot&&e.slot!==decorUI.mode.from));objects.push(preview);}
+  if(preview){
+    objects=objects.filter(e=>(e.type!=='lifeDecor'||(e.slot!==preview.slot&&e.slot!==decorUI.mode.from))&&
+      !(e.id==='ancient-bed'&&(preview.decorId==='fineBedding'||(preview.slot==='room-1'&&(preview.large||preview.decorId==='lowTable'))))&&
+      !(e.id==='ancient-jars'&&preview.slot.startsWith('room-')));
+    objects.push(preview);
+  }
   objects.sort((a, b) => Number(Boolean(b.floor))-Number(Boolean(a.floor)) || a.y - b.y);
   for (const e of objects) {
     let x = e.x * T,

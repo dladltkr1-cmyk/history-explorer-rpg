@@ -1,7 +1,7 @@
-import {decorDescription} from './decor-spec.js?v=52-furniture-final';
-import {LIFE_SHOPS,shopMap,atLifeShop,woodReady,collectWood,woodId} from './life-shops.js?v=52-furniture-final';
-import {CROPS,DECOR,HOME_LEVELS,setLifeLevel,buyLife,buyLumber,upgradeHome,openPaddy} from './homestead.js?v=52-furniture-final';
-import {canGrow,UPGRADE_GATES} from './life-progression.js?v=52-furniture-final';
+import {decorDescription} from './decor-spec.js?v=52-reviewed';
+import {LIFE_SHOPS,shopMap,atLifeShop,woodReady,collectWood,woodId} from './life-shops.js?v=52-reviewed';
+import {CROPS,DECOR,HOME_LEVELS,setLifeLevel,buyLife,buyLumber,upgradeHome,openPaddy} from './homestead.js?v=52-reviewed';
+import {canGrow,UPGRADE_GATES} from './life-progression.js?v=52-reviewed';
 export function createLifeShopUI(api){
  const {$,panel,imageTag,toast,save,hud,esc}=api,s=()=>api.state(),h=()=>s().ancient.home;
  const done=text=>{save();hud();toast(text);};
@@ -12,7 +12,7 @@ export function createLifeShopUI(api){
   if(kind==='tool')api.bindTools(()=>show(kind));
   document.querySelectorAll('[data-store-seed]').forEach(b=>b.onclick=()=>{if(buyLife(s(),'seed',b.dataset.storeSeed,Number(b.dataset.count)))done(CROPS[b.dataset.storeSeed].name+' 씨앗 '+b.dataset.count+'개를 샀다.');show(kind);});
   document.querySelectorAll('[data-store-lumber]').forEach(b=>b.onclick=()=>{if(buyLumber(s(),Number(b.dataset.storeLumber)))done('목재 '+b.dataset.storeLumber+'개를 샀다.');show(kind);});
-  document.querySelectorAll('[data-store-decor]').forEach(b=>b.onclick=()=>{if(buyLife(s(),'decor',b.dataset.storeDecor))done(DECOR[b.dataset.storeDecor].name+'을 샀다.');show(kind);});
+  document.querySelectorAll('[data-store-decor]').forEach(b=>b.onclick=()=>{if(buyLife(s(),'decor',b.dataset.storeDecor))done(DECOR[b.dataset.storeDecor].name+' 구입 완료!');show(kind);});
   if($('#store-upgrade'))$('#store-upgrade').onclick=()=>{if(!atLifeShop(s(),'wood')||!canGrow(s()))return;const next=HOME_LEVELS[h().level+1];panel('거처 확장 의뢰',`<h3>${h().level+1}단계로 키울까?</h3><p>${next.coins}엽전 · 목재 ${next.lumber}개를 쓴다. 심은 작물과 살림은 그대로 남아.</p><button id="store-upgrade-confirm" class="primary full">집 키우기</button><button id="store-upgrade-back" class="full">나중에</button>`);$('#store-upgrade-confirm').onclick=()=>{if(upgradeHome(s())){api.refreshWorld();done('거처가 '+h().level+'단계로 자랐다!');}show('wood');};$('#store-upgrade-back').onclick=()=>show('wood');};
   if($('#store-paddy'))$('#store-paddy').onclick=()=>{if(openPaddy(s()))done('내 마당에 논 한 칸을 열었다.');show('wood');};
   if($('#store-cart'))$('#store-cart').onclick=api.cart;
