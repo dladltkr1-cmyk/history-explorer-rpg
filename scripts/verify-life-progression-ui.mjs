@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=51.2');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=51.2');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=51.2');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=52');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=52');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=52');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 const intervals=new Map();let intervalId=0;globalThis.setInterval=(fn,ms)=>{intervals.set(++intervalId,{fn,ms});return intervalId;};globalThis.clearInterval=n=>intervals.delete(n);
@@ -25,19 +25,19 @@ const click=selector=>{const el=document.querySelector(selector);assert.ok(el,se
 function finishDialogue(){let count=0;while(document.querySelector('#next-dialogue')){assert.ok(count++<10);click('#next-dialogue');}}
 function approach(e){const st=qa.state();const spots=[[e.x-1.2,e.y],[e.x+1.2,e.y],[e.x,e.y+1.2],[e.x,e.y-1.2]];const p=spots.find(([x,y])=>!qa.blocked(x,y));assert.ok(p,'safe interaction spot '+e.id);st.x=p[0];st.y=p[1];qa.field();clock+=40;qa.tick(clock);click('#interact');}
 
-const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=51.2');
-const {HOME_LEVELS,CROPS,plotState,freshLife}=await import(root+'/dist/homestead.js?v=51.2');
-const {salePrice}=await import(root+'/dist/economy.js?v=51.2');
-const {ITEMS}=await import(root+'/dist/state.js?v=51.2');
+const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=52');
+const {HOME_LEVELS,CROPS,plotState,freshLife}=await import(root+'/dist/homestead.js?v=52');
+const {salePrice}=await import(root+'/dist/economy.js?v=52');
+const {ITEMS}=await import(root+'/dist/state.js?v=52');
 const initial=localStorage.getItem('history-explorer-save-v1');qa.login();
 const pulse=()=>{for(const entry of intervals.values())if(entry.ms===500)entry.fn();};
 const lifeTimers=()=>[...intervals.values()].filter(v=>v.ms===500).length;
 const open=()=>{qa.field();click('#menu-btn');click('#life-home-menu');};
 const tab=name=>click('[data-life-tab="'+name+'"]');
-const {shopMap}=await import(root+'/dist/life-shops.js?v=51.2');
+const {shopMap}=await import(root+'/dist/life-shops.js?v=52');
 const enterShop=kind=>{qa.field();qa.travel(shopMap(qa.state().ancient.country,kind));qa.state().x=5;qa.state().y=4.9;qa.life.shops.show(kind);};
 const returnHome=()=>{qa.travel('ancient-home-'+qa.state().ancient.country);qa.life.open();};
-const {LIFE_ORDERS,TRANSPORTS,LIFE_TOOLS,ensureOrders}=await import(root+'/dist/life-progression.js?v=51.2');
+const {LIFE_ORDERS,TRANSPORTS,LIFE_TOOLS,ensureOrders}=await import(root+'/dist/life-progression.js?v=52');
 for(const [width,height]of [[1363,936],[1024,768],[768,1024]])for(const country of Object.keys(ANCIENT_COUNTRIES)){
  globalThis.innerWidth=width;globalThis.innerHeight=height;prepareAncientQA(qa.state(),'4c',{country});let st=qa.state();const h=st.ancient.home;Object.assign(h,freshLife());st.coins=0;st.inventory.lumber=2;st.inventory.fishingrod=0;st.artifacts.push('fire');h.harvested.millet=0;h.reputation=0;h.commerce.orders=[];h.commerce.completed=0;h.commerce.history=[];h.commerce.tools={seedBag:false,sickle:false,hearth:false};h.plots.forEach(p=>{p.crop=null;p.plantedAt=0});h.seeds.millet=2;
  qa.travel('ancient-home-'+country);qa.life.open('growth');assert.equal(document.querySelector('#life-upgrade'),null);qa.life.open('farm');assert.equal(document.querySelector('#life-harvest-all').disabled,true);

@@ -1,8 +1,10 @@
-import {reputationDetails} from './ancient-history.js?v=51.2';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=51.2';
+import {createDecorUI} from './decor-ui.js?v=52';
+import {DECOR_VISUALS} from './decor-spec.js?v=52';
+import {reputationDetails} from './ancient-history.js?v=52';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=52';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=51.2';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=51.2";
+import {parkHorse} from './horse-state.js?v=52';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=52";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -19,16 +21,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=51.2";
-import { ASSETS } from "./assets.js?v=51.2";
+} from "./state.js?v=52";
+import { ASSETS } from "./assets.js?v=52";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=51.2';
-import {noteAncientVisit} from './ancient-state.js?v=51.2';
-import {createAncientUI} from './ancient-ui.js?v=51.2';
-import {createHomesteadUI} from './homestead-ui.js?v=51.2';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState} from './homestead.js?v=51.2';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=52';
+import {noteAncientVisit} from './ancient-state.js?v=52';
+import {createAncientUI} from './ancient-ui.js?v=52';
+import {createHomesteadUI} from './homestead-ui.js?v=52';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=52';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=51.2';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=52';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -46,7 +48,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=51.2";
+} from "./economy.js?v=52";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -103,6 +105,7 @@ let s = fresh("탐험가", "boy"),
   questPinned = false,
   questPeekTimer,
   stopFishing = null;
+let decorUI=null;
 const fieldCamera = createFieldCamera();
 let cameraDirection = {x:0,y:0};
 s.map = "paleo-camp";
@@ -122,7 +125,8 @@ const currentMap=()=>ancientWorld(MAPS[s.map],s);
 const canMount=()=>!s.ancient?.home?.commerce?.cart.active&&(s.map.startsWith('nation-') || (MAPS[s.map]?.ancient && MAPS[s.map].theme!=='room'));
 const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel,prepareMounted});
 let lifeShopGuide=null;
-const homesteadUI=createHomesteadUI({$,esc,panel,close,guideShop:kind=>{lifeShopGuide={kind,country:s.ancient.country};toast('마을 북동쪽 · '+LIFE_SHOPS[kind].name+'를 찾아보자.');},items:ITEMS,cooking:COOKING,cook:(id,n)=>cookItem(s,id,n),rest:()=>{const cozy=Object.values(s.ancient.home.placements).includes('fineBedding');s.hp=Math.max(s.hp,Math.ceil(abilities(s).hp*(cozy?.4:.3)));s.energy=20;save();hud();restMenu({art:'campfire'});},restoreTrial:()=>{s=validate(structuredClone(s));},imageTag,save,hud,toast,travel,finishEvent,state:()=>s,admin:()=>adminMode,adminPanel,adminJump,prepareAncient:stage=>ancientUI.prepare(stage),asset:art=>ASSETS[art],sell:(id,n)=>sellItem(s,ITEMS,id,n),selling,setCleanup:fn=>{stopFishing=fn;},refreshWorld:()=>{fieldCamera.reset();if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const start=roomLayout(s.ancient.home.level).start;s.x=start.x;s.y=start.y;}}});
+const homesteadUI=createHomesteadUI({$,esc,panel,close,decorate:()=>decorUI.open(),guideShop:kind=>{lifeShopGuide={kind,country:s.ancient.country};toast('마을 북동쪽 · '+LIFE_SHOPS[kind].name+'를 찾아보자.');},items:ITEMS,cooking:COOKING,cook:(id,n)=>cookItem(s,id,n),rest:()=>{applyHomeRest(s,abilities(s).hp);save();hud();restMenu({art:'campfire'});},restoreTrial:()=>{s=validate(structuredClone(s));},imageTag,save,hud,toast,travel,finishEvent,state:()=>s,admin:()=>adminMode,adminPanel,adminJump,prepareAncient:stage=>ancientUI.prepare(stage),asset:art=>ASSETS[art],sell:(id,n)=>sellItem(s,ITEMS,id,n),selling,setCleanup:fn=>{stopFishing=fn;},refreshWorld:()=>{fieldCamera.reset();if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const start=roomLayout(s.ancient.home.level).start;s.x=start.x;s.y=start.y;}}});
+decorUI=createDecorUI({$,panel,imageTag,esc,save,hud,toast,close,travel,state:()=>s,pause:type=>{screen=type;keys.clear();},rest:()=>applyHomeRest(s,abilities(s).hp),admin:()=>adminMode,prepareAncient:stage=>ancientUI.prepare(stage),adminJump,adminPanel,homeAdmin:()=>homesteadUI.adminPanel(),restoreState:old=>{s=validate(old);fieldCamera.reset();}});
 function toast(text) {
   if(!$("#reputation-gain")?.hidden)text=text.replace(/(?: · |, )?평판 \+\d+/g,'');
   $("#toast").textContent = text;
@@ -204,6 +208,8 @@ function setAvatarImage(el, direction = "front", pose = "idle") {
   if(img.complete && img.naturalWidth)show();else img.addEventListener('load',show,{once:true});
 }
 function close() {
+  if(decorUI?.mode)fieldCamera.reset();
+  decorUI?.cancel();
   stopFishing?.(); stopFishing=null;
   overlay.hidden = true;
   overlay.innerHTML = "";
@@ -216,6 +222,7 @@ function panel(
   body,
   { wide = false, closable = true, type = "panel" } = {},
 ) {
+  decorUI?.cancel();
   stopFishing?.(); stopFishing=null;
   keys.clear();
   screen = type;
@@ -698,6 +705,7 @@ function adminInteractions() {
       if(registered.action==='ancient-horse'){ancientUI.adminPanel();return;}
       if(registered.action==='ancient'){ancientUI.adminPanel();return;}
       if(registered.action==='homestead'){homesteadUI.adminPanel();return;}
+      if(registered.action==='decor'){decorUI.adminPanel();return;}
       if(registered.action==='life-shops'){homesteadUI.shops.adminPanel();return;}
       if(registered.action==='ancient-fishing'){ancientUI.prepare('4c');s.progress.ancient=21;s.ancient.century=4;s.ancient.chapter='4c';}
       for(const [id,n] of Object.entries(registered.items||{}))adminGive(id,n);
@@ -1629,7 +1637,7 @@ function nearby() {
       (e) =>
         e.type !== "scenery" &&
         e.type !== "roomProp" &&
-        e.type !== "lifeDecor" &&
+        !(e.type === "lifeDecor" && !e.use) &&
         !(e.type==='roomLoot' && s.opened.includes(e.id)) &&
         !(e.type==='story' && !e.collect && activeQuest(s)?.target!==e.id && e.id!=='dongye-sign') &&
         (!['berry','loot','chest'].includes(e.type) || resourceReady(s,e)) &&
@@ -1640,7 +1648,7 @@ function nearby() {
     )
     .map((e) => ({ ...e, d: Math.hypot(e.x - s.x, e.y - s.y) }))
     .filter((e) => e.d < (e.type==='horse' ? 1.9 : 1.65))
-    .sort((a, b) => a.d - b.d)[0];
+    .sort((a, b) => (a.d+(a.type==='lifeDecor'?.22:0)) - (b.d+(b.type==='lifeDecor'?.22:0)))[0];
 }
 function interact() {
   if (!playing || screen) return;
@@ -1651,6 +1659,7 @@ function interact() {
   }
   const q = activeQuest(s);
   if(e.type==='lifeMerchant'&&lifeShopGuide?.kind===e.shopKind)lifeShopGuide=null;
+  if(e.type==='lifeDecor'&&decorUI.use(e))return;
   if(currentMap().ancient&&homesteadUI.interact(e))return;
   if(currentMap().ancient&&ancientUI.interact(e,q))return;
   if(e.type==='fishingSpot'){fishingMenu(e);return;}
@@ -2409,9 +2418,18 @@ function drawSprite(art, x, y, w, h) {
   if (im?.complete && im.naturalWidth) {
     const profile=FIELD_SPRITES[art];
     if(profile){ctx.drawImage(im,...profile.source,x-w/2,y-h,w,h);return;}
-    ctx.drawImage(im, x - w / 2, y - h + h * (SPRITE_BASELINE[art] || 0), w, h);
+    ctx.drawImage(im, x - w / 2, y - h + h * (art.startsWith('life-')&&DECOR_VISUALS[art.slice(5)] ? .06 : (SPRITE_BASELINE[art] || 0)), w, h);
   }
 }
+
+function drawDecorLight(e,x,y,w,h,flames){
+ const points=e.decorId==='doubleLamp'?[-.19,.19]:[0];
+ for(const off of points){const lx=x+w*off,ly=y-h*.57;
+  if(!flames){const g=ctx.createRadialGradient(lx,ly,2,lx,ly,34);g.addColorStop(0,'#ffe4a04a');g.addColorStop(1,'#ffe4a000');ctx.fillStyle=g;ctx.beginPath();ctx.arc(lx,ly,34,0,Math.PI*2);ctx.fill();}
+  else{ctx.fillStyle='#df943c';ctx.beginPath();ctx.ellipse(lx,ly,3.8,7,-.12,0,Math.PI*2);ctx.fill();ctx.fillStyle='#fff2ba';ctx.beginPath();ctx.ellipse(lx,ly+2,1.9,3.7,0,0,Math.PI*2);ctx.fill();}
+ }
+}
+
 const WALKING_PLAYER_SCALE = 1.06;
 function drawPlayer(x, y, w, h) {
   let direction =
@@ -2424,7 +2442,11 @@ function drawPlayer(x, y, w, h) {
   const custom = avatarSource(s.appearance, direction, pose);
   const stable=avatarSource(s.appearance,direction,'idle');
   const shown=custom.complete&&custom.naturalWidth?custom:stable;
-  if(shown.complete&&shown.naturalWidth){ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(shown,x-w/2,y-h,w,h);ctx.restore();}
+  if(shown.complete&&shown.naturalWidth){ctx.save();ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
+   const resting=decorUI?.pose;
+   if(resting?.kind==='rest'){ctx.translate(x,y-27);ctx.rotate(-Math.PI/2);ctx.drawImage(shown,-w/2,-h/2,w,h);}
+   else if(resting){ctx.drawImage(shown,0,0,shown.naturalWidth,shown.naturalHeight*.78,x-w/2,y-h*.78,w,h*.78);ctx.drawImage(shown,0,shown.naturalHeight*.78,shown.naturalWidth,shown.naturalHeight*.22,x-w/2,y,w,h*.10);}
+   else ctx.drawImage(shown,x-w/2,y-h,w,h);ctx.restore();}
 }
 function drawMountedPlayer(x,y) {
   const dir=s.direction==='up'?'back':s.direction==='down'?'front':s.direction;
@@ -2576,8 +2598,9 @@ function draw(dt = 0) {
     T = 64;
   ctx.imageSmoothingEnabled = false;
   const safe = playing ? playerSafeArea(W,H) : {left:0,right:W,top:0,bottom:H};
-  cam = fieldCamera.update({map:m,width:W,height:H,x:s.x,y:s.y,
+  cam = decorUI?.camera(W,H,m) || fieldCamera.update({map:m,width:W,height:H,x:s.x,y:s.y,
     direction:playing && !screen ? cameraDirection : {x:0,y:0},dt,playing,safe});
+  decorUI?.project(cam);
   revealPlayerBehindHUD(playing?safe:playerSafeArea(W,H));
   const ground = m.ground || (m.theme === 'room' ? (m.roomPalette?.border || '#514337') : m.theme === "cave" || m.theme === "interior" ? "#8d907d"
     : ["paleo-deep","bronze-grove","go-outskirts"].includes(m.id) ? "#748664"
@@ -2740,7 +2763,7 @@ function draw(dt = 0) {
           ),
       ),
     )
-    .concat([{ id: "player", x: s.x, y: s.y, type: "player", art: s.avatar }]);
+    .concat([{ id: "player", x: decorUI?.pose?.x ?? s.x, y: decorUI?.pose ? decorUI.pose.y+(decorUI.pose.kind==='rest'?-.55:.20) : s.y, type: "player", art: s.avatar }]);
   if (m.id==='nation-goguryeo-homes' && s.completedQuests.includes('goguryeo-build')) {
     const house=objects.find(o=>o.id==='goguryeo-smallhouse');if(house)house.art='growthHouse';
   }
@@ -2751,6 +2774,8 @@ function draw(dt = 0) {
     objects.push({id:'buyeo-returned',x:14,y:5,type:'npc',name:'돌아온 사람',art:'farmer'});
   if (m.id==='nation-samhan-field' && !s.completedQuests.includes('samhan-deliver'))
     objects=objects.filter(o=>o.id!=='samhan-grainstack');
+  const preview=decorUI?.preview();
+  if(preview){objects=objects.filter(e=>e.type!=='lifeDecor'||(e.slot!==preview.slot&&e.slot!==decorUI.mode.from));objects.push(preview);}
   objects.sort((a, b) => Number(Boolean(b.floor))-Number(Boolean(a.floor)) || a.y - b.y);
   for (const e of objects) {
     let x = e.x * T,
@@ -2795,7 +2820,7 @@ function draw(dt = 0) {
     if(['lifeCarpenter','lifeDelivery'].includes(e.type)&&e.actor){w=58;h=72;}
     if(e.id==='ancient-home-fire'&&e.art==='life-hearth'){w=78;h=66;}
     if(e.type==='homestead'){w=e.id==='life-workbench'?86:65;h=e.id==='life-workbench'?68:56;}
-    if(e.type==='lifeDecor'){w=e.floor?82:48;h=e.floor?45:48;}
+    if(e.type==='lifeDecor'){w=e.w;h=e.h;}
     if (e.art==='growthHall' || e.art==='growthFestival') { w=195; h=142; }
     if (e.art==='growthGranary' || e.art==='growthShed' || e.art==='growthFish') { w=122; h=106; }
     if (['iron-workshop','goguryeo-mainhouse','goguryeo-smallhouse','goguryeo-family','okjeo-home'].includes(e.id)) {
@@ -2828,6 +2853,7 @@ function draw(dt = 0) {
       continue;
     if(isPlayer&&s.ancient?.home?.commerce?.cart.active){const cartSpot=[[s.x-.75,s.y+.3],[s.x+.75,s.y+.3],[s.x,s.y+.65],[s.x,s.y]].find(([cx,cy])=>!blocked(cx,cy));if(cartSpot)drawSprite('life-cart-loaded',cartSpot[0]*T,cartSpot[1]*T,82,58);}
     drawObjectShadow(e, x, y, w, h);
+    if(e.type==='lifeDecor'&&e.lit)drawDecorLight(e,x,y,w,h,false);
     if (isPlayer) {
       ctx.strokeStyle = "#fff7c4";
       ctx.lineWidth = 3;
@@ -2851,7 +2877,9 @@ function draw(dt = 0) {
     if (isPlayer) s.mounted && canMount() ? drawMountedPlayer(x,y+bob) : drawPlayer(x, y + bob, w * WALKING_PLAYER_SCALE, h * WALKING_PLAYER_SCALE);
     else {
       if (e.type === "enemy" && e.elite) ctx.filter = "sepia(.28) saturate(1.2)";
+      if(e.type==='lifeDecor'){const px=(decorUI?.pose?.x??s.x)*T,py=(decorUI?.pose?.y??s.y)*T;if(e.preview)ctx.globalAlpha=.68;else if(!e.floor&&!e.wall&&py<y&&py>y-h&&Math.abs(px-x)<w*.45)ctx.globalAlpha=.64;}
       drawSprite(e.art, x, y + bob, w, h);
+      if(e.type==='lifeDecor'&&e.lit)drawDecorLight(e,x,y,w,h,true);
       ctx.filter = "none";
     }
     if(e.type==='farmPlot'&&e.ready){ctx.fillStyle='#f4e5aa';ctx.beginPath();ctx.arc(x+36,y-h+13,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#4f6f43';ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillText('✓',x+36,y-h+18);}
@@ -2932,6 +2960,7 @@ function draw(dt = 0) {
     }
     $("#interact").firstChild.textContent = e
       ? e.type === 'fishingSpot' ? fishingCooldown(s,s.map,e.id)>0 ? '낚시터 쉬는 중 ' : '낚시하기 '
+      : e.type === 'lifeDecor' ? (e.use==='lamp'?(e.lit?'불 끄기 ':'불 켜기 '):e.label+' ')
       : e.type === 'fishingBranch' ? '줍기 '
       : e.type === "exit"
         ? "이동하기 "

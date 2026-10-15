@@ -1,7 +1,8 @@
-import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=51.2';
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=51.2';
+import {DECOR_VISUALS} from '../decor-spec.js?v=52';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=52';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=52';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=51.2';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=52';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -184,7 +185,7 @@ export function ancientWorld(base,s) {
   const h=a?.home;
   const homeArt='life-home-'+a?.country+'-'+(h?.level||1);
   if(base.id===c?.home){
-    const layout=roomLayout(h.level),props=base.entities.map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1],...(e.id==='ancient-home-fire'&&h.commerce.tools.hearth?{art:'life-hearth'}:{})}));
+    const layout=roomLayout(h.level),props=base.entities.filter(e=>!(e.id==='ancient-bed'&&(Object.values(h.placements).includes('fineBedding')||['diningSet','lowTable'].includes(h.placements['room-1'])))&&!(e.id==='ancient-jars'&&Object.keys(h.placements).some(k=>k.startsWith('room-')))).map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1],...(e.id==='ancient-home-fire'&&h.commerce.tools.hearth?{art:'life-hearth'}:{})}));
     return {...base,...layout,name:'내 거처 · '+c.name+' · '+h.level+'단계',entities:[...props,...lifeDecor(h,'room')],obstacles:[]};
   }
   if(base.id==='ancient-yard-'+a?.country){
@@ -207,7 +208,10 @@ export function ancientWorld(base,s) {
     return e;
   }),{id:'ancient-han-guard',type:'ancientStory',x:5.4,y:7.3,name:'나루 경비',art:'han-guard-'+era.country,lines:[era.text,'나루로 향하는 길은 이쪽이야.'],actor:true},{id:'ancient-han-standard',type:'scenery',x:18.8,y:6.1,name:era.secondary?'상류·하류의 두 표식':'나루의 표식',art:'han-standard-'+(era.secondary?'alliance':era.country)}]};
 }
-function lifeDecor(home,area){return Object.entries(home.placements).flatMap(([slot,id])=>{const spot=DECOR_SLOTS.find(v=>v.id===slot);if(spot?.area!==area)return [];const [x,y]=decorPosition(spot,home.level);return [{id:'life-decor-'+slot,type:'lifeDecor',x,y,name:DECOR[id].name,art:DECOR[id].art,floor:id.endsWith('Mat')||DECOR[id].floor,wall:DECOR[id].wall}];});}
+function lifeDecor(home,area){return Object.entries(home.placements).flatMap(([slot,id])=>{
+ const spot=DECOR_SLOTS.find(v=>v.id===slot);if(spot?.area!==area)return [];const v=DECOR_VISUALS[id],[x,y]=decorPosition(spot,home.level,id);
+ return [{id:'life-decor-'+slot,type:'lifeDecor',decorId:id,slot,x,y,name:DECOR[id].name,art:DECOR[id].art,...v,lit:Boolean(home.lamps[slot]),solid:['woodShelf','grainRack'].includes(id),footprint:[.52,.28]}];
+});}
 export function ancientQuest(q,s) {
   if(!q)return null;
   const c=ANCIENT_COUNTRIES[s.ancient?.country];
