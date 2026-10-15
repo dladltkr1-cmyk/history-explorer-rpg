@@ -1,5 +1,5 @@
-import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=52';
-import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=52';
+import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=52-furniture';
+import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=52-furniture';
 export function createDecorUI(api){
  const {$,panel,imageTag,esc,save,hud,toast}=api;let mode=null,pose=null,poseTimer,legacyTrial=null;
  const state=()=>api.state(),home=()=>state().ancient.home,area=()=>state().map.includes('-yard-')?'yard':'room';
@@ -55,7 +55,7 @@ export function createDecorUI(api){
   if(!valid(e)||pose)return;api.close();pose={...e,kind,map:state().map};api.pause('decor-pose');
   const box=document.createElement('div');box.id='decor-pose';box.innerHTML=`<span>${kind==='rest'?'잠시 누워 쉬는 중':kind==='shade'?'그늘에서 쉬는 중':'잠시 앉아 쉬는 중'}</span><button id="decor-rise">일어나기</button>`;document.querySelector('#game').append(box);
   const finish=()=>{if(!pose)return;const p=pose;pose=null;clearTimeout(poseTimer);api.close();if(p.map===state().map&&valid(p)){if(p.kind==='rest')api.rest();save();hud();toast(p.kind==='rest'?'편히 쉬었다.':'잠시 쉬었다.');}};
-  $('#decor-rise').onclick=finish;poseTimer=setTimeout(finish,2000);
+  $('#decor-rise').onclick=finish;poseTimer=setTimeout(finish,5000);
  }
  function adminPanel(){
   if(!api.admin())return;

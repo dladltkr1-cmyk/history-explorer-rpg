@@ -1,14 +1,14 @@
-import {shopMap,collectWood,woodId,WOOD_SPOTS} from '../dist/life-shops.js?v=52';
+import {shopMap,collectWood,woodId,WOOD_SPOTS} from '../dist/life-shops.js?v=52-furniture';
 import {writeFile} from 'node:fs/promises';
 // Deterministic income progression using production/actions, not QA grants. Clock acceleration is explicit.
 import assert from 'node:assert/strict';
 globalThis.Image=class{set src(v){}};
-const {fresh,ITEMS}=await import('../dist/state.js?v=52');
-import {REGIONS} from '../dist/regions/index.js?v=52';
-import {prepareAncientQA} from '../dist/ancient-state.js?v=52';
-import {CROPS,HOME_LEVELS,activePlots,plotState,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome} from '../dist/homestead.js?v=52';
-import {LIFE_ORDERS,LIFE_TOOLS,ensureOrders,deliverOrder,buyTool,canGrow} from '../dist/life-progression.js?v=52';
-import {sellItem,salePrice} from '../dist/economy.js?v=52';
+const {fresh,ITEMS}=await import('../dist/state.js?v=52-furniture');
+import {REGIONS} from '../dist/regions/index.js?v=52-furniture';
+import {prepareAncientQA} from '../dist/ancient-state.js?v=52-furniture';
+import {CROPS,HOME_LEVELS,activePlots,plotState,plantCrop,harvestCrop,buyLife,buyLumber,upgradeHome} from '../dist/homestead.js?v=52-furniture';
+import {LIFE_ORDERS,LIFE_TOOLS,ensureOrders,deliverOrder,buyTool,canGrow} from '../dist/life-progression.js?v=52-furniture';
+import {sellItem,salePrice} from '../dist/economy.js?v=52-furniture';
 for(const [id,c]of Object.entries(CROPS))console.log(`${c.name}: sale ${c.sale*4}, seed ${c.seed}, net ${c.sale*4-c.seed}, net/min ${((c.sale*4-c.seed)/c.minutes).toFixed(2)}`);
 const shopping=(s,kind,action)=>{const loc={map:s.map,x:s.x,y:s.y};Object.assign(s,{map:shopMap(s.ancient.country,kind),x:5,y:4.9});try{return action();}finally{Object.assign(s,loc);}};
 for(const freeWood of [false,true,'sell-excess'])for(const supplemental of [0,3]){
