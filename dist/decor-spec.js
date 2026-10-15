@@ -16,6 +16,6 @@ export const decorDescription=id=>({rest:'누워 쉬기 · 기존 집 휴식 효
 export function decorAnchor(slot,level,dimensions,id){
  const [w,h]=dimensions,v=DECOR_VISUALS[id]||{};
  if(slot.area==='yard')return {'yard-1':[4.2,7.1],'yard-2':[19.5,5.7],'yard-3':[3.4,11.3],'yard-4':[21,12],'yard-5':[12,16]}[slot.id];
- const points={'room-1':[2.8,h-2.1],'room-2':[3.0,v.wall?2.3:4.05],'room-3':[w*.52,h*.50+.15],'room-4':[w-2.6,v.wall?2.3:4.05],'room-5':[w-2.5,h*.64],'room-6':[w*.32,h*.55],'room-7':[w*.61,v.wall?2.3:4.0]};
+ const points={'room-1':[2.8+(v.floor||v.large||id==='lowTable'?0:1.35),h-2.1],'room-2':[3.0,v.wall?2.3:4.05],'room-3':[w*.52,h*.50+.15],'room-4':[w-2.6,v.wall?2.3:4.05],'room-5':[w-2.5,h*.64],'room-6':[w*.32,h*.55],'room-7':[w*.61,v.wall?2.3:4.0]};
  return points[slot.id];
 }

@@ -185,7 +185,7 @@ export function ancientWorld(base,s) {
   const h=a?.home;
   const homeArt='life-home-'+a?.country+'-'+(h?.level||1);
   if(base.id===c?.home){
-    const layout=roomLayout(h.level),props=base.entities.filter(e=>!(e.id==='ancient-bed'&&(Object.values(h.placements).includes('fineBedding')||['diningSet','lowTable'].includes(h.placements['room-1'])))&&!(e.id==='ancient-jars'&&Object.keys(h.placements).some(k=>k.startsWith('room-')))).map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1],...(e.id==='ancient-home-fire'&&h.commerce.tools.hearth?{art:'life-hearth'}:{})}));
+    const layout=roomLayout(h.level),props=base.entities.filter(e=>!(e.id==='ancient-bed'&&(Object.values(h.placements).includes('fineBedding')||(DECOR_VISUALS[h.placements['room-1']]?.large||h.placements['room-1']==='lowTable')))&&!(e.id==='ancient-jars'&&Object.keys(h.placements).some(k=>k.startsWith('room-')))).map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1],...(e.id==='ancient-home-fire'&&h.commerce.tools.hearth?{art:'life-hearth'}:{})}));
     return {...base,...layout,name:'내 거처 · '+c.name+' · '+h.level+'단계',entities:[...props,...lifeDecor(h,'room')],obstacles:[]};
   }
   if(base.id==='ancient-yard-'+a?.country){

@@ -21,7 +21,7 @@ export function createDecorUI(api){
   document.querySelector('#game').append(root);
   $('#decor-exit').onclick=api.close;
   $('#decor-area').onclick=()=>{const id=mode.id;const target=area()==='room'?'ancient-yard-'+state().ancient.country:'ancient-home-'+state().ancient.country;api.travel(target);if(state().map===target)open(id);};
-  document.querySelectorAll('[data-decor-pick]').forEach(b=>b.onclick=()=>{mode.id=b.dataset.decorPick;mode.slot=null;const used=Object.values(home().placements).filter(v=>v===mode.id).length;mode.from=home().decorations[mode.id]<=used?Object.keys(home().placements).find(k=>home().placements[k]===mode.id):null;render();});
+  document.querySelectorAll('[data-decor-pick]').forEach(b=>b.onclick=()=>{mode.id=b.dataset.decorPick;mode.slot=null;const used=Object.values(home().placements).filter(v=>v===mode.id).length;mode.from=home().decorations[mode.id]<=used?Object.keys(home().placements).find(k=>home().placements[k]===mode.id):null;update();project(camera(innerWidth,innerHeight,api.map()));});
   document.querySelectorAll('[data-decor-site]').forEach(b=>b.onclick=()=>{mode.slot=b.dataset.decorSite;update();});
   $('#decor-cancel-preview').onclick=()=>{mode.id=null;mode.slot=null;mode.from=null;render();};
   $('#decor-remove').onclick=()=>{const slot=mode.slot;if(slot&&placeDecor(state(),slot,null)){save();hud();toast('살림을 보관했다.');mode.slot=null;render();}};
@@ -30,9 +30,9 @@ export function createDecorUI(api){
    if(from){delete h.placements[from];delete h.lamps[from];}
    if(!placeDecor(state(),mode.slot,mode.id)){if(from){h.placements[from]=oldFrom;if(oldLit!==undefined)h.lamps[from]=oldLit;}return;}
    if(oldLit!==undefined)h.lamps[mode.slot]=oldLit;save();hud();toast(DECOR[mode.id].name+'을 놓았다!');mode.from=null;mode.slot=null;mode.id=null;render();
-  };update();
+  };update();project(camera(innerWidth,innerHeight,api.map()));
  }
- function update(){if(!mode)return;for(const b of document.querySelectorAll('[data-decor-site]')){b.classList.toggle('allowed',Boolean(mode.id&&candidate(b.dataset.decorSite)));b.classList.toggle('chosen',b.dataset.decorSite===mode.slot);b.setAttribute('aria-pressed',String(b.dataset.decorSite===mode.slot));}
+ function update(){if(!mode)return;for(const b of document.querySelectorAll('[data-decor-pick]'))b.setAttribute('aria-pressed',String(b.dataset.decorPick===mode.id));for(const b of document.querySelectorAll('[data-decor-site]')){b.classList.toggle('allowed',Boolean(mode.id&&candidate(b.dataset.decorSite)));b.classList.toggle('chosen',b.dataset.decorSite===mode.slot);b.setAttribute('aria-pressed',String(b.dataset.decorSite===mode.slot));}
   const slot=DECOR_SLOTS.find(v=>v.id===mode.slot),ok=Boolean(slot&&candidate(slot.id));$('#decor-place').disabled=!ok;$('#decor-remove').disabled=!slot||!home().placements[slot.id];
   $('#decor-choice').textContent=slot?(mode.id?DECOR[mode.id].name+' · '+slot.name+(ok?'':' · 이 자리에는 놓을 수 없어'):slot.name):'실제 공간을 보며 골라 줘.';
  }
