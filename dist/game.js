@@ -1,10 +1,12 @@
-import {createDecorUI} from './decor-ui.js?v=52-complete';
-import {DECOR_VISUALS} from './decor-spec.js?v=52-complete';
-import {reputationDetails} from './ancient-history.js?v=52-complete';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=52-complete';
+import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=53';
+import {drawLifeDistrict} from './life-terrain.js?v=53';
+import {createDecorUI} from './decor-ui.js?v=53';
+import {DECOR_VISUALS} from './decor-spec.js?v=53';
+import {reputationDetails} from './ancient-history.js?v=53';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=53';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=52-complete';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=52-complete";
+import {parkHorse} from './horse-state.js?v=53';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=53";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -21,16 +23,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=52-complete";
-import { ASSETS } from "./assets.js?v=52-complete";
+} from "./state.js?v=53";
+import { ASSETS } from "./assets.js?v=53";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=52-complete';
-import {noteAncientVisit} from './ancient-state.js?v=52-complete';
-import {createAncientUI} from './ancient-ui.js?v=52-complete';
-import {createHomesteadUI} from './homestead-ui.js?v=52-complete';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=52-complete';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=53';
+import {noteAncientVisit} from './ancient-state.js?v=53';
+import {createAncientUI} from './ancient-ui.js?v=53';
+import {createHomesteadUI} from './homestead-ui.js?v=53';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=53';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=52-complete';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=53';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -48,7 +50,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=52-complete";
+} from "./economy.js?v=53";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -125,7 +127,7 @@ const currentMap=()=>ancientWorld(MAPS[s.map],s);
 const canMount=()=>!s.ancient?.home?.commerce?.cart.active&&(s.map.startsWith('nation-') || (MAPS[s.map]?.ancient && MAPS[s.map].theme!=='room'));
 const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel,prepareMounted});
 let lifeShopGuide=null;
-const homesteadUI=createHomesteadUI({$,esc,panel,close,decorate:()=>decorUI.open(),guideShop:kind=>{lifeShopGuide={kind,country:s.ancient.country};toast('마을 북동쪽 · '+LIFE_SHOPS[kind].name+'를 찾아보자.');},items:ITEMS,cooking:COOKING,cook:(id,n)=>cookItem(s,id,n),rest:()=>{applyHomeRest(s,abilities(s).hp);save();hud();restMenu({art:'campfire'});},restoreTrial:()=>{s=validate(structuredClone(s));},imageTag,save,hud,toast,travel,finishEvent,state:()=>s,admin:()=>adminMode,adminPanel,adminJump,prepareAncient:stage=>ancientUI.prepare(stage),asset:art=>ASSETS[art],sell:(id,n)=>sellItem(s,ITEMS,id,n),selling,setCleanup:fn=>{stopFishing=fn;},refreshWorld:()=>{fieldCamera.reset();if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const start=roomLayout(s.ancient.home.level).start;s.x=start.x;s.y=start.y;}}});
+const homesteadUI=createHomesteadUI({$,esc,panel,close,decorate:()=>decorUI.open(),guideShop:kind=>{lifeShopGuide={kind,country:s.ancient.country};toast('생활마을 북쪽 상점 거리 · '+LIFE_SHOPS[kind].name+'를 찾아보자.');},items:ITEMS,cooking:COOKING,cook:(id,n)=>cookItem(s,id,n),rest:()=>{applyHomeRest(s,abilities(s).hp);save();hud();restMenu({art:'campfire'});},restoreTrial:()=>{s=validate(structuredClone(s));},imageTag,save,hud,toast,travel,finishEvent,state:()=>s,admin:()=>adminMode,adminPanel,adminJump,prepareAncient:stage=>ancientUI.prepare(stage),asset:art=>ASSETS[art],sell:(id,n)=>sellItem(s,ITEMS,id,n),selling,setCleanup:fn=>{stopFishing=fn;},refreshWorld:()=>{fieldCamera.reset();if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const start=roomLayout(s.ancient.home.level).start;s.x=start.x;s.y=start.y;}}});
 decorUI=createDecorUI({$,panel,imageTag,esc,save,hud,toast,close,travel,state:()=>s,map:currentMap,pause:type=>{screen=type;keys.clear();},rest:()=>applyHomeRest(s,abilities(s).hp),admin:()=>adminMode,prepareAncient:stage=>ancientUI.prepare(stage),adminJump,adminPanel,homeAdmin:()=>homesteadUI.adminPanel(),restoreState:old=>{s=validate(old);fieldCamera.reset();}});
 function toast(text) {
   if(!$("#reputation-gain")?.hidden)text=text.replace(/(?: · |, )?평판 \+\d+/g,'');
@@ -946,7 +948,10 @@ function menu() {
   $('#ancient-records-menu')?.addEventListener('click',ancientUI.records);
   $('#ancient-chapters-menu')?.addEventListener('click',ancientUI.chapters);
   if(s.ancient?.home?.commerce?.cart.active){const b=document.createElement('button');b.id='life-transport-menu';b.textContent='운송 확인 · 취소';$('.menu-grid').prepend(b);b.onclick=homesteadUI.cart;}
-  if(currentMap().ancient&&s.ancient.home.owned){const button=document.createElement('button');button.id='life-home-menu';button.textContent='내 거처 · 생활 관리';$('.menu-grid').prepend(button);button.onclick=()=>{if(!['ancient-home-'+s.ancient.country,'ancient-yard-'+s.ancient.country].includes(s.map))travel(ANCIENT_COUNTRIES[s.ancient.country].home);if(s.map===ANCIENT_COUNTRIES[s.ancient.country].home)finishEvent('ancient:home');homesteadUI.open();};}
+  if(currentMap().ancient&&s.ancient.home.owned){
+    const area=s.map==='ancient-home-'+s.ancient.country?'room':atYard(s)?'yard':null;
+    if(area){const button=document.createElement('button');button.id='life-home-menu';button.textContent=area==='room'?'집 안 꾸미기':'내 마당 · 농사와 꾸미기';$('.menu-grid').prepend(button);button.onclick=()=>area==='room'?decorUI.open():homesteadUI.open();}
+  }
   $("#settings").onclick = settings;
   $("#home").onclick = () => travel("hq");
   if (adminMode) $("#admin-menu").onclick = adminPanel;
@@ -1231,6 +1236,7 @@ function artifactDetail(id, found = false, done = codex) {
   };
 }
 function shop(tab = "weapon") {
+  if(!canTrade(s)){toast("상점 거리 거래 상인 가까이에서 거래하자.");return;}
   if (tab === "sell") {
     selling();
     return;
@@ -1267,7 +1273,7 @@ function shop(tab = "weapon") {
       (b.onclick = () => {
         const id = b.dataset.buy,
           i = ITEMS[id];
-        if (s.coins < i.price || s.inventory.gear.includes(id)) return;
+        if (!canTrade(s) || s.coins < i.price || s.inventory.gear.includes(id)) return;
         s.coins -= i.price;
         feedback("-" + i.price + " 엽전", "coin", null);
         if (i.kind === "food") {
@@ -1306,6 +1312,7 @@ function merchant(e) {
   } else shop();
 }
 function selling() {
+  if(!canTrade(s)){toast("상점 거리 거래 상인 가까이에서 판매하자.");return;}
   if (!['gojoseon','nations','ancient'].includes(regionOf(s.map)?.id)) return;
   const ids = STACK_IDS.filter(
     (id) => salePrice(ITEMS[id]) && s.inventory[id] > 0,
@@ -1329,7 +1336,7 @@ function selling() {
       )
       .join(
         "",
-      )}</div><div class="shop-grid">${ids.map((id) => `<article class="shop-item">${itemIcon(id)}<div class="info"><b>${ITEMS[id].name} × ${s.inventory[id]}</b><small>판매 가격</small></div><span class="price">${salePrice(ITEMS[id])} 엽전</span><button data-sell="${id}">판매</button></article>`).concat(gearRows).join("") || "<p>판매할 물건이 없다.</p>"}</div>`,
+      )}</div><div class="shop-grid">${ids.map((id) => `<article class="shop-item">${itemIcon(id)}<div class="info"><b>${ITEMS[id].name} × ${s.inventory[id]}</b><small>판매 가격</small></div><span class="price">${salePrice(ITEMS[id])} 엽전</span><div class="life-bundle-buttons"><button data-sell="${id}" data-count="1">1개 판매</button><button data-sell="${id}" data-count="5" ${s.inventory[id]<5?'disabled':''}>5개</button><button data-sell="${id}" data-count="${s.inventory[id]}">모두</button></div></article>`).concat(gearRows).join("") || "<p>판매할 물건이 없다.</p>"}</div>`,
     { wide: true },
   );
   document
@@ -1338,7 +1345,7 @@ function selling() {
   document.querySelectorAll("[data-sell]").forEach(
     (b) =>
       (b.onclick = () => {
-        const coins = sellItem(s, ITEMS, b.dataset.sell);
+        const coins = sellItem(s, ITEMS, b.dataset.sell, Number(b.dataset.count)||1);
         if (!coins) return;
         save();
         hud();
@@ -2361,7 +2368,7 @@ function marker(e) {
 }
 function targetEntity() {
   if(lifeShopGuide&&!currentMap().ancient)lifeShopGuide=null;
-  const q = lifeShopGuide?{map:'ancient-village-'+lifeShopGuide.country,target:shopDoor(lifeShopGuide.kind)}:activeQuest(s);
+  const q = lifeShopGuide?{map:s.map==='ancient-village-'+lifeShopGuide.country?s.map:marketMap(lifeShopGuide.country),target:s.map==='ancient-village-'+lifeShopGuide.country?'life-market-road':shopDoor(lifeShopGuide.kind)}:activeQuest(s);
   if (s.map === "hq") return MAPS.hq.entities[0];
   if (!q) return null;
   if(q.id==='ancient-y-gather'){const missing=currentMap().entities.find(e=>e.gather&&!s.ancient.carry.includes(e.gather));if(missing)return missing;}
@@ -2676,7 +2683,7 @@ function draw(dt = 0) {
       ctx.fillRect(x, y, 5, 3);
     }
   }
-  if(m.ancient&&m.theme!=='room'){
+  if(m.ancient&&m.theme!=='room'&&!m.district){
     if(m.country){const c=m.country;ctx.fillStyle=c==='goguryeo'?'#a6997c':c==='baekje'?'#ccbb93':'#bea775';ctx.beginPath();ctx.ellipse(6.8*T,8.5*T,c==='baekje'?3*T:2.7*T,1.8*T,0,0,Math.PI*2);ctx.fill();if(c==='goguryeo')drawSprite('rock',4*T,9*T,58,48);if(c==='silla'){ctx.fillStyle='#758252';for(const x of [4.5,5,9])ctx.fillRect(x*T,9.7*T,5,14);}}
     ctx.strokeStyle='#bca57c';ctx.lineWidth=50;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(3*T,9*T);ctx.lineTo(10*T,9*T);ctx.lineTo(13*T,11*T);ctx.lineTo(20*T,9*T);ctx.stroke();
     ctx.beginPath();ctx.moveTo(12*T,3*T);ctx.lineTo(10*T,9*T);ctx.lineTo(11*T,15*T);ctx.stroke();
@@ -2723,7 +2730,7 @@ function draw(dt = 0) {
   }
   if (m.nationVisual) drawNationTerrain(m,T);
   if(m.lifeYard)drawLifeYard(m,T);
-  if(m.id.startsWith('ancient-village-')){ctx.strokeStyle='#c4b68b';ctx.lineWidth=T*.6;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(10*T,8.3*T);ctx.quadraticCurveTo(15*T,9*T,20.3*T,8.5*T);ctx.stroke();for(const d of Object.values(LIFE_SHOPS)){ctx.beginPath();ctx.moveTo(d.at[0]*T,(d.at[1]+.8)*T);ctx.lineTo(d.at[0]*T,8.5*T);ctx.stroke();}ctx.lineCap='butt';}
+  if(m.district)drawLifeDistrict(ctx,m,T);
   if(m.fishingPond) {
     const p=m.fishingPond;
     ctx.fillStyle='#799981';ctx.beginPath();ctx.ellipse(p.x*T,p.y*T,(p.rx+.22)*T,(p.ry+.2)*T,-.15,0,Math.PI*2);ctx.fill();
@@ -2815,7 +2822,8 @@ function draw(dt = 0) {
     }
     if(e.id==='ancient-han-standard'){w=48;h=68;}
     if(e.lifeStage){[w,h]=HOME_LEVELS[e.lifeStage].house;}
-    if(e.shopKind&&e.type==='house'){w=176;h=154;}
+    if(e.shopKind&&e.type==='house'){w=192;h=168;}
+    if(e.id?.startsWith('district-')&&e.w){w=e.w;h=e.h;}
     if(e.type==='lifeMerchant'){w=48;h=72;}
     if(e.id==='life-shop-counter'){w=106;h=90;}
     if(e.type==='lifeWood'){w=58;h=46;}
@@ -2978,6 +2986,7 @@ function draw(dt = 0) {
   if (playing) drawMini(m, target);
 }
 function drawMini(m, target) {
+  mini.save();if(m.district)mini.scale(24/m.w,18/m.h);
   mini.fillStyle = m.theme==='room' ? '#b69a71' : m.theme === "cave" ? "#919782" : "#95b47c";
   mini.fillRect(0, 0, 144, 108);
   if(m.theme==='room'){
@@ -3004,7 +3013,8 @@ function drawMini(m, target) {
   mini.beginPath();
   mini.arc(s.x * 6, s.y * 6, 3, 0, 7);
   mini.fill();
-  if(m.id.startsWith('ancient-village-')){mini.font='bold 9px system-ui';mini.textAlign='center';for(const [k,d]of Object.entries(LIFE_SHOPS)){const x=d.at[0]*6,y=d.at[1]*6;mini.fillStyle='#fff2cd';mini.fillRect(x-13,y-9,26,12);mini.fillStyle='#594630';mini.fillText({seed:'씨앗',tool:'도구',wood:'목공',decor:'살림'}[k],x,y);}}
+  if(m.district==='market'){mini.font='bold 9px system-ui';mini.textAlign='center';for(const [k,d]of Object.entries(LIFE_SHOPS)){const x=d.at[0]*6,y=d.at[1]*6;mini.fillStyle='#fff2cd';mini.fillRect(x-13,y-9,26,12);mini.fillStyle='#594630';mini.fillText({seed:'씨앗',tool:'도구',wood:'목공',decor:'살림'}[k],x,y);}}
+  mini.restore();
 }
 function tick(t) {
   music.mode(playing ? (screen === "battle" ? "battle" : "exploration") : null);

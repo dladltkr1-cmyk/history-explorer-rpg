@@ -1,10 +1,10 @@
-import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=52-complete";
+import { MAPS, REGIONS, ARTIFACTS, regionOf } from "./regions/index.js?v=53";
 import { FISHING_ITEMS } from './fishing.js?v=44.2';
 import { defaultAppearance, validAppearance } from "./avatar.js?v=25.1";
 import { NATION_ITEM_NAMES } from "./regions/nations.js?v=37.1";
-import {ancientQuest} from './regions/ancient.js?v=52-complete';
-import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=52-complete';
-import {CROPS} from './homestead.js?v=52-complete';
+import {ancientQuest} from './regions/ancient.js?v=53';
+import {freshAncient,validateAncient,ancientEventAllowed,onAncientQuest} from './ancient-state.js?v=53';
+import {CROPS} from './homestead.js?v=53';
 export const MAX_LEVEL = 10,
   KEY = "history-explorer-save-v1";
 export const ITEMS = {
@@ -440,7 +440,7 @@ export function validate(raw) {
   if (!num(s.hp, 0, abilities(s).hp)) throw Error("체력 정보가 올바르지 않아.");
   validateAncient(s,ITEMS,MAPS);
   if (!s.ancient.home.owned || !s.ancient.country) s.horseParked = false;
-  if (!MAPS[s.map] || !num(s.x, 1, 22) || !num(s.y, 1, 16)) {
+  if (!MAPS[s.map] || !num(s.x, 1, MAPS[s.map].w-2) || !num(s.y, 1, MAPS[s.map].h-2)) {
     s.map = "hq";
     s.x = 11;
     s.y = 10;

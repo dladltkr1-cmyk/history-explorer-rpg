@@ -1,8 +1,10 @@
-import {DECOR_VISUALS} from '../decor-spec.js?v=52-complete';
-import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=52-complete';
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=52-complete';
+import {makeLifeDistricts} from './life-districts.js?v=53';
+import {marketMap,forestMap} from '../life-access.js?v=53';
+import {DECOR_VISUALS} from '../decor-spec.js?v=53';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=53';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=53';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=52-complete';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=53';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -124,27 +126,27 @@ const maps=[
 ];
 for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
   maps.push(place(c.village,c.name+' · '+VILLAGE_GEOGRAPHY[id].label,'ancient-'+(id==='goguryeo'?'north':id==='baekje'?'river':'plain'),[
-    story('ancient-helper',10,8,'마을 도우미',c.helperArt,[c.welcome,'씨앗과 목재, 작은 살림을 준비했어. 마당에서 심고, 돌아와 수확해 보렴.','마을 북동쪽 상점가에서 씨앗과 도구를 마련하렴. 집 안에서는 밭과 살림을 관리할 수 있어.']),
+    story('ancient-helper',10,8,'마을 도우미',c.helperArt,[c.welcome,'씨앗과 목재, 작은 살림을 준비했어. 마당에서 심고, 돌아와 수확해 보렴.','북쪽 길은 상점 거리, 남서쪽 길은 외곽 숲이야. 농사는 내 마당에서, 부탁은 이 게시판에서 살펴보렴.']),
     entity('ancient-own-home','ancientHome',6,7,'내 거처',{art:c.art,solid:true,to:c.home}),
     entity('ancient-horse-post','horseStable',7.8,9.8,'말 쉼터',{art:'ancientHorsePost'}),
     entity('life-request-board','lifeRequests',11,11,'마을 부탁 게시판',{art:'life-requestBoard'}),
-    ...Object.entries(LIFE_SHOPS).map(([kind,d])=>entity(shopDoor(kind),'house',...d.at,d.name,{art:'shop-'+id+'-'+kind,solid:true,to:shopMap(id,kind),shopKind:kind,footprint:[1.3,.7]})),
-    entity('life-shop-sign','lifeShopSign',16,8.4,'상점가 안내',{art:'shop-sign'}),
-    ...WOOD_SPOTS.map(([x,y],n)=>entity(woodId(id,n+1),'lifeWood',x,y,'떨어진 목재',{art:'shop-wood-pile'})),
+    exit('life-market-road',12,2,'상점 거리로',marketMap(id)),
+    exit('life-forest-road',2,13,'마을 외곽 숲으로',forestMap(id)),
+    entity('life-shop-sign','lifeShopSign',13.8,4,'상점 거리 안내',{art:'shop-sign'}),
     entity('ancient-village-house','scenery',17,5,'이웃의 집',{art:'ancientVillageHouse',solid:true}),
     entity('ancient-fire-'+id,'rest',14,11,'마을 화로',{art:'campfire'}),
-    entity('ancient-shop-'+id,'shop',17,12,'물건 교환',{art:id==='goguryeo'?'elder':'farmer'}),
     exit('ancient-han-door-'+id,21,9,'한강으로 향하는 여행길','ancient-han'),exit('ancient-hq-'+id,11,15,'탐험 본부','hq'),
   ],{entryAt:17,country:id,ground:c.ground,trees:id==='goguryeo'?[[3,3],[3,12],[18,3],[19,14],[15,3]]:[[3,3],[3,13],[20,3],[20,14]]}));
+  maps.push(...makeLifeDistricts(id,c));
   for(const [kind,d]of Object.entries(LIFE_SHOPS)){
     const store=place(shopMap(id,kind),c.name+' · '+d.name,'room',[
-      {...exit('life-shop-exit',5,6.4,'상점가로',c.village),art:'roomDoor'},
+      {...exit('life-shop-exit',5,6.4,'상점 거리로',marketMap(id)),art:'roomDoor'},
       entity(kind==='wood'?'life-carpenter':'life-merchant-'+kind,'lifeMerchant',SHOP_MERCHANT.x,SHOP_MERCHANT.y,d.merchant,{art:'shop-merchant-'+kind,actor:true,shopKind:kind}),
       entity('life-shop-counter','roomProp',5,3.3,'진열대',{art:'shop-counter-'+kind}),
       entity('life-shop-left','roomProp',2.1,4.4,'가게 물품',{art:'shop-prop-'+kind}),
       entity('life-shop-right','roomProp',7.8,3.8,'작업과 진열',{art:'shop-prop-'+kind}),
     ],{country:id,entryAt:18,shopKind:kind,roomPalette:{border:'#574c3e',floor:HOME_PALETTES[id].wall?[HOME_PALETTES[id].wall,'#c7b18c','#bca57f']:['#c7b18c']}});
-    Object.assign(store,{w:10,h:8,start:{x:6.3,y:5.2},obstacles:[],returnTo:{map:c.village,x:d.at[0],y:d.at[1]+1.0}});maps.push(store);
+    Object.assign(store,{w:10,h:8,start:{x:6.3,y:5.2},obstacles:[],returnTo:{map:marketMap(id),x:d.at[0],y:d.at[1]+1.0}});maps.push(store);
   }
   const room=place(c.home,'내 거처 · '+c.name,'room',[
     exit('ancient-home-exit',11,15,'마을로',c.village),
@@ -156,13 +158,12 @@ for(const [id,c]of Object.entries(ANCIENT_COUNTRIES)) {
     entity('ancient-jars','roomProp',18,13,'생활 항아리',{art:'roomJar'}),
   ],{country:id,entryAt:18,roomPalette:{border:'#574c3e',floor:id==='goguryeo'?['#b29b7c','#b8a486','#af987a']:id==='baekje'?['#c7b18c','#cfbb96','#bda780']:['#bfa984','#c7b38e','#b9a47c']}});
   const layout=roomLayout(1);Object.assign(room,{w:layout.w,h:layout.h,start:layout.start});
-  room.entities.push(entity('life-board','homestead',5,3.9,'생활 책상',{art:'life-board'}));
   room.entities=room.entities.map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1]}));
   room.obstacles=[];
   room.returnTo={map:c.village,x:6,y:8.5};maps.push(room);
   const yard=place('ancient-yard-'+id,'내 마당 · '+c.name,'ancient-'+(id==='goguryeo'?'north':id==='baekje'?'river':'plain'),[
     entity('life-yard-home','ancientHome',12,6,'집 안으로',{art:c.art,solid:true,to:c.home}),
-    entity('life-yard-board','homestead',12,8.5,'생활 책상',{art:'life-board'}),
+    entity('life-yard-board','homestead',12,8.5,'농사 관리판',{art:'life-board'}),
     exit('life-yard-exit',12,15.8,'마을로',c.village),
   ],{country:id,entryAt:18,ground:HOME_PALETTES[id].ground,trees:[[2,3],[22,3]]});
   yard.start={x:12,y:9.4};yard.returnTo={map:c.village,x:6,y:8.5};maps.push(yard);
@@ -192,12 +193,13 @@ export function ancientWorld(base,s) {
     return {...base,lifeYard:true,name:'내 마당 · '+c.name+' · '+h.level+'단계',entities:[...base.entities.map(e=>e.type==='ancientHome'?{...e,art:homeArt,lifeStage:h.level}:e),
       ...activePlots(h).map(p=>{const [x,y]=plotPosition(p.id),state=plotState(p);return {id:'life-'+p.id,type:'farmPlot',plotId:p.id,x,y,name:(p.id.startsWith('paddy')?'논 ':'밭 ')+p.id.split('-')[1],art:p.crop?'life-'+(state.status==='ready'?'ripe':'growing')+'-'+p.crop:'life-empty-'+p.id.split('-')[0],ready:state.status==='ready'};}),
       ...(h.level>=2?[entity('life-workbench','homestead',17,8,'작업대',{art:'life-workbench'})]:[]),
-      ...(h.level>=3?[entity('life-cart','lifeCarpenter',20,9,h.commerce.cart.owned?'내 수레':'수레 자리',{art:h.commerce.cart.owned?'life-cart-empty':'life-cart-plan'})]:[]),...lifeDecor(h,'yard')],};
+      ...(h.commerce.cart.owned?[entity('life-cart','lifeCarpenter',20,9,'내 수레',{art:'life-cart-empty'})]:[]),...lifeDecor(h,'yard')],};
   }
   if(base.id===c?.village){const entities=base.entities.map(e=>e.type==='ancientHome'?{...e,art:homeArt,lifeStage:h.level}:e.type==='lifeWood'?{...e,art:woodReady(s,e.id)?'shop-wood-pile':'shop-wood-empty',ready:woodReady(s,e.id)}:e);
     if(h.owned&&s.horseUnlocked&&s.horseParked)entities.push({id:'ancient-my-horse',type:'parkedHorse',x:7.8,y:9.5,name:'내 말',art:'horseLeftIdle'});
     return {...base,entities};
   }
+  if(base.id===forestMap(a?.country))return {...base,entities:base.entities.map(e=>e.type==='lifeWood'?{...e,art:woodReady(s,e.id)?'shop-wood-pile':'shop-wood-empty',ready:woodReady(s,e.id)}:e)};
   if(base.id!=='ancient-han')return base;
   return {...base,name:'한강 유역 · '+era.name,entities:[...base.entities.map(e=>{
     if(e.countryReturn)return {...e,to:c?.village||'ancient-origins'};

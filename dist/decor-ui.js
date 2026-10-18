@@ -1,5 +1,5 @@
-import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=52-complete';
-import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=52-complete';
+import {DECOR,CROPS,DECOR_SLOTS,HOME_LEVELS,atHome,canPlaceDecor,placeDecor,decorPosition,toggleDecorLamp,setLifeLevel} from './homestead.js?v=53';
+import {DECOR_VISUALS,decorDescription} from './decor-spec.js?v=53';
 export function createDecorUI(api){
  const {$,panel,imageTag,esc,save,hud,toast}=api;let mode=null,pose=null,poseTimer,legacyTrial=null;
  const state=()=>api.state(),home=()=>state().ancient.home,area=()=>state().map.includes('-yard-')?'yard':'room';
@@ -17,11 +17,11 @@ export function createDecorUI(api){
   if(!mode)return;document.querySelector('#decor-mode')?.remove();
   const items=Object.entries(DECOR).filter(([id,d])=>home().decorations[id]&&(d.area==='both'||d.area===area()));
   const root=document.createElement('section');root.id='decor-mode';root.setAttribute('aria-label','눈으로 꾸미기');
-  root.innerHTML=`<div class="decor-toolbar"><div><small>내 거처 · ${home().level}단계</small><strong>눈으로 꾸미기</strong></div><button id="decor-area">${area()==='room'?'마당 꾸미기':'집 안 꾸미기'}</button><button id="decor-exit">꾸미기 끝내기</button></div><div class="decor-sites">${activeSlots().map(v=>`<button data-decor-site="${v.id}" aria-label="${esc(v.name)} · ${home().placements[v.id]?DECOR[home().placements[v.id]].name:'빈 자리'}">＋<small>${v.name}</small></button>`).join('')}</div><div class="decor-dock"><p id="decor-hint">${mode.id?'놓을 자리를 골라 줘.':'① 보유한 가구 선택 → ② 자리를 터치 → ③ 놓기'}</p><div class="decor-inventory">${items.map(([id,d])=>{const used=Object.values(home().placements).filter(v=>v===id).length;return `<button data-decor-pick="${id}" aria-pressed="${mode.id===id}">${imageTag(d.art,d.name)}<b>${d.name}</b><small>${home().decorations[id]-used>0?'남음 '+(home().decorations[id]-used)+'개':'놓은 가구 옮기기'}</small></button>`;}).join('')||'<p>살림 가게에서 가구를 마련해 보자.</p>'}</div><div class="decor-confirm"><span id="decor-choice">실제 공간을 보며 골라 줘.</span><button id="decor-cancel-preview">선택 취소</button><button id="decor-remove" disabled>회수</button><button id="decor-place" class="primary" disabled>놓기</button></div></div>`;
+  root.innerHTML=`<div class="decor-toolbar"><div><small>내 거처 · ${home().level}단계</small><strong>눈으로 꾸미기</strong></div><span>${area()==='room'?'집 안':'내 마당'} 꾸미기</span><button id="decor-exit">꾸미기 끝내기</button></div><div class="decor-sites">${activeSlots().map(v=>`<button data-decor-site="${v.id}" aria-label="${esc(v.name)} · ${home().placements[v.id]?DECOR[home().placements[v.id]].name:'빈 자리'}">＋<small>${v.name}</small></button>`).join('')}</div><div class="decor-dock"><p id="decor-hint">${mode.id?'놓을 자리를 골라 줘.':'① 보유한 가구 선택 → ② 자리를 터치 → ③ 놓기'}</p><div class="decor-inventory">${items.map(([id,d])=>{const used=Object.values(home().placements).filter(v=>v===id).length;return `<button data-decor-pick="${id}" aria-pressed="${mode.id===id}">${imageTag(d.art,d.name)}<b>${d.name}</b><small>${home().decorations[id]-used>0?'남음 '+(home().decorations[id]-used)+'개':'놓은 가구 옮기기'}</small></button>`;}).join('')||'<p>살림 가게에서 가구를 마련해 보자.</p>'}</div><div class="decor-confirm"><span id="decor-choice">실제 공간을 보며 골라 줘.</span><button id="decor-cancel-preview">선택 취소</button><button id="decor-remove" disabled>회수</button><button id="decor-place" class="primary" disabled>놓기</button></div></div>`;
   document.querySelector('#game').append(root);
   $('#decor-exit').onclick=api.close;
-  $('#decor-area').onclick=()=>{const id=mode.id;const target=area()==='room'?'ancient-yard-'+state().ancient.country:'ancient-home-'+state().ancient.country;api.travel(target);if(state().map===target)open(id);};
-  document.querySelectorAll('[data-decor-pick]').forEach(b=>b.onclick=()=>{mode.id=b.dataset.decorPick;mode.slot=null;const used=Object.values(home().placements).filter(v=>v===mode.id).length;mode.from=home().decorations[mode.id]<=used?Object.keys(home().placements).find(k=>home().placements[k]===mode.id):null;update();project(camera(innerWidth,innerHeight,api.map()));});
+
+  document.querySelectorAll('[data-decor-pick]').forEach(b=>b.onclick=()=>{mode.id=b.dataset.decorPick;mode.slot=null;const used=Object.values(home().placements).filter(v=>v===mode.id).length;mode.from=home().decorations[mode.id]<=used?Object.keys(home().placements).find(k=>k.startsWith(area()==='room'?'room-':'yard-')&&home().placements[k]===mode.id):null;update();project(camera(innerWidth,innerHeight,api.map()));});
   document.querySelectorAll('[data-decor-site]').forEach(b=>b.onclick=()=>{mode.slot=b.dataset.decorSite;update();});
   $('#decor-cancel-preview').onclick=()=>{mode.id=null;mode.slot=null;mode.from=null;render();};
   $('#decor-remove').onclick=()=>{const slot=mode.slot;if(slot&&placeDecor(state(),slot,null)){save();hud();toast('살림을 보관했다.');mode.slot=null;render();}};
@@ -65,7 +65,7 @@ export function createDecorUI(api){
   const jump=where=>api.adminJump('ancient-'+where+'-'+state().ancient.country);
   const owned=()=>{for(const id of Object.keys(DECOR))home().decorations[id]=Math.max(1,home().decorations[id]);};
   const preset=kind=>{ready();owned();if(kind==='owned')return;home().placements={};home().lamps={};const list=[['room-1','fineBedding'],['yard-1','yardArbor'],['room-2','woodShelf'],['yard-2','herbPot'],['room-3','diningSet'],['room-4','grainRack'],['yard-3','stripedJar'],['room-5','clayLamp'],['yard-4','woodBox'],['room-6','wovenMat'],['yard-5','darkJar'],['room-7','wovenScreen']];
-   for(const [slot,id]of list.slice(0,kind==='partial'?3:kind==='empty'?0:12))placeDecor(state(),slot,id);
+   const oldMap=state().map;for(const [slot,id]of list.slice(0,kind==='partial'?3:kind==='empty'?0:12)){state().map=(slot.startsWith('room-')?'ancient-home-':'ancient-yard-')+state().ancient.country;placeDecor(state(),slot,id);}state().map=oldMap;
   };
   document.querySelectorAll('[data-decor-country]').forEach(b=>b.onclick=()=>{ready();state().ancient.country=b.dataset.decorCountry;jump('home');adminPanel();});
   document.querySelectorAll('[data-decor-level]').forEach(b=>b.onclick=()=>{ready();setLifeLevel(home(),Number(b.dataset.decorLevel));jump('home');adminPanel();});

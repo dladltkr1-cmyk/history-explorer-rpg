@@ -1,4 +1,5 @@
-import {atLifeShop} from './life-shops.js?v=52-complete';
+import {atBoard} from './life-access.js?v=53';
+import {atLifeShop} from './life-shops.js?v=53';
 // Additive life progression. No historical quest, combat, server or currency contract changes.
 export const UPGRADE_GATES={2:{reputation:8,requests:0,harvest:true},3:{reputation:22,requests:4},4:{reputation:45,requests:10}};
 export const LIFE_TOOLS={
@@ -45,8 +46,8 @@ function newOrder(s,slot){const c=s.ancient.home.commerce,eligible=eligibleOrder
 export function ensureOrders(s){if(!owned(s))return false;const c=s.ancient.home.commerce;if(c.orders.length)return false;for(let i=0;i<3;i++)c.orders.push(newOrder(s,i));return true;}
 export function hasMaterials(s,items){return Object.entries(items).every(([id,n])=>(s.inventory[id]||0)>=n);}
 const take=(s,items)=>{for(const [id,n]of Object.entries(items))s.inventory[id]-=n;};
-export function focusOrder(s,id){if(!owned(s))return false;const c=s.ancient.home.commerce;if(id!==null&&!c.orders.some(o=>o.id===id))return false;c.focus=id;return true;}
-export function deliverOrder(s,id){if(!owned(s)||s.map!=='ancient-village-'+s.ancient.country)return null;const h=s.ancient.home,c=h.commerce,slot=c.orders.findIndex(o=>o.id===id),o=c.orders[slot],d=LIFE_ORDERS[o?.key];
+export function focusOrder(s,id){if(!owned(s)||!atBoard(s))return false;const c=s.ancient.home.commerce;if(id!==null&&!c.orders.some(o=>o.id===id))return false;c.focus=id;return true;}
+export function deliverOrder(s,id){if(!owned(s)||!atBoard(s))return null;const h=s.ancient.home,c=h.commerce,slot=c.orders.findIndex(o=>o.id===id),o=c.orders[slot],d=LIFE_ORDERS[o?.key];
  if(!d||!hasMaterials(s,d.items)||c.completed>=99999)return null;
  take(s,d.items);const reward=orderReward(d);s.coins+=reward;addReputation(h,d.rep);c.completed++;c.history.push(o);c.history=c.history.slice(-30);c.orders.splice(slot,1);c.orders.splice(slot,0,newOrder(s,slot));if(c.focus===id)c.focus=null;return {reward,rep:d.rep};
 }
@@ -55,8 +56,8 @@ export function buyTool(s,id){const h=s.ancient?.home,d=LIFE_TOOLS[id];if(!owned
 }
 export function commissionCart(s){if(!owned(s)||!atLifeShop(s,'wood')||s.ancient.home.level<3||s.ancient.home.commerce.cart.owned)return false;s.ancient.home.commerce.cart.commissioned=true;return true;}
 export function buildCart(s){const cart=s.ancient?.home.commerce.cart;if(!owned(s)||!atLifeShop(s,'wood')||s.ancient.home.level<3||!cart.commissioned||cart.owned||s.coins<CART_RECIPE.coins||!hasMaterials(s,CART_RECIPE.materials))return false;s.coins-=CART_RECIPE.coins;take(s,CART_RECIPE.materials);cart.owned=true;return true;}
-export function startTransport(s,key){const c=s.ancient?.home?.commerce?.cart,d=TRANSPORTS[key];if(!owned(s)||s.map!=='ancient-village-'+s.ancient.country||!c.owned||c.active||!d||(s.progress.ancient||0)<20||!hasMaterials(s,d.items))return false;c.active={id:c.nextId++,key,country:s.ancient.country};s.mounted=false;return true;}
+export function startTransport(s,key){const c=s.ancient?.home?.commerce?.cart,d=TRANSPORTS[key];if(!owned(s)||!atBoard(s)||!c.owned||c.active||!d||(s.progress.ancient||0)<20||!hasMaterials(s,d.items))return false;c.active={id:c.nextId++,key,country:s.ancient.country};s.mounted=false;return true;}
 export function cancelTransport(s){const c=s.ancient?.home?.commerce?.cart;if(!c?.active)return false;c.active=null;return true;}
-export function deliverTransport(s,target,id){const h=s.ancient?.home,c=h?.commerce.cart,a=c?.active,d=TRANSPORTS[a?.key];if(!owned(s)||!a||a.id!==id||!d||s.map!==d.map||d.target!==target||Math.hypot(s.x-(target==='life-han-delivery'?14:17),s.y-(target==='life-han-delivery'?7:7.5))>1.65||!hasMaterials(s,d.items)||c.completed>=99999)return null;
+export function deliverTransport(s,target,id){const h=s.ancient?.home,c=h?.commerce.cart,a=c?.active,d=TRANSPORTS[a?.key];if(!owned(s)||!a||a.id!==id||!d||s.map!==d.map||d.target!==target||!Number.isFinite(s.x)||!Number.isFinite(s.y)||Math.hypot(s.x-(target==='life-han-delivery'?14:17),s.y-(target==='life-han-delivery'?7:7.5))>1.65||!hasMaterials(s,d.items)||c.completed>=99999)return null;
  take(s,d.items);const reward=transportReward(d);s.coins+=reward;addReputation(h,d.rep);c.completed++;c.active=null;return {reward,rep:d.rep};}
 export function hasBulkHarvest(s){const c=s.ancient?.home?.commerce;return Boolean(c?.tools.sickle||c?.legacyBulkHarvest);}

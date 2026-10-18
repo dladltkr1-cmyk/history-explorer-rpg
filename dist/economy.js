@@ -1,3 +1,4 @@
+import {canTrade} from './life-access.js?v=53';
 // Drop rules are independent of era and combat calculations.
 export const DROPS={boar:{item:'rawmeat',doubleChance:.15},wolf:{item:'hide'},snake:{item:'rawmeat'},bear:{item:'rawmeat',doubleChance:.22,extraItem:'hide',extraChance:.12},tiger:{item:'hide',doubleChance:.25},bandit:{berriesChance:.4,coinsChance:.25,minCoins:5,maxCoins:15}};
 export function rollRoomReward(random=Math.random){
@@ -17,11 +18,11 @@ export function rollDrop(enemy,random=Math.random){
 export const COOKING={rawmeat:'food',fish:'cookedfish',ricecrop:'rice'};
 export const RESPAWN_MS=120000,ENCOUNTER_PROTECTION_MS=45000;
 export function salePrice(item){return item?.sellable&&['food','material'].includes(item.kind)?item.salePrice??Math.floor(item.price/2):0;}
-export function sellItem(state,items,id,count=1){const price=salePrice(items[id]);if(!price||!Number.isInteger(count)||count<1||(state.inventory[id]||0)<count)return 0;state.inventory[id]-=count;state.coins+=price*count;return price*count;}
+export function sellItem(state,items,id,count=1){const price=salePrice(items[id]);if(!canTrade(state)||!price||!Number.isInteger(count)||count<1||(state.inventory[id]||0)<count)return 0;state.inventory[id]-=count;state.coins+=price*count;return price*count;}
 export function gearSalePrice(item){return item&&['weapon','clothes','accessory'].includes(item.kind)&&!item.questOnly?Math.floor(item.price/2):0;}
 export function sellGear(state,items,id){
   const price=gearSalePrice(items[id]);
-  if(!price||!state.inventory.gear.includes(id)||Object.values(state.equipment).includes(id))return 0;
+  if(!canTrade(state)||!price||!state.inventory.gear.includes(id)||Object.values(state.equipment).includes(id))return 0;
   state.inventory.gear.splice(state.inventory.gear.indexOf(id),1);
   state.coins+=price;
   return price;

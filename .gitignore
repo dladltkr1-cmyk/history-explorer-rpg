@@ -2,3 +2,5 @@ node_modules/
 .sites-runtime/
 .pages-build/
 scripts/.ancient-ui-test-*.mjs
+
+scripts/.spaces-ui-test-*.mjs

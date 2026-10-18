@@ -1,6 +1,7 @@
-import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=52-complete';
-import {atLifeShop} from './life-shops.js?v=52-complete';
-import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=52-complete';
+import {atYard,atWorkbench} from './life-access.js?v=53';
+import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=53';
+import {atLifeShop} from './life-shops.js?v=53';
+import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=53';
 // Shared life content: no quest/map initialization and no wall-clock mutation on render.
 export const CROPS = {
   millet:{name:'조',item:'millet',minutes:3,sale:3,seed:2,yield:4,kind:'field',color:'#c8ab57'},
@@ -108,13 +109,13 @@ export function plotState(plot,now=Date.now()){
 }
 export function atHome(s){return Boolean(s.ancient?.country&&s.ancient.home.owned&&['ancient-home-'+s.ancient.country,'ancient-yard-'+s.ancient.country].includes(s.map));}
 export function plantCrop(s,plotId,cropId,now=Date.now()){
-  if(!atHome(s)||!Number.isFinite(now)||now<=0)return false;
+  if(!atYard(s)||!Number.isFinite(now)||now<=0)return false;
   const h=s.ancient.home,p=activePlots(h).find(p=>p.id===plotId),c=CROPS[cropId];
   if(!p||p.crop||!c||c.kind!==plotId.split('-')[0]||h.seeds[cropId]<1)return false;
   h.seeds[cropId]--;p.crop=cropId;p.plantedAt=now;return true;
 }
 export function harvestCrop(s,plotId,now=Date.now()){
-  if(!atHome(s))return null;const h=s.ancient.home,p=activePlots(h).find(p=>p.id===plotId);
+  if(!atYard(s))return null;const h=s.ancient.home,p=activePlots(h).find(p=>p.id===plotId);
   if(!p||plotState(p,now).status!=='ready')return null;const id=p.crop,c=CROPS[id];
   if((s.inventory[c.item]||0)+c.yield>99999||h.harvested[id]+c.yield>99999)return null;
   s.inventory[c.item]=(s.inventory[c.item]||0)+c.yield;
@@ -156,7 +157,7 @@ export function canPlaceDecor(s,slot,id){
 }
 export function placeDecor(s,slot,id){
  if(!atHome(s))return false;const h=s.ancient.home,spot=DECOR_SLOTS.slice(0,HOME_LEVELS[h.level].slots).find(v=>v.id===slot);
- if(!spot)return false;if(id===null){delete h.placements[slot];delete h.lamps[slot];return true;}
+ if(!spot||s.map!==(spot.area==='room'?'ancient-home-':'ancient-yard-')+s.ancient.country)return false;if(id===null){delete h.placements[slot];delete h.lamps[slot];return true;}
  if(!canPlaceDecor(s,slot,id))return false;
  if(h.placements[slot]!==id)delete h.lamps[slot];h.placements[slot]=id;return true;
 }
@@ -170,7 +171,7 @@ export function applyHomeRest(s,maxHP){
  const cozy=Object.values(s.ancient.home.placements).includes('fineBedding');s.hp=Math.max(s.hp,Math.ceil(maxHP*(cozy?.4:.3)));s.energy=20;return true;
 }
 export function craftDecor(s,id){
-  const d=DECOR[id],h=s.ancient?.home;if(!atHome(s)||h.level<2||!d?.lumber||(s.inventory.lumber||0)<d.lumber||h.decorations[id]>=99999)return false;
+  const d=DECOR[id],h=s.ancient?.home;if(!atWorkbench(s)||h.level<2||!d?.lumber||(s.inventory.lumber||0)<d.lumber||h.decorations[id]>=99999)return false;
   s.inventory.lumber-=d.lumber;h.decorations[id]++;return true;
 }
 export function meetsLifeRequirements(s,{homeLevel=1,reputation=0,produced={},paddy=false}={}){
@@ -185,7 +186,7 @@ export function setLifeLevel(home,level){
 }
 
 export function plantBatch(s,ids,cropId,now=Date.now()) {
- const h=s.ancient?.home,c=CROPS[cropId];if(!atHome(s)||!h.commerce.tools.seedBag||!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length||!c||h.seeds[cropId]<ids.length||!Number.isFinite(now)||now<=0)return false;
+ const h=s.ancient?.home,c=CROPS[cropId];if(!atYard(s)||!h.commerce.tools.seedBag||!Array.isArray(ids)||!ids.length||new Set(ids).size!==ids.length||!c||h.seeds[cropId]<ids.length||!Number.isFinite(now)||now<=0)return false;
  const plots=ids.map(id=>activePlots(h).find(p=>p.id===id));if(plots.some(p=>!p||p.crop||p.id.split('-')[0]!==c.kind))return false;
  for(const id of ids)plantCrop(s,id,cropId,now);return true;
 }

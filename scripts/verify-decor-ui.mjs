@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=52-complete');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=52-complete');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=52-complete');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=53');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=53');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=53');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 const intervals=new Map();let intervalId=0;globalThis.setInterval=(fn,ms)=>{intervals.set(++intervalId,{fn,ms});return intervalId;};globalThis.clearInterval=n=>intervals.delete(n);
@@ -25,9 +25,9 @@ const click=selector=>{const el=document.querySelector(selector);assert.ok(el,se
 function finishDialogue(){let count=0;while(document.querySelector('#next-dialogue')){assert.ok(count++<10);click('#next-dialogue');}}
 function approach(e){const st=qa.state();const spots=[[e.x-1.2,e.y],[e.x+1.2,e.y],[e.x,e.y+1.2],[e.x,e.y-1.2]];const p=spots.find(([x,y])=>!qa.blocked(x,y));assert.ok(p,'safe interaction spot '+e.id);st.x=p[0];st.y=p[1];qa.field();clock+=40;qa.tick(clock);click('#interact');}
 
-const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=52-complete');
-const {HOME_LEVELS,DECOR,DECOR_SLOTS,canPlaceDecor,placeDecor,decorPosition,upgradeHome,applyHomeRest}=await import(root+'/dist/homestead.js?v=52-complete');
-const {DECOR_VISUALS}=await import(root+'/dist/decor-spec.js?v=52-complete');
+const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=53');
+const {HOME_LEVELS,DECOR,DECOR_SLOTS,canPlaceDecor,placeDecor,decorPosition,upgradeHome,applyHomeRest}=await import(root+'/dist/homestead.js?v=53');
+const {DECOR_VISUALS}=await import(root+'/dist/decor-spec.js?v=53');
 qa.start(validate(structuredClone(original)));qa.field();const baseline=localStorage.getItem('history-explorer-save-v1');qa.login();
 const step=()=>{clock+=40;qa.tick(clock);};
 function openQA(){qa.decor().adminPanel();}

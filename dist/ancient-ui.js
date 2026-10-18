@@ -1,7 +1,7 @@
-import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=52-complete';
-import {parkHorse,retrieveHorse} from './horse-state.js?v=52-complete';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=52-complete';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=52-complete';
+import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=53';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=53';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=53';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=53';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.
@@ -89,7 +89,7 @@ export function createAncientUI(api) {
     if(e.type==='ancientDisplay'){display();return true;}
     if(e.type==='ancientHome') {
       if(!s.ancient.home.owned){dialogue('내 거처',['먼저 마을 도우미를 만나 보자.'],e.art);return true;}
-      panel('내 거처',`${imageTag(e.art,'나의 거처','ancient-house-preview')}<p>${s.ancient.home.level}단계 거처 · 밭 ${s.ancient.home.fields}칸 · 평판 ${s.ancient.home.reputation}<br>집 안에는 보관 공간과 화로, 생활 책상이 있어.<br>내 마당에서는 씨앗을 심고 작물을 수확할 수 있어.</p><div class="row"><button id="ancient-enter-home" class="primary full">집 안으로</button><button id="ancient-enter-yard">내 마당으로</button></div>`);
+      panel('내 거처',`${imageTag(e.art,'나의 거처','ancient-house-preview')}<p>${s.ancient.home.level}단계 거처 · 밭 ${s.ancient.home.fields}칸 · 평판 ${s.ancient.home.reputation}<br>집 안에는 이야기 책상과 보관 공간, 화로가 있어. 꾸미기는 집 안에서 탐험수첩을 열어 보렴.<br>내 마당에서는 씨앗을 심고 작물을 수확할 수 있어.</p><div class="row"><button id="ancient-enter-home" class="primary full">집 안으로</button><button id="ancient-enter-yard">내 마당으로</button></div>`);
       $('#ancient-enter-home').onclick=()=>{travel(e.to);finishEvent('ancient:home');};
       $('#ancient-enter-yard').onclick=()=>travel('ancient-yard-'+s.ancient.country);return true;
     }
