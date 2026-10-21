@@ -1,10 +1,11 @@
-import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=53';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=53';
-import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=53';
+import {freshBaekjeStory,validateBaekjeStory,storyEventAllowed} from './baekje-story.js?v=54';
+import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=54';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=54';
+import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=54';
 
 export const ANCIENT_EXHIBITS={}; // Register sourced culture records here with their content update.
 export const ANCIENT_EXTENSIONS=['field','workbench','storage','culture','horse'];
-export function freshAncient(){return {revision:1,history:freshHanHistory(),country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
+export function freshAncient(){return {revision:1,baekje4c:freshBaekjeStory(),history:freshHanHistory(),country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
 export function syncAncient(s) {
   s.ancient??=freshAncient();const a=s.ancient,p=s.progress.ancient||0;
   ensureLife(a.home);
@@ -34,6 +35,7 @@ export function validateAncient(s,items,maps) {
   }
   validateLife(s.ancient.home);
   validateHanHistory(s.ancient);
+  validateBaekjeStory(s.ancient);
   const p=s.progress.ancient||0;
   if(p>=17&&!s.ancient.country)throw Error('머무는 나라 기록이 없다.');
   if(p<16&&s.ancient.country)throw Error('건국 이야기를 먼저 완료해야 한다.');
@@ -49,6 +51,7 @@ function ancientCanRestore(s,m){const a=s.ancient;return m&&(s.progress.ancient|
 export function ancientEventAllowed(s,q,event) {
   if(!q||q.available===false)return false;
   const a=s.ancient;
+  if(['ancient-4c-trade','ancient-4c-cargo','ancient-4c-south'].includes(q.id))return storyEventAllowed(s,q,event);
   if(q.id==='ancient-country')return Boolean(a.country)&&a.records.length===4;
   if(q.id==='ancient-home')return a.home.owned;
   if(q.id==='ancient-y-gather'||q.id==='ancient-y-king')return ['branch','cord'].every(id=>a.carry.includes(id));
@@ -57,6 +60,8 @@ export function ancientEventAllowed(s,q,event) {
   return event===q.event;
 }
 export function onAncientQuest(s,q) {
+  if(q.reputation)s.ancient.home.reputation=Math.min(100,s.ancient.home.reputation+q.reputation);
+  if(q.id==='ancient-4c-trade'&&!s.ancient.baekje4c.farmBonus&&Object.values(s.ancient.home.harvested).some(n=>n>0)){s.coins+=5;s.ancient.baekje4c.farmBonus=true;}
   if(q.id==='ancient-b-trail'&&!s.ancient.carry.includes('trail'))s.ancient.carry.push('trail');
   if(q.id==='ancient-b-king')s.ancient.carry=s.ancient.carry.filter(x=>x!=='trail');
   if(q.id==='ancient-y-place')s.ancient.carry=s.ancient.carry.filter(x=>!['branch','cord'].includes(x));
@@ -107,6 +112,8 @@ export function prepareAncientQA(s,stage,{country=s.ancient?.country||'baekje'}=
   if(fixture.index===11)s.ancient.carry.push('branch','cord');
   for(const key of Object.keys(s.cooldowns))if(key.startsWith('quiz:ancient-'))delete s.cooldowns[key];
   syncAncient(s);
+  const b=s.ancient.baekje4c;if(fixture.index>=22){b.delivered=true;b.observed=['river','boat','grain'];}if(fixture.index>=23)b.round=3;if(fixture.index>=24){b.exchanges=3;b.routes=2;b.court=true;}
+  if(fixture.story)Object.assign(s.ancient.baekje4c,structuredClone(fixture.story));
   const q=ancientQuest(ANCIENT_QUESTS[fixture.index],s);
-  return {...fixture,map:q.map,target:q.target};
+  return {...fixture,map:fixture.storyMap||q.map,target:fixture.storyTarget||q.target};
 }

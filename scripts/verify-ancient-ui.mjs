@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=53');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=53');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=53');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=54');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=54');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=54');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 let source=await readFile(root+'/dist/game.js','utf8');source=source.replace(/from (["'])(\.\/[^"']+)\1/g,(_,q,p)=>'from '+q+new URL(p,'file://'+root+'/dist/').href+q);
@@ -43,7 +43,7 @@ for(const [country,c]of Object.entries(ANCIENT_COUNTRIES)){
   }
   assert.equal(st.progress.ancient,index+1,'UI progress '+q.id);assert.equal(validate(JSON.parse(localStorage.getItem('history-explorer-save-v1'))).progress.ancient,index+1);
  }
- const st=qa.state();assert.equal(st.map,c.home);assert.equal(st.mounted,false);assert.equal(activeQuest(st),null);assert.equal(st.ancient.country,country);assert.equal(st.ancient.century,4);
+ const st=qa.state();assert.equal(st.map,c.home);assert.equal(st.mounted,false);assert.equal(activeQuest(st).id,'ancient-4c-trade');assert.equal(st.ancient.country,country);assert.equal(st.ancient.century,4);
  approach(qa.currentMap().entities.find(e=>e.type==='ancientStorage'));document.querySelector('#ancient-count').value='5';click('[data-store="food"]');assert.equal(st.inventory.food,2);assert.equal(st.ancient.home.storage.food,5);click('[data-take="food"]');assert.equal(st.inventory.food,3);assert.equal(st.ancient.home.storage.food,4);
  approach(qa.currentMap().entities.find(e=>e.type==='ancientDisplay'));assert.ok(document.querySelector('.panel').textContent.includes('비어 있다'));
  qa.travel(c.village);assert.equal(qa.blocked(st.x,st.y),false);qa.travel('ancient-han');assert.equal(qa.blocked(st.x,st.y),false);assert.ok(reachable(qa.currentMap())(qa.currentMap().entities.find(e=>e.id==='ancient-fishing')));qa.travel(c.village);assert.equal(qa.blocked(st.x,st.y),false);

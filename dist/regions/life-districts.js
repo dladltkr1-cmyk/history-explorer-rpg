@@ -1,6 +1,6 @@
 import {map,entity,exit} from './common.js';
-import {marketMap,forestMap,TRADER} from '../life-access.js?v=53';
-import {LIFE_SHOPS,shopDoor,shopMap,woodId,WOOD_SPOTS} from '../life-shops.js?v=53';
+import {marketMap,forestMap,TRADER} from '../life-access.js?v=54';
+import {LIFE_SHOPS,shopDoor,shopMap,woodId,WOOD_SPOTS} from '../life-shops.js?v=54';
 // Shared town plan, different country palette and tree species. Safe, short walks.
 export function makeLifeDistricts(id,c){
  const boundary=(w,h)=>{const a=[];for(let x=0;x<w;x++)a.push({x,y:0,art:'tree'},{x,y:h-1,art:'tree'});for(let y=1;y<h-1;y++)a.push({x:0,y,art:'tree'},{x:w-1,y,art:'tree'});return a;};

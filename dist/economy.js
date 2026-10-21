@@ -1,4 +1,4 @@
-import {canTrade} from './life-access.js?v=53';
+import {canTrade} from './life-access.js?v=54';
 // Drop rules are independent of era and combat calculations.
 export const DROPS={boar:{item:'rawmeat',doubleChance:.15},wolf:{item:'hide'},snake:{item:'rawmeat'},bear:{item:'rawmeat',doubleChance:.22,extraItem:'hide',extraChance:.12},tiger:{item:'hide',doubleChance:.25},bandit:{berriesChance:.4,coinsChance:.25,minCoins:5,maxCoins:15}};
 export function rollRoomReward(random=Math.random){

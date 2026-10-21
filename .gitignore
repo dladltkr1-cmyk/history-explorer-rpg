@@ -4,3 +4,4 @@ node_modules/
 scripts/.ancient-ui-test-*.mjs
 
 scripts/.spaces-ui-test-*.mjs
+scripts/.baekje-ui-test-*.mjs

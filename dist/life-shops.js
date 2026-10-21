@@ -1,4 +1,4 @@
-import {forestMap,nearLife} from './life-access.js?v=53';
+import {forestMap,nearLife} from './life-access.js?v=54';
 // Physical shop access shared by the UI and every purchase mutation.
 export const LIFE_SHOPS={
  seed:{name:'씨앗 가게',at:[7,6],merchant:'씨앗 상인',line:'밭에는 잡곡을, 논에는 벼를 심어 보렴.',art:'seeds'},

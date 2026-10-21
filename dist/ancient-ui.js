@@ -1,7 +1,8 @@
-import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=53';
-import {parkHorse,retrieveHorse} from './horse-state.js?v=53';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest} from './regions/ancient.js?v=53';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=53';
+import {STORY_RECORDS} from './baekje-story.js?v=54';
+import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=54';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=54';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest,ancientWorld} from './regions/ancient.js?v=54';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=54';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.
@@ -55,7 +56,7 @@ export function createAncientUI(api) {
       panel('시간이 흐른다',`<div class="ancient-time"><small>정착을 마쳤다.</small><strong>4세기</strong><p>백제가 한강을 중심으로 성장하고 있다.</p></div><button id="ancient-begin4" class="primary full">새 시기 시작하기</button>`);
       $('#ancient-begin4').onclick=()=>{if(!setAncientCentury(s,4))return;close();finishEvent('ancient:4c-start');noteAncientVisit(s,s.map);save();hud();toast('지도에서 4세기의 모습을 확인해 보자.');};return;
     }
-    panel('고대 국가 이야기',`<p>${a.country?ANCIENT_COUNTRIES[a.country].name+'의 내 거처':'건국 이야기'} · ${a.century?a.century+'세기':'정착 전'}</p><div class="ancient-chapters">${ANCIENT_CHAPTERS.map(c=>`<article><b>${c.name}</b><p>${c.theme||''}</p><small>${a.chapter===c.id?'현재 시기':a.completedChapters.includes(c.id)?'완료':c.ready?'이야기 기록':'다음 이야기 준비 중'}</small></article>`).join('')}</div>${a.century?'<button id="ancient-current-map" class="primary full">현재 시기 지도 보기</button>':''}<p class="note">4~6세기 왕의 본격 임무와 문화·교류·통일 이야기는 후속 업데이트에서 이어진다.</p>`,{wide:true});
+    panel('고대 국가 이야기',`<p>${a.country?ANCIENT_COUNTRIES[a.country].name+'의 내 거처':'건국 이야기'} · ${a.century?a.century+'세기':'정착 전'}</p><div class="ancient-chapters">${ANCIENT_CHAPTERS.map(c=>`<article><b>${c.name}</b><p>${c.theme||''}</p><small>${a.chapter===c.id?'현재 시기':a.completedChapters.includes(c.id)?'완료':c.ready?'이야기 기록':'다음 이야기 준비 중'}</small></article>`).join('')}</div>${a.century?'<button id="ancient-current-map" class="primary full">현재 시기 지도 보기</button>':''}<p class="note">4세기 「한강에서 바다까지」 1~3번 이야기를 진행할 수 있어. 4번 이후는 다음 업데이트에서 이어져.</p>`,{wide:true});
     if(a.century)$('#ancient-current-map').onclick=historicalMap;
   }
   function historicalMap() {
@@ -69,8 +70,8 @@ export function createAncientUI(api) {
     document.querySelectorAll('[data-ancient-place]').forEach(b=>b.onclick=()=>travel(b.dataset.ancientPlace,s.map,{fast:true}));
   }
   function records() {
-    const a=state().ancient,lines={goguryeo:'주몽 · 졸본. 알과 새의 도움이 등장하는 건국 이야기.',baekje:'온조 · 한강 유역. 고구려에서 남쪽으로 내려온 일행의 이야기.',silla:'박혁거세 · 경주. 특별한 알이 등장하는 건국 이야기.',gaya:'김수로 · 가야. 하늘과 알이 등장하는 건국 이야기. 가야에는 여러 나라가 있었다.'};
-    panel('고대 국가 기록',`<div class="nation-records">${Object.keys(lines).map(id=>`<article><b>${names[id]}</b><p>${a.records.includes(id)?esc(lines[id]):'아직 살펴보지 않았다.'}</p></article>`).join('')}</div><p class="note">건국 이야기의 신비한 장면은 확인된 출생 사실과 구분한다.</p>`,{wide:true});
+    const s=state(),a=s.ancient,lines={goguryeo:'주몽 · 졸본. 알과 새의 도움이 등장하는 건국 이야기.',baekje:'온조 · 한강 유역. 고구려에서 남쪽으로 내려온 일행의 이야기.',silla:'박혁거세 · 경주. 특별한 알이 등장하는 건국 이야기.',gaya:'김수로 · 가야. 하늘과 알이 등장하는 건국 이야기. 가야에는 여러 나라가 있었다.'};
+    panel('고대 국가 기록',`<div class="nation-records">${Object.keys(lines).map(id=>`<article><b>${names[id]}</b><p>${a.records.includes(id)?esc(lines[id]):'아직 살펴보지 않았다.'}</p></article>`).join('')}</div><h3>한강에서 바다까지</h3>${STORY_RECORDS.map(([id,name,text])=>`<article><b>${name}</b><p>${s.completedQuests.includes(id)?text:'아직 경험하지 않았다.'}</p></article>`).join('')}<p class="note">건국 이야기의 신비한 장면은 확인된 출생 사실과 구분한다.</p>`,{wide:true});
   }
   function interact(e,q) {
     const s=state();
@@ -122,7 +123,7 @@ export function createAncientUI(api) {
     const fixture=typeof stage==='string'?ANCIENT_QA.find(v=>v.id===stage):stage;
     if(!fixture)return;
     const ready=prepareContentQA(s,r,fixture);s.unlockedRegions=regions.map(v=>v.id);
-    adminJump(ready.map,maps[ready.map].entities.find(e=>e.id===ready.target));
+    adminJump(ready.map,ancientWorld(maps[ready.map],s).entities.find(e=>e.id===ready.target));
   }
   function journey(e){
     const s=state(),country=s.ancient.country,to=e.to,outbound=to==='ancient-han';
@@ -135,7 +136,7 @@ export function createAncientUI(api) {
   }
   function adminPanel() {
     const s=state(),a=s.ancient;
-    panel('고대 국가 시험',`<p class="note">기존 별도 시험 세션 · 원본 학생 기록에는 저장하지 않는다.</p><p>나라: ${a.country?names[a.country]:'선택 전'} · 시기: ${a.century?a.century+'세기':'건국/정착'}</p><h3>건국과 정착</h3><div class="admin-grid">${ANCIENT_QA.map(v=>`<button data-ancient-stage="${v.id}">${v.name}</button>`).join('')}</div><h3>머무는 나라 변경</h3><div class="row">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-ancient-country="${id}">${c.name}</button>`).join('')}</div><h3>세기·지도·한강 상태</h3><div class="admin-grid">${[4,5,6].map(n=>`<button data-ancient-century="${n}">${n}세기 상태</button><button data-ancient-map="${n}">${n}세기 지도</button><button data-ancient-han="${n}">${n}세기 한강</button>`).join('')}</div><h3>한강 사건별 상태 (별도 시험)</h3><div class="admin-grid">${Object.entries(HAN_PHASES).map(([id,p])=>`<button data-han-phase="${id}">${p.name}</button>`).join('')}</div><h3>생활 평판 경계값</h3><div class="admin-grid">${[0,9,10,29,30,54,55,79,80,100].map(n=>`<button data-reputation-qa="${n}">평판 ${n}</button>`).join('')}</div><h3>나라별 거처</h3><div class="row">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-ancient-home="${id}">${c.name} 거처</button>`).join('')}</div><h3>인물 그림체</h3><button id="ancient-qa-style" class="full">기존 NPC와 전용 건국 인물 비교</button><h3>집 앞 말 쉼터</h3><div class="admin-grid">${[['none','말 없음'],['owned','말 보유'],['mounted','말 탑승'],['parked','집 앞에 세워둠 / 다시 타기']].map(([id,name])=>`<button data-ancient-horse="${id}">${name}</button>`).join('')}</div><button id="ancient-qa-home" class="full">내 거처 · 보관/전시 시험</button><button id="ancient-qa-reset-quiz" class="full">퀴즈 완료/재도전 기록 초기화</button><button id="ancient-qa-back" class="full">관리자 메뉴</button>`,{wide:true});
+    panel('고대 국가 시험',`<p class="note">기존 별도 시험 세션 · 원본 학생 기록에는 저장하지 않는다.</p><p>나라: ${a.country?names[a.country]:'선택 전'} · 시기: ${a.century?a.century+'세기':'건국/정착'}</p><h3>건국·정착·4세기 백제 이야기</h3><div class="admin-grid">${ANCIENT_QA.map(v=>`<button data-ancient-stage="${v.id}">${v.name}</button>`).join('')}</div><h3>머무는 나라 변경</h3><div class="row">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-ancient-country="${id}">${c.name}</button>`).join('')}</div><h3>세기·지도·한강 상태</h3><div class="admin-grid">${[4,5,6].map(n=>`<button data-ancient-century="${n}">${n}세기 상태</button><button data-ancient-map="${n}">${n}세기 지도</button><button data-ancient-han="${n}">${n}세기 한강</button>`).join('')}</div><h3>한강 사건별 상태 (별도 시험)</h3><div class="admin-grid">${Object.entries(HAN_PHASES).map(([id,p])=>`<button data-han-phase="${id}">${p.name}</button>`).join('')}</div><h3>생활 평판 경계값</h3><div class="admin-grid">${[0,9,10,29,30,54,55,79,80,100].map(n=>`<button data-reputation-qa="${n}">평판 ${n}</button>`).join('')}</div><h3>나라별 거처</h3><div class="row">${Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>`<button data-ancient-home="${id}">${c.name} 거처</button>`).join('')}</div><h3>인물 그림체</h3><button id="ancient-qa-style" class="full">기존 NPC와 전용 건국 인물 비교</button><h3>집 앞 말 쉼터</h3><div class="admin-grid">${[['none','말 없음'],['owned','말 보유'],['mounted','말 탑승'],['parked','집 앞에 세워둠 / 다시 타기']].map(([id,name])=>`<button data-ancient-horse="${id}">${name}</button>`).join('')}</div><button id="ancient-qa-home" class="full">내 거처 · 보관/전시 시험</button><button id="ancient-qa-reset-quiz" class="full">퀴즈 완료/재도전 기록 초기화</button><button id="ancient-qa-back" class="full">관리자 메뉴</button>`,{wide:true});
     document.querySelectorAll('[data-ancient-stage]').forEach(b=>b.onclick=()=>prepare(b.dataset.ancientStage));
     document.querySelectorAll('[data-ancient-country]').forEach(b=>b.onclick=()=>{if((s.progress.ancient||0)<17)prepare('chosen');chooseAncientCountry(s,b.dataset.ancientCountry,{admin:true});save();adminJump(ANCIENT_COUNTRIES[s.ancient.country].village);});
     document.querySelectorAll('[data-han-phase]').forEach(b=>b.onclick=()=>{if(!isAdmin())return;if((s.progress.ancient||0)<20)prepare('4c');previewHanHistory(s,b.dataset.hanPhase,{admin:true});adminJump('ancient-han');hud();});
