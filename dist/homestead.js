@@ -1,7 +1,7 @@
-import {atYard,atWorkbench} from './life-access.js?v=54';
-import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=54';
-import {atLifeShop} from './life-shops.js?v=54';
-import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=54';
+import {atYard,atWorkbench} from './life-access.js?v=54.2';
+import {DECOR_VISUALS,decorAnchor,isLamp} from './decor-spec.js?v=54.2';
+import {atLifeShop} from './life-shops.js?v=54.2';
+import {freshCommerce,validateCommerce,canGrow,addReputation} from './life-progression.js?v=54.2';
 // Shared life content: no quest/map initialization and no wall-clock mutation on render.
 export const CROPS = {
   millet:{name:'조',item:'millet',minutes:3,sale:3,seed:2,yield:4,kind:'field',color:'#c8ab57'},

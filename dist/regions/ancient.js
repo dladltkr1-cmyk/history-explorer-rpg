@@ -1,11 +1,11 @@
-import {storyPeriod,STORY_POINTS} from '../baekje-story.js?v=54';
-import {makeLifeDistricts} from './life-districts.js?v=54';
-import {marketMap,forestMap} from '../life-access.js?v=54';
-import {DECOR_VISUALS} from '../decor-spec.js?v=54';
-import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=54';
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=54';
+import {storyPeriod,STORY_POINTS} from '../baekje-story.js?v=54.2';
+import {makeLifeDistricts} from './life-districts.js?v=54.2';
+import {marketMap,forestMap} from '../life-access.js?v=54.2';
+import {DECOR_VISUALS} from '../decor-spec.js?v=54.2';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=54.2';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=54.2';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=54';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=54.2';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -71,7 +71,7 @@ export const ANCIENT_QUESTS=[
   q('ancient-4c-next','다음 이야기 · 치양의 급한 소식','ancient-home-baekje','ancient-chapters','ancient:4c-full',{location:'home',available:false,xp:0,detail:'1~3번 이야기를 마쳤다. 369년 치양의 소식은 다음 업데이트에서 이어진다.'}),
 ];
 export const ANCIENT_QA=[
-  ['opening','고대 국가 시작',0],['jumong','주몽 바로 만나기',2],['onjo','온조 바로 만나기',6],['hyeokgeose','박혁거세 바로 만나기',8],['suro','김수로 바로 만나기',11],['goguryeo','고구려 건국 이야기',1],['baekje','백제 건국 이야기',4],['silla','신라 건국 이야기',7],['gaya','가야 건국 이야기',10],['quiz','건국편 퀴즈 직전',14],['choice','나라 선택 직전',16],['chosen','나라 선택 완료',17],['helper','내 거처 안내 직전',17],['home','내 거처 획득',18],['4c','4세기 시작',19],['4c-trade','QUEST 1 시작',21],['4c-deliver','QUEST 1 전달 직전',21,{parcel:true},'ancient-han','story-keeper'],['4c-cargo','QUEST 2 · 1라운드',22],['4c-cargo2','QUEST 2 · 2라운드',22,{round:1}],['4c-cargo3','QUEST 2 · 3라운드',22,{round:2}],['4c-south','QUEST 3 시작',23],['4c-exchange','QUEST 3 거래 완료 직전',23,{exchanges:2}],['4c-complete','QUEST 3 완료 직전 · 궁정',23,{exchanges:3,routes:2}],['4c-wait','QUEST 4 대기',24],
+  ['opening','고대 국가 시작',0],['jumong','주몽 바로 만나기',2],['onjo','온조 바로 만나기',6],['hyeokgeose','박혁거세 바로 만나기',8],['suro','김수로 바로 만나기',11],['goguryeo','고구려 건국 이야기',1],['baekje','백제 건국 이야기',4],['silla','신라 건국 이야기',7],['gaya','가야 건국 이야기',10],['quiz','건국편 퀴즈 직전',14],['choice','나라 선택 직전',16],['chosen','나라 선택 완료',17],['helper','내 거처 안내 직전',17],['home','내 거처 획득',18],['4c','4세기 시작',19],['4c-trade','QUEST 1 시작',21],['4c-deliver','QUEST 1 전달 직전',21,{parcel:true},'ancient-han','story-keeper'],['4c-cargostart','QUEST 2 시작',22],['4c-cargo','QUEST 2 · 1라운드',22],['4c-cargo2','QUEST 2 · 2라운드',22,{round:1}],['4c-cargo3','QUEST 2 · 3라운드',22,{round:2}],['4c-south','QUEST 3 시작',23],['4c-exchange','QUEST 3 거래 완료 직전',23,{exchanges:2}],['4c-complete','QUEST 3 완료 직전 · 궁정',23,{exchanges:3,routes:2}],['4c-done','QUEST 3 완료',24],['4c-wait','QUEST 4 대기',24],
 ].map(([id,name,index,story,storyMap,storyTarget])=>({id,name,index,story,storyMap,storyTarget,quest:ANCIENT_QUESTS[index].id,map:ANCIENT_QUESTS[index].map,target:ANCIENT_QUESTS[index].target}));
 const qa={name:'고대 국가 건국과 정착',stages:ANCIENT_QA,items:[]};
 for(const [index,quest]of ANCIENT_QUESTS.entries())quest.qa={...qa,stages:[{id:'current',name:'선택 퀘스트 직전',index,quest:quest.id,map:quest.map,target:quest.target},...ANCIENT_QA]};
@@ -207,7 +207,7 @@ export function ancientWorld(base,s) {
   }
   if(base.id===forestMap(a?.country))return {...base,entities:base.entities.map(e=>e.type==='lifeWood'?{...e,art:woodReady(s,e.id)?'shop-wood-pile':'shop-wood-empty',ready:woodReady(s,e.id)}:e)};
   if(base.id!=='ancient-han')return base;
-  return {...base,name:'한강 유역 · '+era.name,entities:[...base.entities.map(e=>{
+  return {...base,obstacles:base.obstacles.filter(o=>Math.hypot(o.x-20,o.y-3.5)>2.2),name:'한강 유역 · '+era.name,entities:[...base.entities.map(e=>{
     if(e.countryReturn)return {...e,to:c?.village||'ancient-origins'};
     if(e.centuryState==='sign')return {...e,lines:[era.name,era.text],banner:era.country};
     if(e.centuryState==='resident')return {...e,art:ANCIENT_COUNTRIES[era.country].helperArt,lines:[era.text,'네 거처는 이 한강 지역과 떨어진 생활마을에 있어.']};

@@ -1,13 +1,13 @@
-import {createBaekjeStoryUI} from './baekje-story-ui.js?v=54.1';
-import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=54';
-import {drawLifeDistrict} from './life-terrain.js?v=54';
-import {createDecorUI} from './decor-ui.js?v=54';
-import {DECOR_VISUALS} from './decor-spec.js?v=54';
-import {reputationDetails} from './ancient-history.js?v=54';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=54';
+import {createBaekjeStoryUI} from './baekje-story-ui.js?v=54.2';
+import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=54.2';
+import {drawLifeDistrict} from './life-terrain.js?v=54.2';
+import {createDecorUI} from './decor-ui.js?v=54.2';
+import {DECOR_VISUALS} from './decor-spec.js?v=54.2';
+import {reputationDetails} from './ancient-history.js?v=54.2';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=54.2';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=54';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=54";
+import {parkHorse} from './horse-state.js?v=54.2';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=54.2";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -24,16 +24,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=54";
-import { ASSETS } from "./assets.js?v=54";
+} from "./state.js?v=54.2";
+import { ASSETS } from "./assets.js?v=54.2";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=54';
-import {noteAncientVisit} from './ancient-state.js?v=54';
-import {createAncientUI} from './ancient-ui.js?v=54';
-import {createHomesteadUI} from './homestead-ui.js?v=54';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=54';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=54.2';
+import {noteAncientVisit} from './ancient-state.js?v=54.2';
+import {createAncientUI} from './ancient-ui.js?v=54.2';
+import {createHomesteadUI} from './homestead-ui.js?v=54.2';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=54.2';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=54';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=54.2';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -51,7 +51,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=54";
+} from "./economy.js?v=54.2";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -805,7 +805,7 @@ function hud() {
     ? `${(s.progress[r.id] || 0) + 1} / ${r.quests.length}`
     : "";
   $("#quest-title").textContent =
-    (r?.id==='ancient'&&!q?`거처 ${s.ancient.home.level}단계 · 밭과 살림을 가꾸자.`:q?.title) || (s.map === "hq" ? "시대의 문으로 가 보자." : "자유 탐험");
+    (r?.id==='ancient'&&!q?(ANCIENT_QUESTS[s.progress.ancient]?.title||`거처 ${s.ancient.home.level}단계 · 밭과 살림을 가꾸자.`):q?.title) || (s.map === "hq" ? "시대의 문으로 가 보자." : "자유 탐험");
   const paleoStatus = r?.id === "paleolithic" && q
     ? `\n주먹도끼 ${s.artifacts.includes("handaxe") ? "✓" : "·"}  뗀석기 ${s.artifacts.includes("flint") ? "✓" : "·"}\n불의 사용 ${s.artifacts.includes("fire") ? "✓" : "·"}  음식 조리 ${s.completedQuests.includes("paleo-cook") ? "✓" : "·"}`
     : "";
@@ -816,7 +816,7 @@ function hud() {
     (q?.detail ? q.detail + paleoStatus + nationItems + (q.id==='pre-fishing-rod'?'\n'+fishingMaterialsText(): '') + (r?.id === 'nations' ? `\n탐험 표식 ${s.nationMarks.length} / 5` : '') : "") ||
     (s.map === "hq"
       ? "가까이 가서 조사 / 말하기를 눌러."
-      : "놓친 유물과 부탁을 찾아보자.");
+      : r?.id==='ancient'&&ANCIENT_QUESTS[s.progress.ancient]?.available===false?ANCIENT_QUESTS[s.progress.ancient].detail:"놓친 유물과 부탁을 찾아보자.");
   $("#quest-place").textContent = q
     ? `⌖ ${MAPS[q.map].name}`
     : s.map === "hq"

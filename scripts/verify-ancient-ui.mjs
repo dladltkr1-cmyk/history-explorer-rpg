@@ -12,9 +12,9 @@ w.HTMLCanvasElement.prototype.getContext=()=>new Proxy({measureText:()=>({width:
 let clock=0,id=0;const frames=new Map(),epoch=Date.now();Date.now=()=>epoch+clock;
 Object.defineProperty(globalThis,'performance',{value:{now:()=>clock},configurable:true});
 Object.assign(globalThis,{innerWidth:1024,innerHeight:768,devicePixelRatio:1,addEventListener:w.addEventListener.bind(w),getComputedStyle:w.getComputedStyle.bind(w),requestAnimationFrame:cb=>{frames.set(++id,cb);return id;},cancelAnimationFrame:id=>frames.delete(id)});
-const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=54');
-const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=54');
-const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=54');
+const {fresh,validate,activeQuest,abilities}=await import(root+'/dist/state.js?v=54.2');
+const {REGIONS,MAPS}=await import(root+'/dist/regions/index.js?v=54.2');
+const {ANCIENT_COUNTRIES,ANCIENT_QA,ANCIENT_QUESTS}=await import(root+'/dist/regions/ancient.js?v=54.2');
 const original=fresh('고대 UI 원본','boy');Object.assign(original,{introSeen:true,basicTutorialDone:true,audioMuted:true,coins:317,personalCode:null});original.completedRegions=REGIONS.slice(0,5).map(r=>r.id);original.unlockedRegions=REGIONS.map(r=>r.id);original.inventory.food=7;original.inventory.fishingrod=1;original.horseUnlocked=true;original.inventory.gear.push('bronzeCharm');
 localStorage.setItem('history-explorer-save-v1',JSON.stringify(original));
 let source=await readFile(root+'/dist/game.js','utf8');source=source.replace(/from (["'])(\.\/[^"']+)\1/g,(_,q,p)=>'from '+q+new URL(p,'file://'+root+'/dist/').href+q);
@@ -77,5 +77,5 @@ for(const map of ['nation-buyeo-village','ancient-village-silla']){
 qa.state().hp=abilities(qa.state()).hp-2;qa.menu();click('[data-admin-menu="interaction"]');click('[data-qa-interact="combat"]');const enemy=qa.currentMap().entities.find(e=>e.id==='buyeo-wolf');qa.state().x=enemy.x-.4;qa.state().y=enemy.y;qa.field();for(let n=0;n<85;n++){clock+=40;qa.tick(clock);}click('#interact');assert.equal(qa.screen(),'battle');const hp=qa.state().hp,food=qa.state().inventory.food;click('[data-fight="food"]');click('[data-food="food"]');assert.equal(qa.state().inventory.food,food-1);assert.equal(qa.state().hp,hp+2);await new Promise(resolve=>setTimeout(resolve,1250));const coins=qa.state().coins;click('[data-fight="run"]');assert.equal(qa.screen(),'');assert.equal(qa.state().coins,coins);assert.ok(qa.state().monsters['buyeo-wolf']);
 console.log('Regression: actual frame loop on old/new maps; horse speed ×1.6 and dismount; battle entry/food consumption/enemy turn/escape keeps enemy and gives no coins.');
 assert.equal(localStorage.getItem('history-explorer-save-v1'),originalText);qa.exit();const restored=structuredClone(qa.state());delete restored.updatedAt;delete before.updatedAt;assert.deepEqual(restored,before);const stored=JSON.parse(localStorage.getItem('history-explorer-save-v1'));delete stored.updatedAt;assert.deepEqual(stored,before);
-console.log(outputs.join('\n'));console.log('Admin: 15 stage fixtures including all four founders; 22 individually selected quests; 3 countries × 3 maps/Han overlays; student save untouched throughout QA; original content restored (normal save timestamp excepted).');
+console.log(outputs.join('\n'));console.log('Admin: all registered stage fixtures including all four founders and new story stages; every individually selected quest; 3 countries × 3 maps/Han overlays; student save untouched throughout QA; original content restored (normal save timestamp excepted).');
 await unlink(path);dom.window.close();process.exit(0);

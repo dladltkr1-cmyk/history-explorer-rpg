@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class{set src(v){} get complete(){return false;}};
-const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=54');
-const {prepareAncientQA}=await import('../dist/ancient-state.js?v=54');
-const {MAPS}=await import('../dist/regions/index.js?v=54');
-const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=54');
-import * as st from '../dist/baekje-story.js?v=54';
+const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=54.2');
+const {prepareAncientQA}=await import('../dist/ancient-state.js?v=54.2');
+const {MAPS}=await import('../dist/regions/index.js?v=54.2');
+const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=54.2');
+import * as st from '../dist/baekje-story.js?v=54.2';
 const go=(s,key)=>{s.map=key==='sender'?'ancient-village-'+s.ancient.country:'ancient-han';Object.assign(s,st.STORY_POINTS[key]);s.x+=1;};
 for(const country of ['goguryeo','baekje','silla'])for(const farm of [false,true]){
  let s=fresh('이야기 검수','boy');prepareAncientQA(s,'4c-trade',{country});s.map='ancient-home-'+country;s.x=5;s.y=5;s.coins=100;s.ancient.home.reputation=0;
@@ -20,7 +20,7 @@ for(const country of ['goguryeo','baekje','silla'])for(const farm of [false,true
   const sides=r===0?['left','right']:r===1?['left','right','right']:['left','right','right','left'];for(let i=0;i<sides.length;i++)st.placeCargo(s,i,sides[i]);assert.ok(st.cargoBalance(s.ancient.baekje4c).ready);s=validate(JSON.parse(JSON.stringify(s)));assert.ok(st.departCargo(s));assert.equal(st.departCargo(s),false);
  }
  assert.equal(advance(s,'ancient:4c-cargo').length,1);assert.equal(advance(s,'ancient:4c-cargo').length,0);go(s,'south');
- for(let i=0;i<3;i++){assert.equal(st.exchangeStory(s,0,2),false);assert.ok(st.exchangeStory(s,0,1));s=validate(JSON.parse(JSON.stringify(s)));}
+ for(let i=0;i<3;i++){assert.equal(st.exchangeStory(s,0,2),false);assert.ok(st.exchangeStory(s,0,1,i));assert.equal(st.exchangeStory(s,0,1,i),false);s=validate(JSON.parse(JSON.stringify(s)));}
  assert.equal(st.chooseStoryRoute(s,'land'),false);assert.ok(st.chooseStoryRoute(s,'water'));assert.equal(st.chooseStoryRoute(s,'water'),false);assert.ok(st.chooseStoryRoute(s,'land'));assert.equal(advance(s,'ancient:4c-south').length,0);assert.ok(st.seeStoryCourt(s));assert.equal(advance(s,'ancient:4c-south').length,1);assert.equal(advance(s,'ancient:4c-south').length,0);
  assert.equal(s.coins,175+(farm?5:0));assert.equal(s.ancient.home.reputation,6);const expected={...s,...before};gain(expected,36,0);assert.equal(s.level,expected.level);assert.equal(s.xp,expected.xp);assert.equal(JSON.stringify(s.inventory),inventory);assert.equal(activeQuest(s),null);assert.equal(s.progress.ancient,24);assert.ok(!s.completedRegions.includes('ancient'));validate(JSON.parse(JSON.stringify(s)));
 }
