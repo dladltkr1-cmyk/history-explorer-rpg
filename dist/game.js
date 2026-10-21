@@ -1,4 +1,4 @@
-import {createBaekjeStoryUI} from './baekje-story-ui.js?v=54';
+import {createBaekjeStoryUI} from './baekje-story-ui.js?v=54.1';
 import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=54';
 import {drawLifeDistrict} from './life-terrain.js?v=54';
 import {createDecorUI} from './decor-ui.js?v=54';
