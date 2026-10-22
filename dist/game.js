@@ -2823,6 +2823,9 @@ function draw(dt = 0) {
       continue;
     }
     if(e.type==='warActor'){drawWarActor(ctx,e,T,clock,s,avatarSource);continue;}
+    if(m.warField&&e.id?.startsWith('war-wall-')&&['warFence','rock'].includes(e.art)){
+      const total=e.worldWidth,unit=e.art==='warFence'?104:80;for(let start=-total/2;start<total/2;start+=unit){const width=Math.min(unit,total/2-start);ctx.save();ctx.beginPath();ctx.rect(x+start,y-80,width,100);ctx.clip();drawSprite(e.art==='rock'?'warRock':e.art,x+start+unit/2,y,unit,70);ctx.restore();}continue;
+    }
     const isPlayer = e.type === "player";
     let w =
         isPlayer || ["npc", "quiz", "shop", "enemy"].includes(e.type) ? 58 : 64,
