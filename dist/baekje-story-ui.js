@@ -1,5 +1,5 @@
-import {CARGO,CARGO_ROUNDS,EXCHANGES,STORY_RECORDS,takeStoryParcel,deliverStoryParcel,observeStory,cargoBalance,placeCargo,departCargo,exchangeStory,chooseStoryRoute,seeStoryCourt,storyActive} from './baekje-story.js?v=54.2';
-const sprite=(id,alt='',cls='')=>`<img class="${cls}" src="/assets/story/${id}.svg?v=54.2" alt="${alt}">`;
+import {CARGO,CARGO_ROUNDS,EXCHANGES,STORY_RECORDS,takeStoryParcel,deliverStoryParcel,observeStory,cargoBalance,placeCargo,departCargo,exchangeStory,chooseStoryRoute,seeStoryCourt,storyActive} from './baekje-story.js?v=55';
+const sprite=(id,alt='',cls='')=>`<img class="${cls}" src="/assets/story/${id}.svg?v=55" alt="${alt}">`;
 const cargoName=id=>CARGO[id]?.name||'천';
 export function createBaekjeStoryUI(api){
  const {$,panel,close,save,hud,toast,finishEvent,imageTag}=api,s=()=>api.state(),b=()=>s().ancient.baekje4c;
@@ -58,7 +58,7 @@ export function createBaekjeStoryUI(api){
   if(!allowed(23,'south')||b().routes!==2)return fail();
   const remark={baekje:'우리 백제가 한강을 바탕으로 성장하고 있구나.',goguryeo:'고구려와 경쟁하던 백제의 성장 모습을 살펴봤어.',silla:'신라에서 온 여행자로서 여러 지역의 교류를 살펴봤어.'}[s().ancient.country];
   panel('이야기 장면 · 백제의 궁정',`<div class="story-court"><div class="court-banner">백제 · 4세기</div>${sprite('geunchogo','근초고왕 전용 SD 캐릭터','court-king')}<span class="court-name">근초고왕 · 재위 346~375년</span></div><p>“한강을 오가는 사람들이 늘고 있구나.<br>남쪽 여러 지역과도 관계가 넓어지고 있어.”</p><p>${remark}<br>근초고왕 때 백제는 남쪽으로 영향력을 넓혔어.</p><p class="note">왕이 나루터에 왔다는 뜻은 아니야. 궁정 모습과 대사는 게임용 창작이야. 마한의 통합 범위와 시기는 연구가 이어지고 있어.</p><button id="story-finish3" class="primary full">백제의 남쪽 진출 기록 · 30엽전 / 평판 +2 / 경험치 12</button>`,{wide:true,type:'baekje-story'});
-  $('#story-finish3').onclick=()=>{if(!allowed(23,'south'))return fail();seeStoryCourt(s());close();finishEvent('ancient:4c-south');panel('한강에서 바다까지 · 첫 모험 완료','<p>한강에서 짐을 옮기고, 서로 필요한 물건을 바꾸었어.</p><p>다음 이야기: 369년, 치양의 급한 소식.<br>다음 업데이트에서 이어진다.</p><button id="story-return-field" class="primary full">한강으로 돌아가기</button>');$('#story-return-field').onclick=close;};
+  $('#story-finish3').onclick=()=>{if(!allowed(23,'south'))return fail();seeStoryCourt(s());close();finishEvent('ancient:4c-south');panel('한강에서 바다까지 · 첫 모험 완료','<p>한강에서 짐을 옮기고, 서로 필요한 물건을 바꾸었어.</p><p>다음 이야기: 369년, 치양의 급한 소식.<br>한강의 북쪽 전령을 찾아가자.</p><button id="story-return-field" class="primary full">한강으로 돌아가기</button>');$('#story-return-field').onclick=close;};
  }
  function interact(e){if(e.type!=='baekjeStory')return false;if(e.id==='story-sender')sender();else if(e.id==='story-keeper')keeper();else south();return true;}
  function adminPanel(){api.ancientAdmin();}

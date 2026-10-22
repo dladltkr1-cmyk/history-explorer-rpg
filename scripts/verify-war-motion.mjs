@@ -1,0 +1,9 @@
+globalThis.Image=class{set src(v){}get complete(){return false}};
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+const root=fileURLToPath(new URL('..',import.meta.url)).replace(/\/$/,'');
+const {fresh}=await import(root+'/dist/state.js?v=55');const {prepareAncientQA}=await import(root+'/dist/ancient-state.js?v=55');const w=await import(root+'/dist/war-story.js?v=55');
+const s=fresh('walk','boy');prepareAncientQA(s,'escort-start');s.map=w.ESCAPE;w.restoreWar(s);const rt=w.createEscapeRuntime(s);const blocked=(x,y)=>x<1||x>22||y<1||y>34||w.warBlocked(s.map,x,y);let logs=[];
+const tick=()=>{const e=w.stepEscape(s,rt,.04,blocked);if(e)logs.push(e);for(const p of rt.followers)assert.equal(blocked(p.x,p.y),false,'follower crossed an obstacle');if(e==='caught')throw Error('Caught '+JSON.stringify({x:s.x,y:s.y,guards:rt.guards}));};
+async function walk(x,y){let n=0;while(Math.hypot(s.x-x,s.y-y)>.05){if(n++>2000)throw Error('stuck '+JSON.stringify({x:s.x,y:s.y,target:[x,y],followers:rt.followers}));const dx=x-s.x,dy=y-s.y,d=Math.hypot(dx,dy),a=Math.min(d,.14);const nx=s.x+dx/d*a,ny=s.y+dy/d*a;if(!blocked(nx,ny)){s.x=nx;s.y=ny;}tick();const g=w.canAmbush(s,rt);if(g){w.ambush(s,rt);for(let i=0;i<17;i++)tick();}}for(let i=0;i<10;i++)tick();}
+try{for(const p of [[8,30],[8,26.2],[6.5,26.2],[6.5,25.2],[11,25.2],[10,23],[18.5,22],[18.5,18],[18.5,16.8],[18.5,14],[7,14],[7,10],[7,8],[1.3,8],[1.3,1.8],[12,1.8],[12,3],[12,2]]){await walk(...p);}assert.equal(w.tryEscape(s,rt),'success');assert.ok(logs.includes('ambush'));assert.equal(logs.filter(e=>e==='checkpoint').length,2);console.log('v55 continuous movement: breadcrumb following around every fence, patrols active throughout, real rear ambush, both checkpoints, three-person exit; no coordinate jumps or wall crossings.');}catch(e){console.log(e.message,logs);process.exitCode=1;}

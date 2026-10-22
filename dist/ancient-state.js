@@ -1,11 +1,12 @@
-import {freshBaekjeStory,validateBaekjeStory,storyEventAllowed} from './baekje-story.js?v=54.2';
-import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=54.2';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=54.2';
-import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=54.2';
+import {freshWar,validateWar,warEventAllowed,restoreWar,warMap} from './war-story.js?v=55';
+import {freshBaekjeStory,validateBaekjeStory,storyEventAllowed} from './baekje-story.js?v=55';
+import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=55';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=55';
+import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=55';
 
 export const ANCIENT_EXHIBITS={}; // Register sourced culture records here with their content update.
 export const ANCIENT_EXTENSIONS=['field','workbench','storage','culture','horse'];
-export function freshAncient(){return {revision:1,baekje4c:freshBaekjeStory(),history:freshHanHistory(),country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
+export function freshAncient(){return {revision:1,war:freshWar(),baekje4c:freshBaekjeStory(),history:freshHanHistory(),country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
 export function syncAncient(s) {
   s.ancient??=freshAncient();const a=s.ancient,p=s.progress.ancient||0;
   ensureLife(a.home);
@@ -36,10 +37,12 @@ export function validateAncient(s,items,maps) {
   validateLife(s.ancient.home);
   validateHanHistory(s.ancient);
   validateBaekjeStory(s.ancient);
+  validateWar(s.ancient);
   const p=s.progress.ancient||0;
   if(p>=17&&!s.ancient.country)throw Error('머무는 나라 기록이 없다.');
   if(p<16&&s.ancient.country)throw Error('건국 이야기를 먼저 완료해야 한다.');
   syncAncient(s);
+  if(warMap(s.map)){if(s.progress.ancient!==(s.map==='ancient-chiyang-trail'?24:25)){s.map='ancient-han';s.x=12;s.y=6;}else restoreWar(s);}
   // Existing saves unlock era 6 only after era 5 is complete.
   const unlocked=s.completedRegions.includes('nations');
   s.unlockedRegions=s.unlockedRegions.filter(id=>id!=='ancient');
@@ -51,6 +54,7 @@ function ancientCanRestore(s,m){const a=s.ancient;return m&&(s.progress.ancient|
 export function ancientEventAllowed(s,q,event) {
   if(!q||q.available===false)return false;
   const a=s.ancient;
+  if(['ancient-4c-chiyang','ancient-4c-pyongyang'].includes(q.id))return warEventAllowed(s,q,event);
   if(['ancient-4c-trade','ancient-4c-cargo','ancient-4c-south'].includes(q.id))return storyEventAllowed(s,q,event);
   if(q.id==='ancient-country')return Boolean(a.country)&&a.records.length===4;
   if(q.id==='ancient-home')return a.home.owned;
@@ -113,6 +117,9 @@ export function prepareAncientQA(s,stage,{country=s.ancient?.country||'baekje'}=
   for(const key of Object.keys(s.cooldowns))if(key.startsWith('quiz:ancient-'))delete s.cooldowns[key];
   syncAncient(s);
   const b=s.ancient.baekje4c;if(fixture.index>=22){b.delivered=true;b.observed=['river','boat','grain'];}if(fixture.index>=23)b.round=3;if(fixture.index>=24){b.exchanges=3;b.routes=2;b.court=true;}
+  if(fixture.index>=25){s.ancient.war.trail={started:true,stage:3,clues:['fork','fallen','watch'],failures:0,delivered:true,history:true};}
+  if(fixture.index>=26){Object.assign(s.ancient.war.escape,{started:true,checkpoint:2,down:[true,false,false],escaped:true,history:true});}
+  if(fixture.war) {for(const [key,val]of Object.entries(fixture.war))Object.assign(s.ancient.war[key],structuredClone(val));}
   if(fixture.story)Object.assign(s.ancient.baekje4c,structuredClone(fixture.story));
   const q=ancientQuest(ANCIENT_QUESTS[fixture.index],s);
   return {...fixture,map:fixture.storyMap||q.map,target:fixture.storyTarget||q.target};

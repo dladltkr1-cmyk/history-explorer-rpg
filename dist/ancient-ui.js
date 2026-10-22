@@ -1,8 +1,9 @@
-import {STORY_RECORDS} from './baekje-story.js?v=54.2';
-import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=54.2';
-import {parkHorse,retrieveHorse} from './horse-state.js?v=54.2';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest,ancientWorld} from './regions/ancient.js?v=54.2';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=54.2';
+import {WAR_RECORDS} from './war-story.js?v=55';
+import {STORY_RECORDS} from './baekje-story.js?v=55';
+import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=55';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=55';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest,ancientWorld} from './regions/ancient.js?v=55';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS} from './ancient-state.js?v=55';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.
@@ -56,7 +57,7 @@ export function createAncientUI(api) {
       panel('시간이 흐른다',`<div class="ancient-time"><small>정착을 마쳤다.</small><strong>4세기</strong><p>백제가 한강을 중심으로 성장하고 있다.</p></div><button id="ancient-begin4" class="primary full">새 시기 시작하기</button>`);
       $('#ancient-begin4').onclick=()=>{if(!setAncientCentury(s,4))return;close();finishEvent('ancient:4c-start');noteAncientVisit(s,s.map);save();hud();toast('지도에서 4세기의 모습을 확인해 보자.');};return;
     }
-    panel('고대 국가 이야기',`<p><b>${ANCIENT_QUESTS[p]?.title||'이야기 기록'}</b><br>${ANCIENT_QUESTS[p]?.detail||''}</p><p>${a.country?ANCIENT_COUNTRIES[a.country].name+'의 내 거처':'건국 이야기'} · ${a.century?a.century+'세기':'정착 전'}</p><div class="ancient-chapters">${ANCIENT_CHAPTERS.map(c=>`<article><b>${c.name}</b><p>${c.theme||''}</p><small>${a.chapter===c.id?'현재 시기':a.completedChapters.includes(c.id)?'완료':c.ready?'이야기 기록':'다음 이야기 준비 중'}</small></article>`).join('')}</div>${a.century?'<button id="ancient-current-map" class="primary full">현재 시기 지도 보기</button>':''}<p class="note">4세기 「한강에서 바다까지」 1~3번 이야기를 진행할 수 있어. 4번 이후는 다음 업데이트에서 이어져.</p>`,{wide:true});
+    panel('고대 국가 이야기',`<p><b>${ANCIENT_QUESTS[p]?.title||'이야기 기록'}</b><br>${ANCIENT_QUESTS[p]?.detail||''}</p><p>${a.country?ANCIENT_COUNTRIES[a.country].name+'의 내 거처':'건국 이야기'} · ${a.century?a.century+'세기':'정착 전'}</p><div class="ancient-chapters">${ANCIENT_CHAPTERS.map(c=>`<article><b>${c.name}</b><p>${c.theme||''}</p><small>${a.chapter===c.id?'현재 시기':a.completedChapters.includes(c.id)?'완료':c.ready?'이야기 기록':'다음 이야기 준비 중'}</small></article>`).join('')}</div>${a.century?'<button id="ancient-current-map" class="primary full">현재 시기 지도 보기</button>':''}<p class="note">4세기 「한강에서 바다까지」 1~5번 이야기를 진행할 수 있어. 6번 이후는 다음 업데이트에서 이어져.</p>`,{wide:true});
     if(a.century)$('#ancient-current-map').onclick=historicalMap;
   }
   function historicalMap() {
@@ -71,7 +72,7 @@ export function createAncientUI(api) {
   }
   function records() {
     const s=state(),a=s.ancient,lines={goguryeo:'주몽 · 졸본. 알과 새의 도움이 등장하는 건국 이야기.',baekje:'온조 · 한강 유역. 고구려에서 남쪽으로 내려온 일행의 이야기.',silla:'박혁거세 · 경주. 특별한 알이 등장하는 건국 이야기.',gaya:'김수로 · 가야. 하늘과 알이 등장하는 건국 이야기. 가야에는 여러 나라가 있었다.'};
-    panel('고대 국가 기록',`<div class="nation-records">${Object.keys(lines).map(id=>`<article><b>${names[id]}</b><p>${a.records.includes(id)?esc(lines[id]):'아직 살펴보지 않았다.'}</p></article>`).join('')}</div><h3>한강에서 바다까지</h3>${STORY_RECORDS.map(([id,name,text])=>`<article><b>${name}</b><p>${s.completedQuests.includes(id)?text:'아직 경험하지 않았다.'}</p></article>`).join('')}<p class="note">건국 이야기의 신비한 장면은 확인된 출생 사실과 구분한다.</p>`,{wide:true});
+    panel('고대 국가 기록',`<div class="nation-records">${Object.keys(lines).map(id=>`<article><b>${names[id]}</b><p>${a.records.includes(id)?esc(lines[id]):'아직 살펴보지 않았다.'}</p></article>`).join('')}</div><h3>한강에서 바다까지</h3>${[...STORY_RECORDS,...WAR_RECORDS].map(([id,name,text])=>`<article><b>${name}</b><p>${s.completedQuests.includes(id)?text:'아직 경험하지 않았다.'}</p></article>`).join('')}<p class="note">건국 이야기의 신비한 장면은 확인된 출생 사실과 구분한다.</p>`,{wide:true});
   }
   function interact(e,q) {
     const s=state();
@@ -124,6 +125,8 @@ export function createAncientUI(api) {
     if(!fixture)return;
     const ready=prepareContentQA(s,r,fixture);s.unlockedRegions=regions.map(v=>v.id);
     adminJump(ready.map,ancientWorld(maps[ready.map],s).entities.find(e=>e.id===ready.target));
+    if(fixture.id?.startsWith('trail-')){const p=[[14,32],[5,26],[14,18],[23,9]][s.ancient.war.trail.stage];s.x=p[0];s.y=p[1];}
+    api.prepareWar?.(fixture);
   }
   function journey(e){
     const s=state(),country=s.ancient.country,to=e.to,outbound=to==='ancient-han';

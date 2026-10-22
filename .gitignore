@@ -5,3 +5,7 @@ scripts/.ancient-ui-test-*.mjs
 
 scripts/.spaces-ui-test-*.mjs
 scripts/.baekje-ui-test-*.mjs
+
+dist/server/
+qa/
+scripts/.war-ui-test-*.mjs

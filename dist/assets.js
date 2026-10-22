@@ -3,9 +3,9 @@ Object.assign(ASSETS,{fish:'/assets/items/food/fish.png',cookedfish:'/assets/ite
 for(const avatar of ['boy','girl'])for(const pose of ['back-idle','left-idle','front-walk-1','front-walk-2','back-walk-1','back-walk-2','left-walk-1','left-walk-2'])ASSETS[avatar+'-'+pose]='/assets/player/directions/'+avatar+'-'+pose+'.png?v=27.3';
 
 ASSETS.hide='/assets/items/hide.png';
-for(const country of ['goguryeo','baekje','silla'])for(const level of [1,2,3,4])ASSETS['life-home-'+country+'-'+level]='/assets/life/home-'+country+'-'+level+'.svg?v=54.2';
-for(const crop of ['millet','barnyard','sorghum','barley','ricecrop'])for(const kind of ['crop','seed','growing','ripe'])ASSETS['life-'+kind+'-'+crop]='/assets/life/'+kind+'-'+crop+'.svg?v=54.2';
-for(const id of ['clayJar','stripedJar','darkJar','reedMat','wovenMat','clayLamp','doubleLamp','woodBox','lowTable','wallWeave','herbPot','dyedCloth','lumber','board','workbench','cart','empty-field','empty-paddy'])ASSETS['life-'+id]='/assets/life/'+id+'.svg?v=54.2';
+for(const country of ['goguryeo','baekje','silla'])for(const level of [1,2,3,4])ASSETS['life-home-'+country+'-'+level]='/assets/life/home-'+country+'-'+level+'.svg?v=55';
+for(const crop of ['millet','barnyard','sorghum','barley','ricecrop'])for(const kind of ['crop','seed','growing','ripe'])ASSETS['life-'+kind+'-'+crop]='/assets/life/'+kind+'-'+crop+'.svg?v=55';
+for(const id of ['clayJar','stripedJar','darkJar','reedMat','wovenMat','clayLamp','doubleLamp','woodBox','lowTable','wallWeave','herbPot','dyedCloth','lumber','board','workbench','cart','empty-field','empty-paddy'])ASSETS['life-'+id]='/assets/life/'+id+'.svg?v=55';
 for(const [key,file]of Object.entries({ancientHomeNorth:'home-north',ancientHomeRiver:'home-river',ancientHomePlain:'home-plain',ancientVillageHouse:'village-house',ancientShed:'shed',ancientEgg:'egg',ancientMarker:'marker',ancientWell:'well',ancientDesk:'desk',ancientDisplay:'display'}))ASSETS[key]='/assets/ancient/'+file+'.svg?v=44.2';
 for(const [key,file] of Object.entries({threadIcon:'thread',branchIcon:'branch',boneIcon:'bone',needleIcon:'needle',rodIcon:'rod',fishingSpotIcon:'spot'}))ASSETS[key]='/assets/items/fishing/'+file+'.svg';
 Object.assign(ASSETS,{snake:'/assets/enemies/snake.png',bear:'/assets/enemies/bear.png',tiger:'/assets/enemies/tiger.png'});
@@ -29,16 +29,18 @@ Object.assign(ASSETS,{
 Object.assign(ASSETS,{ancientHelperNorth:ASSETS.farmer,ancientHelperRiver:ASSETS.shopkeeper,ancientHelperPlain:ASSETS.elder,ancientHorsePost:'/assets/ancient/horse-post.svg?v=44.2'});
 
 Object.assign(ASSETS,{kingJumong:'/assets/ancient/jumong-v44.png',kingOnjo:'/assets/ancient/onjo-v44.png',kingHyeokgeose:'/assets/ancient/hyeokgeose-v44.png',kingSuro:'/assets/ancient/suro-v44.png'});
-for(const id of ['requestBoard','cart-empty','cart-loaded','cart-plan','seedBag','sickle','hearth','fineBedding','grainRack','woodShelf','wovenScreen','yardArbor','diningSet'])ASSETS['life-'+id]='/assets/life2/'+id+'.svg?v=54.2';
+for(const id of ['requestBoard','cart-empty','cart-loaded','cart-plan','seedBag','sickle','hearth','fineBedding','grainRack','woodShelf','wovenScreen','yardArbor','diningSet'])ASSETS['life-'+id]='/assets/life2/'+id+'.svg?v=55';
 
-for(const country of ['goguryeo','baekje','silla'])for(const kind of ['seed','tool','wood','decor'])ASSETS['shop-'+country+'-'+kind]='/assets/shops/'+country+'-'+kind+'.svg?v=54.2';
-for(const kind of ['seed','tool','wood','decor'])for(const role of ['merchant','prop','counter'])ASSETS['shop-'+role+'-'+kind]='/assets/shops/'+role+'-'+kind+'.svg?v=54.2';
-for(const id of ['sign','wood-pile','wood-empty'])ASSETS['shop-'+id]='/assets/shops/'+id+'.svg?v=54.2';
+for(const country of ['goguryeo','baekje','silla'])for(const kind of ['seed','tool','wood','decor'])ASSETS['shop-'+country+'-'+kind]='/assets/shops/'+country+'-'+kind+'.svg?v=55';
+for(const kind of ['seed','tool','wood','decor'])for(const role of ['merchant','prop','counter'])ASSETS['shop-'+role+'-'+kind]='/assets/shops/'+role+'-'+kind+'.svg?v=55';
+for(const id of ['sign','wood-pile','wood-empty'])ASSETS['shop-'+id]='/assets/shops/'+id+'.svg?v=55';
 
-for(const id of ['goguryeo','baekje','silla']){ASSETS['han-guard-'+id]='/assets/ancient/guard-'+id+'.svg?v=54.2';ASSETS['han-standard-'+id]='/assets/ancient/standard-'+id+'.svg?v=54.2';}
-ASSETS['han-standard-alliance']='/assets/ancient/standard-alliance.svg?v=54.2';
+for(const id of ['goguryeo','baekje','silla']){ASSETS['han-guard-'+id]='/assets/ancient/guard-'+id+'.svg?v=55';ASSETS['han-standard-'+id]='/assets/ancient/standard-'+id+'.svg?v=55';}
+ASSETS['han-standard-alliance']='/assets/ancient/standard-alliance.svg?v=55';
 
-for(const id of ['clayJar','stripedJar','darkJar','reedMat','wovenMat','clayLamp','doubleLamp','woodBox','lowTable','wallWeave','herbPot','dyedCloth','fineBedding','grainRack','woodShelf','wovenScreen','yardArbor','diningSet'])ASSETS['life-'+id]='/assets/decor/'+id+'.svg?v=54.2';
-for(const id of ['stall','wheel','fence','stump','brush'])ASSETS['district-'+id]='/assets/district/'+id+'.svg?v=54.2';
+for(const id of ['clayJar','stripedJar','darkJar','reedMat','wovenMat','clayLamp','doubleLamp','woodBox','lowTable','wallWeave','herbPot','dyedCloth','fineBedding','grainRack','woodShelf','wovenScreen','yardArbor','diningSet'])ASSETS['life-'+id]='/assets/decor/'+id+'.svg?v=55';
+for(const id of ['stall','wheel','fence','stump','brush'])ASSETS['district-'+id]='/assets/district/'+id+'.svg?v=55';
 
-Object.assign(ASSETS,{storyDock:'/assets/story/dock.svg?v=54.2',storyBoat:'/assets/story/boat.svg?v=54.2',storyCargo:'/assets/story/cargo.svg?v=54.2',kingGeunchogo:'/assets/story/geunchogo.svg?v=54.2'});
+Object.assign(ASSETS,{storyDock:'/assets/story/dock.svg?v=55',storyBoat:'/assets/story/boat.svg?v=55',storyCargo:'/assets/story/cargo.svg?v=55',kingGeunchogo:'/assets/story/geunchogo.svg?v=55'});
+
+Object.assign(ASSETS,Object.fromEntries(['Fence','Log','Rock','Gate','Warning','Shelter'].map(n=>['war'+n,'/assets/war/'+n.toLowerCase()+'.svg?v=55'])));

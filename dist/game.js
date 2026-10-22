@@ -1,13 +1,16 @@
-import {createBaekjeStoryUI} from './baekje-story-ui.js?v=54.2';
-import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=54.2';
-import {drawLifeDistrict} from './life-terrain.js?v=54.2';
-import {createDecorUI} from './decor-ui.js?v=54.2';
-import {DECOR_VISUALS} from './decor-spec.js?v=54.2';
-import {reputationDetails} from './ancient-history.js?v=54.2';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=54.2';
+import {createWarUI} from './war-ui.js?v=55';
+import {warMap,TRAIL,ESCAPE,warBlocked,restoreWar} from './war-story.js?v=55';
+import {drawWarTerrain,drawWarActor} from './war-render.js?v=55';
+import {createBaekjeStoryUI} from './baekje-story-ui.js?v=55';
+import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=55';
+import {drawLifeDistrict} from './life-terrain.js?v=55';
+import {createDecorUI} from './decor-ui.js?v=55';
+import {DECOR_VISUALS} from './decor-spec.js?v=55';
+import {reputationDetails} from './ancient-history.js?v=55';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=55';
 import {createFieldCamera} from './field-camera.js?v=47';
-import {parkHorse} from './horse-state.js?v=54.2';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=54.2";
+import {parkHorse} from './horse-state.js?v=55';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=55";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -24,16 +27,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=54.2";
-import { ASSETS } from "./assets.js?v=54.2";
+} from "./state.js?v=55";
+import { ASSETS } from "./assets.js?v=55";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=54.2';
-import {noteAncientVisit} from './ancient-state.js?v=54.2';
-import {createAncientUI} from './ancient-ui.js?v=54.2';
-import {createHomesteadUI} from './homestead-ui.js?v=54.2';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=54.2';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=55';
+import {noteAncientVisit} from './ancient-state.js?v=55';
+import {createAncientUI} from './ancient-ui.js?v=55';
+import {createHomesteadUI} from './homestead-ui.js?v=55';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=55';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=54.2';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=55';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -51,7 +54,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=54.2";
+} from "./economy.js?v=55";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
@@ -125,9 +128,10 @@ const esc = (v) =>
 const imageTag = (art, alt = "", cls = "") =>
   `<img src="${ASSETS[art] || ASSETS.chest}" alt="${esc(alt)}" class="${cls}">`;
 const currentMap=()=>ancientWorld(MAPS[s.map],s);
-const canMount=()=>!s.ancient?.home?.commerce?.cart.active&&(s.map.startsWith('nation-') || (MAPS[s.map]?.ancient && MAPS[s.map].theme!=='room'));
+const canMount=()=>!warMap(s.map)&&!s.ancient?.home?.commerce?.cart.active&&(s.map.startsWith('nation-') || (MAPS[s.map]?.ancient && MAPS[s.map].theme!=='room'));
+const warUI=createWarUI({$,state:()=>s,panel,close,save,hud,toast,travel,finishEvent,imageTag,screen:()=>screen,playing:()=>playing,clearKeys:()=>keys.clear()});
 const baekjeStoryUI=createBaekjeStoryUI({$,panel,close,save,hud,toast,finishEvent,imageTag,state:()=>s,ancientAdmin:()=>ancientUI.adminPanel()});
-const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel,prepareMounted});
+const ancientUI=createAncientUI({$,esc,panel,dialogue,imageTag,close,save,hud,toast,finishEvent,travel,adminJump,activeQuest,items:ITEMS,maps:MAPS,prepareContentQA,regions:REGIONS,state:()=>s,admin:()=>adminMode,adminPanel,prepareMounted,prepareWar:fixture=>warUI.prepareQA(fixture)});
 let lifeShopGuide=null;
 const homesteadUI=createHomesteadUI({$,esc,panel,close,decorate:()=>decorUI.open(),guideShop:kind=>{lifeShopGuide={kind,country:s.ancient.country};toast('생활마을 북쪽 상점 거리 · '+LIFE_SHOPS[kind].name+'를 찾아보자.');},items:ITEMS,cooking:COOKING,cook:(id,n)=>cookItem(s,id,n),rest:()=>{applyHomeRest(s,abilities(s).hp);save();hud();restMenu({art:'campfire'});},restoreTrial:()=>{s=validate(structuredClone(s));},imageTag,save,hud,toast,travel,finishEvent,state:()=>s,admin:()=>adminMode,adminPanel,adminJump,prepareAncient:stage=>ancientUI.prepare(stage),asset:art=>ASSETS[art],sell:(id,n)=>sellItem(s,ITEMS,id,n),selling,setCleanup:fn=>{stopFishing=fn;},refreshWorld:()=>{fieldCamera.reset();if(s.map===ANCIENT_COUNTRIES[s.ancient.country]?.home){const start=roomLayout(s.ancient.home.level).start;s.x=start.x;s.y=start.y;}}});
 decorUI=createDecorUI({$,panel,imageTag,esc,save,hud,toast,close,travel,state:()=>s,map:currentMap,pause:type=>{screen=type;keys.clear();},rest:()=>applyHomeRest(s,abilities(s).hp),admin:()=>adminMode,prepareAncient:stage=>ancientUI.prepare(stage),adminJump,adminPanel,homeAdmin:()=>homesteadUI.adminPanel(),restoreState:old=>{s=validate(old);fieldCamera.reset();}});
@@ -268,6 +272,7 @@ function start(state) {
   document.querySelector(".admin-mode-badge")?.remove();
   if (adminMode) $("#game").insertAdjacentHTML("beforeend", '<div class="admin-mode-badge">관리자 시험 기록 · 학생 저장과 분리</div>');
   close();
+  if(warMap(s.map)){restoreWar(s);warUI.reset();}
   if (blocked(s.x, s.y)) {
     s.x = currentMap().start.x;
     s.y = currentMap().start.y;
@@ -706,6 +711,7 @@ function adminInteractions() {
     const a=b.dataset.qaInteract;
     const registered=INTERACTION_QA.find(v=>v.id===a);
     if(registered) {
+      if(registered.action==='war-story'){ancientUI.adminPanel();return;}
       if(registered.action==='baekje-story'){baekjeStoryUI.adminPanel();return;}
       if(registered.action==='ancient-horse'){ancientUI.adminPanel();return;}
       if(registered.action==='ancient'){ancientUI.adminPanel();return;}
@@ -882,6 +888,8 @@ function rollHorse(id) {
 }
 function travel(id, from = s.map, {fast=false} = {}) {
   if (!MAPS[id]) return;
+  if(warMap(id)&&fast&&!adminMode){toast('한강의 전령을 만나 여행길로 출발하자.');return;}
+
   if(!adminMode&&s.ancient?.home?.commerce?.cart.active&&(fast||(!currentMap().entities.some(e=>e.to===id)&&MAPS[from]?.returnTo?.map!==id))){toast('운송 중에는 길을 따라 걸어가자. 수레 메뉴에서 취소할 수 있어.');return;}
   const sourceExit = MAPS[from]?.entities.find(e=>e.to===id);
   if (!fast && !adminMode && sourceExit?.unlockAt && (s.progress.nations||0) < sourceExit.unlockAt) {
@@ -929,6 +937,7 @@ function travel(id, from = s.map, {fast=false} = {}) {
       if(candidate.length){s.x=candidate[0].x;s.y=candidate[0].y;}
     }
   }
+  if(warMap(s.map)){restoreWar(s);warUI.reset();}
   invuln = 3;
   s.encounter.distance = 0;
   refreshResources(s, MAPS[id]);
@@ -941,6 +950,7 @@ function travel(id, from = s.map, {fast=false} = {}) {
   if(!adminMode&&id==='ancient-origins'&&(s.progress.ancient||0)===0)ancientUI.entry();
 }
 function menu() {
+  if(warUI.pause())return;
   panel(
     "탐험수첩",
     `<div class="menu-grid"><button id="codex">역사 도감<small>${s.artifacts.length} / ${ARTIFACTS.length} 기록</small></button><button id="nation-records">여러 나라 기록<small>탐험 표식 ${s.nationMarks.length} / 5</small></button><button id="requests">퀘스트<small>스토리 퀘스트 · 서브 퀘스트</small></button>${currentMap().ancient?'<button id="ancient-records-menu">고대 국가 기록</button><button id="ancient-chapters-menu">고대 국가 이야기</button>':''}<button id="settings">환경설정<small>음악 · 저장 파일</small></button><button id="home">탐험 본부로</button>${adminMode ? '<button id="admin-menu">관리자 시험 도구</button>' : ""}<button id="to-title">시작화면으로</button></div>`,
@@ -1093,6 +1103,7 @@ function profile() {
   setAvatarImage($("#profile-avatar"));
 }
 function safeMenu(fn) {
+  if(playing&&warMap(s.map)){if(!screen)warUI.pause();return;}
   if (
     playing &&
     !["battle", "intro", "tutorial", "defeat", "dialogue", "eating", "fishing", "baekje-story"].includes(screen)
@@ -1662,6 +1673,7 @@ function nearby() {
 }
 function interact() {
   if (!playing || screen) return;
+  if(warUI.locked())return;
   const e = nearby();
   if (!e) {
     toast("사람이나 물건 가까이로 가 보자.");
@@ -1670,6 +1682,7 @@ function interact() {
   const q = activeQuest(s);
   if(e.type==='lifeMerchant'&&lifeShopGuide?.kind===e.shopKind)lifeShopGuide=null;
   if(e.type==='lifeDecor'&&decorUI.use(e))return;
+  if(warUI.interact(e))return;
   if(currentMap().ancient&&homesteadUI.interact(e))return;
   if(currentMap().ancient&&baekjeStoryUI.interact(e))return;
   if(currentMap().ancient&&ancientUI.interact(e,q))return;
@@ -2317,6 +2330,7 @@ function checkRandomEncounter(distance) {
 }
 function blocked(x, y) {
   let m = currentMap();
+  if(warBlocked(s.map,x,y))return true;
   if (x < 1 || x > m.w-2 || y < 1 || y > m.h-2) return true;
   if (m.river && x > 17.5 && x < 19.5 && !(y > 8.25 && y < 9.75)) return true;
   if(inFishingRiver(m,x,y))return true;
@@ -2340,7 +2354,7 @@ function blocked(x, y) {
   );
 }
 function marker(e) {
-  if(e.type==='ancientStory'||e.type==='baekjeStory'||e.type==='ancientHome') {
+  if(e.type==='warStory'||e.type==='ancientStory'||e.type==='baekjeStory'||e.type==='ancientHome') {
     if(activeQuest(s)?.target===e.id || (activeQuest(s)?.id==='ancient-y-gather'&&e.gather&&!s.ancient.carry.includes(e.gather)))return '!';
     return '';
   }
@@ -2457,7 +2471,7 @@ function drawPlayer(x, y, w, h) {
    const resting=decorUI?.pose;
    if(resting?.kind==='rest'){ctx.translate(x,y-27);ctx.rotate(-Math.PI/2);ctx.drawImage(shown,-w/2,-h/2,w,h);}
    else if(resting){ctx.drawImage(shown,0,0,shown.naturalWidth,shown.naturalHeight*.78,x-w/2,y-h*.78,w,h*.78);ctx.drawImage(shown,0,shown.naturalHeight*.78,shown.naturalWidth,shown.naturalHeight*.22,x-w/2,y,w,h*.10);}
-   else ctx.drawImage(shown,x-w/2,y-h,w,h);ctx.restore();}
+   else {const action=warUI.actors()?.action;if(s.map===ESCAPE&&action){const phase=Math.sin(Math.min(1,action.time/.6)*Math.PI);ctx.translate(x,y);ctx.rotate((s.direction==='left'?-1:1)*phase*.16);ctx.drawImage(shown,-w/2+phase*7,-h,w,h);}else ctx.drawImage(shown,x-w/2,y-h,w,h);}ctx.restore();}
 }
 function drawMountedPlayer(x,y) {
   const dir=s.direction==='up'?'back':s.direction==='down'?'front':s.direction;
@@ -2735,6 +2749,7 @@ function draw(dt = 0) {
   if (m.nationVisual) drawNationTerrain(m,T);
   if(m.lifeYard)drawLifeYard(m,T);
   if(m.district)drawLifeDistrict(ctx,m,T);
+  drawWarTerrain(ctx,m,T,s,warUI.actors());
   if(m.fishingPond) {
     const p=m.fishingPond;
     ctx.fillStyle='#799981';ctx.beginPath();ctx.ellipse(p.x*T,p.y*T,(p.rx+.22)*T,(p.ry+.2)*T,-.15,0,Math.PI*2);ctx.fill();
@@ -2759,6 +2774,7 @@ function draw(dt = 0) {
     ctx.lineWidth = 3;
     ctx.stroke();
   }
+  const warActors=warUI.actors();
   const target = playing ? targetEntity() : null,
     labels = [];
   let objects = m.obstacles
@@ -2775,6 +2791,7 @@ function draw(dt = 0) {
       ),
     )
     .concat([{ id: "player", x: decorUI?.pose?.x ?? s.x, y: decorUI?.pose ? decorUI.pose.y+(decorUI.pose.kind==='rest'?-.55:.20) : s.y, type: "player", art: s.avatar }]);
+  if(m.id===ESCAPE&&warActors)objects.push(...warActors.followers.map((p,i)=>({id:'war-person-'+i,type:'warActor',x:p.x,y:p.y,actorData:p,refugee:i})),...warActors.guards.map(p=>({id:'war-guard-'+p.id,type:'warActor',x:p.x,y:p.y,actorData:p})));
   if (m.id==='nation-goguryeo-homes' && s.completedQuests.includes('goguryeo-build')) {
     const house=objects.find(o=>o.id==='goguryeo-smallhouse');if(house)house.art='growthHouse';
   }
@@ -2805,11 +2822,12 @@ function draw(dt = 0) {
       labels.push({x,y,label:e.name});
       continue;
     }
+    if(e.type==='warActor'){drawWarActor(ctx,e,T,clock,s,avatarSource);continue;}
     const isPlayer = e.type === "player";
     let w =
         isPlayer || ["npc", "quiz", "shop", "enemy"].includes(e.type) ? 58 : 64,
       h = isPlayer || ["npc", "shop", "enemy"].includes(e.type) ? 72 : 66;
-    if(['ancientStory','baekjeStory'].includes(e.type)&&e.actor){w=58;h=72;}
+    if(['ancientStory','baekjeStory','warStory'].includes(e.type)&&e.actor){w=58;h=72;}
     if (e.type === 'horse' || e.type==='parkedHorse') { w=88; h=88; }
     if(e.type==='horseStable'){w=64;h=48;}
     if (e.type==='roomLoot') {w=52;h=54;}
@@ -2991,7 +3009,7 @@ function draw(dt = 0) {
   if (playing) drawMini(m, target);
 }
 function drawMini(m, target) {
-  mini.save();if(m.district)mini.scale(24/m.w,18/m.h);
+  mini.save();if(m.district||m.warField)mini.scale(24/m.w,18/m.h);
   mini.fillStyle = m.theme==='room' ? '#b69a71' : m.theme === "cave" ? "#919782" : "#95b47c";
   mini.fillRect(0, 0, 144, 108);
   if(m.theme==='room'){
@@ -3040,6 +3058,7 @@ function tick(t) {
       oldY = s.y;
     let dx = keys.has("left") ? -1 : keys.has("right") ? 1 : 0,
       dy = keys.has("up") ? -1 : keys.has("down") ? 1 : 0;
+    if(warUI.locked()){dx=0;dy=0;}
     if (dx || dy) {
       moving = true;
       s.direction = dx < 0 ? "left" : dx > 0 ? "right" : dy < 0 ? "up" : "down";
@@ -3072,6 +3091,7 @@ function tick(t) {
       if (e) startBattle(e);
     }
   }
+  warUI.tick(dt,blocked);
   draw(dt);
   requestAnimationFrame(tick);
 }
@@ -3096,6 +3116,7 @@ addEventListener("keydown", (e) => {
     e.preventDefault();
     keys.add(keyMap[e.key]);
   }
+  if(e.key==='f'&&playing&&!screen&&s.map===ESCAPE){e.preventDefault();warUI.ambush();return;}
   if ((e.key === " " || e.key === "Enter") && playing && !screen) {
     e.preventDefault();
     if (!e.repeat) interact();
