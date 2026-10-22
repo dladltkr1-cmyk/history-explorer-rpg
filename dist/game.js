@@ -8,7 +8,7 @@ import {createDecorUI} from './decor-ui.js?v=55';
 import {DECOR_VISUALS} from './decor-spec.js?v=55';
 import {reputationDetails} from './ancient-history.js?v=55';
 import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=55';
-import {createFieldCamera} from './field-camera.js?v=47';
+import {createFieldCamera} from './field-camera.js?v=55.2';
 import {parkHorse} from './horse-state.js?v=55';
 import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=55";
 import {

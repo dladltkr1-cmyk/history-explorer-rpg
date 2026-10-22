@@ -37,7 +37,9 @@ export function createFieldCamera() {
       const area = safe || {left:0,right:width,top:0,bottom:height};
       const anchorX = clamp(width * (playing ? .5 : .65), area.left + 32 * zoom, area.right - 32 * zoom);
       const anchorY = clamp(height * .56, area.top + 85 * zoom, area.bottom - 36 * zoom);
-      const bounded = (target, size, view) => size <= view ? (size - view) / 2 : clamp(target, 0, size - view);
+      // Story fields need room around the border for actors and the north-gate animation.
+      const edge = map.warField && playing ? 160 : 0;
+      const bounded = (target, size, view) => size <= view ? (size - view) / 2 : clamp(target, edge ? -edge : 0, size - view + edge);
       return {
         x: bounded(x * 64 + aheadX - anchorX / zoom, map.w * 64, viewW),
         y: bounded(y * 64 + aheadY - anchorY / zoom, map.h * 64, viewH),

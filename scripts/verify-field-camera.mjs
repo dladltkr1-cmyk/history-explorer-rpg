@@ -6,8 +6,9 @@ for(const [width,height]of sizes)for(const map of Object.values(MAPS)){
  const camera=createFieldCamera();const zoom=fieldZoom(map,width,height);
  for(const [x,y]of [[0,0],[map.w,0],[0,map.h],[map.w,map.h],[map.w/2,map.h/2]])for(const direction of [{x:1,y:0},{x:-1,y:0},{x:0,y:1},{x:0,y:-1},{x:1,y:1}]){
   const c=camera.update({map,width,height,x,y,direction,dt:.04});
-  if(map.w*64>=c.viewW){assert.ok(c.x>=0);assert.ok(c.x+c.viewW<=map.w*64+1e-8);}else assert.equal(c.x,(map.w*64-c.viewW)/2);
-  if(map.h*64>=c.viewH){assert.ok(c.y>=0);assert.ok(c.y+c.viewH<=map.h*64+1e-8);}else assert.equal(c.y,(map.h*64-c.viewH)/2);
+  const edge=map.warField?160:0;
+  if(map.w*64>=c.viewW){assert.ok(c.x>=-edge);assert.ok(c.x+c.viewW<=map.w*64+edge+1e-8);}else assert.equal(c.x,(map.w*64-c.viewW)/2);
+  if(map.h*64>=c.viewH){assert.ok(c.y>=-edge);assert.ok(c.y+c.viewH<=map.h*64+edge+1e-8);}else assert.equal(c.y,(map.h*64-c.viewH)/2);
   assert.equal(c.zoom,zoom);
  }
  if(['room','interior','cave'].includes(map.theme))assert.equal(zoom,1);
@@ -57,3 +58,6 @@ for(const fps of [30,60,120])for(const direction of [{x:1,y:0},{x:0,y:-1},{x:1,y
 }
 console.log('Stop motion (screen px / px per second):',JSON.stringify(stopMetrics));
 console.log(`Camera: ${Object.keys(MAPS).length} maps × ${sizes.length} PC/tablet viewports × corners/centre × 5 directions; bounds, small interiors, 1.18 zoom, reversal easing, stop recentering and immediate player tracking passed.`);
+
+// All three exit actors remain below the top HUD, including the final y=1 walk.
+for(const [width,height]of sizes)for(const y of [1,2]){const c=createFieldCamera().update({map:MAPS["ancient-pyongyang-escape"],width,height,x:12,y,dt:.04});assert.ok((y*64-c.y)*c.zoom-77*c.zoom>170,"north exit actor head clears the HUD");}
