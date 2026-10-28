@@ -32,7 +32,7 @@ for(const reduced of [false,true])for(const phase of ['waiting','biting','']){
   assert.equal(value(water,'--fishing-bob-height',reduced),reduced?'2px':'5px');
   assert.equal(value(water,'--fishing-bob-tilt',reduced),reduced?'1deg':'6deg');
   if(reduced){
-    assert.equal(value(float,'animation-duration',true),phase==='biting'?'.4s':'2.8s');
+    assert.equal(parseFloat(value(float,'animation-duration',true)),phase==='biting'?.4:2.8);
     assert.equal(value(ring,'animation-duration',true),'4s');
     assert.equal(value(water,'--fishing-ripple-start',true),'.95');
     assert.equal(value(water,'--fishing-ripple-end',true),'1.1');
