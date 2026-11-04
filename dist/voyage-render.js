@@ -1,4 +1,4 @@
-import {VOYAGE_STAGES,obstaclePosition} from './voyage.js?v=56.1';
+import {VOYAGE_STAGES,obstaclePosition} from './voyage.js?v=56.2';
 const cache=new Map();
 export function voyageImage(id){if(!cache.has(id)){const im=new Image();im.src=new URL('./assets/voyage/'+id+'.svg?v=56',import.meta.url).href;cache.set(id,im);}return cache.get(id);}
 const ready=im=>im?.complete&&im.naturalWidth>0;
