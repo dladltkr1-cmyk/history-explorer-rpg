@@ -1,0 +1,67 @@
+{
+  "method": "Same public game in same desktop browser, real iframe CSS viewport; not a physical tablet",
+  "date": "2026-11-04",
+  "measurements": [
+    {
+      "viewport": [
+        1024,
+        768
+      ],
+      "voyageView": [
+        20,
+        98,
+        984,
+        584
+      ],
+      "leftButton": [
+        20,
+        692,
+        110,
+        64
+      ],
+      "rightButton": [
+        894,
+        692,
+        110,
+        64
+      ],
+      "displayPanelClientWidth": 829,
+      "displayPanelScrollWidth": 829
+    },
+    {
+      "viewport": [
+        768,
+        1024
+      ],
+      "voyageView": [
+        10,
+        94,
+        748,
+        848
+      ],
+      "leftButton": [
+        10,
+        952,
+        76,
+        64
+      ],
+      "rightButton": [
+        682,
+        952,
+        76,
+        64
+      ],
+      "displayPanelClientWidth": 699,
+      "displayPanelScrollWidth": 699,
+      "endingPanelClientWidth": 714,
+      "endingPanelScrollWidth": 714,
+      "endingButtonBottom": 799.796875
+    }
+  ],
+  "physicalTouchVerified": false,
+  "countryScope": {
+    "baekje": "Full public PC journey, official file export, home/exhibit/reload",
+    "goguryeo": "Public intro and responsive voyage controls; full flow automated",
+    "silla": "Public ending and full-slot reward fixture; full flow automated"
+  }
+}

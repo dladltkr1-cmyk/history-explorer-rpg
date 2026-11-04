@@ -1,0 +1,152 @@
+[
+  {
+    "script": "verify-ancient-history-ui.mjs",
+    "pass": true,
+    "seconds": 6.2,
+    "output": "v51 DOM: 3 countries × 10 reputation boundaries × 6 political states; 36 guarded outward/return journeys, 6 cargo deliveries, all home/items retained, conservative old-save migration, 6 non-admin UI cargo deliveries with reload, exact debit/reward, blocked mount/fast/home shortcuts and duplicate delivery; request gain/cap and all earlier-era HUD hiding; real first-harvest HUD gain, stale route blocked, original admin save restored. Canvas/time mocked; no physical tablet claim.\n"
+  },
+  {
+    "script": "verify-ancient-ui.mjs",
+    "pass": true,
+    "seconds": 4.26,
+    "output": "Regression: actual frame loop on old/new maps; horse speed ×1.6 and dismount; battle entry/food consumption/enemy turn/escape keeps enemy and gives no coins.\ngoguryeo: all 21 normal UI steps, wrong→retry→right twice, confirm/back/locked country, home/storage/exhibit/map, park→save/reload→retrieve→mounted save→indoor parking, bank access.\nbaekje: all 21 normal UI steps, wrong→retry→right twice, confirm/back/locked country, home/storage/exhibit/map, park→save/reload→retrieve→mounted save→indoor parking, bank access.\nsilla: all 21 normal UI steps, wrong→retry→right twice, confirm/back/locked country, home/storage/exhibit/map, park→save/reload→retrieve→mounted save→indoor parking, bank access.\nAdmin: all registered stage fixtures including all four founders and new story stages; every individually selected quest; 3 countries × 3 maps/Han overlays; student save untouched throughout QA; original content restored (normal save timestamp excepted).\n"
+  },
+  {
+    "script": "verify-ancient.mjs",
+    "pass": true,
+    "seconds": 0.18,
+    "output": "Ancient verified: era-5 unlock gate; legacy defaults/code preservation; 21 real event steps × 3 countries; country lock/equal stats; home item conservation; independent 4/5/6 maps and Han overlays; QA fixtures; linked land targets; dedicated founder assets; unfinished chapters stay locked.\nv44: 3 exact original JPG hashes, image/overlay separation; 3 homes × 3 century parked-save restoration; no duplicate horse, retrieve and legacy defaults.\n"
+  },
+  {
+    "script": "verify-baekje-story-ui.mjs",
+    "pass": true,
+    "seconds": 2.4,
+    "output": "v54 DOM: 3 countries × 3 viewport settings; village/official Han travel/parcel/observations/3 cargo rounds and corrections/resume/3 swaps/wrong routes/animated boats and goods/court/wait; stale callbacks refused; admin original restored. Layout/canvas and clock are mocked.\n"
+  },
+  {
+    "script": "verify-baekje-story.mjs",
+    "pass": true,
+    "seconds": 0.12,
+    "output": "v54: 3 countries × farming/no farming; legacy defaults; all 3 quests, 3 cargo rounds, 3 exchanges, 2 routes, court; save restore each step; 75(+5)/6/36 exact rewards and duplicates refused; location/period guards; inventory preserved; QA presets; reputation cap.\n"
+  },
+  {
+    "script": "verify-decor-ui.mjs",
+    "pass": true,
+    "seconds": 12.09,
+    "output": "v52 decor: 3 countries × 4 levels × 3 viewports, all 18 assets and viable sites; real UI preview/cancel/place/remove/move; physical proximity and existing furniture; customized avatar pose and capped old rest, lamps, harvested records; upgrade/save/legacy/corruption; shared administrator fixtures and student isolation. Canvas mocked; visual inspection reported separately.\n"
+  },
+  {
+    "script": "verify-field-camera-ui.mjs",
+    "pass": true,
+    "seconds": 3.73,
+    "output": "Actual game frame/UI: 9 representative maps × 3 viewport sizes × cardinal/diagonal movement/stop/corners; shared camera QA 4 routes; building entry/exit; zoom 1.18 on foot and horse; unchanged speeds 3.5/5.6 tiles/s, geometry and isolated student save.\n"
+  },
+  {
+    "script": "verify-field-camera.mjs",
+    "pass": true,
+    "seconds": 0.1,
+    "output": "Stop motion (screen px / px per second): [{\"fps\":30,\"initial\":0.628,\"peak\":78.6},{\"fps\":30,\"initial\":0.538,\"peak\":67.4},{\"fps\":30,\"initial\":0.585,\"peak\":73.2},{\"fps\":60,\"initial\":0.168,\"peak\":79},{\"fps\":60,\"initial\":0.144,\"peak\":67.7},{\"fps\":60,\"initial\":0.156,\"peak\":73.6},{\"fps\":120,\"initial\":0.043,\"peak\":79.1},{\"fps\":120,\"initial\":0.037,\"peak\":67.8},{\"fps\":120,\"initial\":0.04,\"peak\":73.6}]\nCamera: 95 maps × 5 PC/tablet viewports × corners/centre × 5 directions; bounds, small interiors, 1.18 zoom, reversal easing, stop recentering and immediate player tracking passed.\n"
+  },
+  {
+    "script": "verify-field-sprites.mjs",
+    "pass": true,
+    "seconds": 0.87,
+    "output": "Field: actual canvas draws, bandit ×1.10 / tiger ×1.45, aspect ratio, interaction at 1.2, collision unchanged, battle 0.64 vs 0.66, original HP/attack passed.\n"
+  },
+  {
+    "script": "verify-fishing-motion.mjs",
+    "pass": true,
+    "seconds": 0.86,
+    "output": "Fishing motion: actual parsed CSS cascade for normal/reduced motion × waiting/bite/timing; gentle animation remains active, with smaller/slower movement.\n"
+  },
+  {
+    "script": "verify-fishing.mjs",
+    "pass": true,
+    "seconds": 0.12,
+    "output": "Random fishing: 1000 catches; all 4 profiles / 2–5 successes; varied targets/speeds; weighted waits 5–60s; miss/spam guards; per-site 60s/7s cooldown and save restoration.\nFishing verified: crafting/drop, random targets, spam/failure, save/code serialization, 7 legacy progress cases, 12 QA stages, 7 waterside spots, cooking/economy.\n"
+  },
+  {
+    "script": "verify-growth.mjs",
+    "pass": true,
+    "seconds": 0.1,
+    "output": "Growth verification passed: five quiz gates, rewards, boundary threshold, and old/new save compatibility.\n"
+  },
+  {
+    "script": "verify-homestead-ui.mjs",
+    "pass": true,
+    "seconds": 3.46,
+    "output": "Life real UI handlers: 3 countries × 3 PC/tablet sizes; plant/wait/live-ready/harvest/sell/seed purchase; all 4 upgrades and 10 plots; 5 crops and offline restoration; decor purchase/place/remove/craft; physical field interaction and geometry; live timer cleanup; shared administrator QA controls and original student restoration.\n"
+  },
+  {
+    "script": "verify-homestead.mjs",
+    "pass": true,
+    "seconds": 0.15,
+    "output": "Homestead: 3 countries × 4 stages; five exact growth deadlines/4-unit harvests/prices; no double sow/harvest, wrong plot or locked paddy; exact upgrade/seed/material debits; decor ownership/placement/craft; legacy migration and once-only starter; 4/5/6 century conservation; corrupt saves rejected; all new SVG assets exist; existing fish/hunt/food economy retained.\n"
+  },
+  {
+    "script": "verify-life-progression-ui.mjs",
+    "pass": true,
+    "seconds": 2.74,
+    "output": "Actual travel arrival geometry: 132 exits, no blocked arrival or unexplained centre spawn on reciprocal links.\nLife2 real DOM handlers: three countries × three desktop/tablet viewport variables; zero-money first harvest/delivery; rich growth lock; batch sow/sickle harvest/improved hearth; bedding rest; cart commission/build/physical arrival/cancel; fast travel guard; no menu teleport; all shared QA controls; student original restored. Mock clock and canvas, not physical tablet/browser rendering.\n"
+  },
+  {
+    "script": "verify-life-progression.mjs",
+    "pass": true,
+    "seconds": 0.12,
+    "output": "Life 2: three countries; fixed persisted orders; exact rewards/no duplication/cancel; no shop arbitrage; rich-player growth gates; real batch farm/tools/cooking; two physical transport routes and cancellation/restoration; 4/5/6 century persistence; v48.1 level4 migration; reputation cap; malformed saves; all 132 map exits audited.\n"
+  },
+  {
+    "script": "verify-life-shops-ui.mjs",
+    "pass": true,
+    "seconds": 2.33,
+    "output": "Actual game DOM handlers: 3 countries × 3 viewport variables; four store doorways/interiors/merchant access; 1/5/10 UI buys and exact debit; no remote/stale purchase; sow/gather/regrow/buy/tool/upgrade/cart/decor-place-return loop; 12 admin store targets and all QA cases; student original restored. Clock/canvas mocked; physical tablet not tested.\n"
+  },
+  {
+    "script": "verify-life-shops.mjs",
+    "pass": true,
+    "seconds": 0.27,
+    "output": "Three countries: four physical shops; bundle prices; every remote/wrong-store/far/foreign/stale purchase rejected without loss; level/tool/paddy/cart costs unchanged; all 18 decor; crops/save retained; two wood points exact 3-minute persisted regrowth; doorway/merchant/resource walking reachability; 27 SVG assets.\n"
+  },
+  {
+    "script": "verify-life-spaces-ui.mjs",
+    "pass": true,
+    "seconds": 2.18,
+    "output": "v53 DOM: 3 countries × 3 viewports; official field interactions and 4 shop round trips; sow/forest/board/harvest/sale/buy/decor/lamp loop; stale board/sale/wood callbacks and room/global remote actions refused; 27 QA location presets; isolated original restored. Clock/canvas mocked.\n"
+  },
+  {
+    "script": "verify-life-spaces.mjs",
+    "pass": true,
+    "seconds": 0.28,
+    "output": "v53 spaces: 3 countries, 6 new maps, 42 physically reachable destinations; precise dealer/board/workbench checks; remote/stale mutations refused; old wood IDs and 3-minute timestamps; both cargo rewards; house desk removal; larger-map/store saves; all earlier-era sale rules unchanged.\n"
+  },
+  {
+    "script": "verify-voyage-ui.mjs",
+    "pass": true,
+    "seconds": 6.34,
+    "output": "v56 DOM PASS: all 3 countries × 3 viewport variables, boarding/departure, 80s real game ticks/keyboard, pause, pointer hold/cancel, collision and stage retry, arrival, quiz wrong/review/correct, original king, one-time 85/+8/24, full slots/display, stale panels and admin-original isolation. Canvas/time mocked; viewport layout and physical touch require browser review.\n"
+  },
+  {
+    "script": "verify-voyage.mjs",
+    "pass": true,
+    "seconds": 1.92,
+    "output": "v56 rules PASS: 3 countries × 5/30/60/120 FPS, 80s; 360 seeded stage/assistance paths; actual collision/invulnerability/retry; legacy save3 migration and property preservation; quiz guards/exact 85,+8,24/one-time reward; full-slot ownership/house1–4; chapter4 only; all voyage QA.\n"
+  },
+  {
+    "script": "verify-war-motion.mjs",
+    "pass": true,
+    "seconds": 0.11,
+    "output": "v55 continuous movement: breadcrumb following around every fence, patrols active throughout, real rear ambush, both checkpoints, three-person exit; no coordinate jumps or wall crossings.\n"
+  },
+  {
+    "script": "verify-war-story-ui.mjs",
+    "pass": true,
+    "seconds": 2.23,
+    "output": "v55 DOM: 3 countries × 3 viewport variables; story entry/travel/clues/hazards/history/rewards, real admin presets, ambush/collapse/wait/regroup, 0-guard/1-person rejection and three-person exit, stale callbacks refused, original storage restored. Canvas/time mocked.\n"
+  },
+  {
+    "script": "verify-war-story.mjs",
+    "pass": true,
+    "seconds": 0.14,
+    "output": "v55 rules: 3-country legacy migration, routes/obstacles/LOS, directional ambush, down-state persistence, capture/checkpoint, 0 guards/1 follower rejection, animated exit state, exact 65/+6/24 and duplicate/remote refusal, terrain reachability, all QA states.\n"
+  }
+]

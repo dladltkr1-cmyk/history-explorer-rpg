@@ -1,0 +1,69 @@
+{
+  "source": "Official public-game export after continuous QUEST5-done → QUEST6 → QUEST7 → own village/home → 3-slot exchange → reload",
+  "date": "2026-11-04",
+  "viewport": [
+    1363,
+    936
+  ],
+  "saveVersion": 3,
+  "progress": 28,
+  "coins": 185,
+  "xp": 24,
+  "reputation": 8,
+  "country": "baekje",
+  "century": 4,
+  "historyPhase": "baekje-4",
+  "completedChapters": [
+    "origins",
+    "settlement",
+    "4c"
+  ],
+  "quests": [
+    "ancient-4c-start",
+    "ancient-4c-map",
+    "ancient-4c-trade",
+    "ancient-4c-cargo",
+    "ancient-4c-south",
+    "ancient-4c-chiyang",
+    "ancient-4c-pyongyang",
+    "ancient-4c-voyage",
+    "ancient-4c-finale"
+  ],
+  "voyage": {
+    "revision": 1,
+    "prepared": true,
+    "boarded": true,
+    "started": true,
+    "stage": 3,
+    "hull": 1,
+    "failures": [
+      0,
+      4,
+      0
+    ],
+    "seed": 372,
+    "success": true,
+    "history": true,
+    "review": [
+      "river",
+      "south",
+      "competition",
+      "diplomacy"
+    ],
+    "quiz": 2,
+    "ending": true
+  },
+  "map": "ancient-home-baekje",
+  "exhibits": [
+    "han-trade-plaque",
+    "origin-goguryeo",
+    "origin-baekje"
+  ],
+  "ownedExhibits": [
+    "origin-goguryeo",
+    "origin-baekje",
+    "origin-silla",
+    "han-trade-plaque"
+  ],
+  "ancientRegionCompleted": false
+}

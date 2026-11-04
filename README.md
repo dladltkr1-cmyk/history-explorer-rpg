@@ -2,8 +2,10 @@
 
 초등학생용 2D 역사 탐험 RPG의 원본 프로젝트입니다. 기존 게임 소스와 이미지, 음악은 `dist/`에 있으며, `server/`는 이전 공개 사이트의 Worker입니다. GitHub Pages 배포물은 `scripts/build-pages.mjs`가 별도 폴더 `.pages-build/`에 만듭니다. 기존 공개 사이트의 배포 설정은 그대로 둡니다.
 
-- 현재 실행 주소: https://history-explorer-rpg.dladltkr1.chatgpt.site/
-- 새 GitHub Pages 주소: 저장소를 연결하고 첫 배포가 성공하면 확정합니다. 현재 학생용으로 공개되지 않았습니다.
+- 현재 공개 게임: https://dladltkr1-cmyk.github.io/history-explorer-rpg/
+- 이전 사이트: https://history-explorer-rpg.dladltkr1.chatgpt.site/ (기존 주소 보존)
+- 최신 기능: v56 · 4세기 백제 QUEST 1~7 완결. 80초 항해, 역사 확인과 엔딩, 집 전시. 다음 5세기 본편은 준비 중입니다.
+- [최신 전체 보고서](역사탐험RPG_전체업데이트_보고서_v56_최신.md): 실제 공개 PC 플레이, 25개 기능 검사, 화면 크기별 검수 및 미확인 범위.
 
 ## 실행과 빌드
 
