@@ -33,7 +33,7 @@ export function createVoyageRuntime(s){const v=s.ancient.voyage;return {stage:v.
 export function obstaclePosition(rt,o,failures=0){return {x:o.x,y:-150+(rt.elapsed-o.at)*VOYAGE_STAGES[rt.stage].speed*(failures>=3?.84:1)};}
 export function voyageCollision(x,y,o){return ((x-o.x)/(54+o.rx))**2+((y-o.y)/(100+o.ry))**2<1;}
 export function stepVoyage(s,rt,dt,input=0){if(!activeVoyage(s)||!s.ancient.voyage.started||rt.stage!==s.ancient.voyage.stage||rt.status!=='sailing'||rt.paused||!Number.isFinite(dt)||dt<=0)return '';
- const v=s.ancient.voyage;let event='',remaining=Math.min(dt,.25);
+ const v=s.ancient.voyage;let event='',remaining=Math.min(dt,1);
  while(remaining>0&&rt.status==='sailing'){
   const h=Math.min(remaining,1/120);remaining-=h;rt.elapsed+=h;rt.invulnerable=Math.max(0,rt.invulnerable-h);rt.splash=Math.max(0,rt.splash-h);
   const flow=rt.stage===2?Math.sin(rt.elapsed*.72)*38:0,axis=Math.sign(input);rt.x=Math.max(110,Math.min(890,rt.x+(axis*360+flow)*h));rt.lean+=(axis*.095+flow*.0007-rt.lean)*Math.min(1,h*7);

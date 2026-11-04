@@ -1,5 +1,5 @@
 import {createWarUI} from './war-ui.js?v=56';
-import {createVoyageUI} from './voyage-ui.js?v=56';
+import {createVoyageUI} from './voyage-ui.js?v=56.1';
 import {warMap,TRAIL,ESCAPE,warBlocked,restoreWar} from './war-story.js?v=56';
 import {drawWarTerrain,drawWarActor} from './war-render.js?v=56';
 import {createBaekjeStoryUI} from './baekje-story-ui.js?v=56';
@@ -3050,7 +3050,7 @@ function drawMini(m, target) {
 }
 function tick(t) {
   music.mode(playing ? (screen === "battle" ? "battle" : "exploration") : null);
-  const voyageDt=Math.min(Math.max(0,(t-last)/1000),.25)||0;
+  const voyageDt=Math.min(Math.max(0,(t-last)/1000),1)||0;
   let dt = Math.min((t - last) / 1000, 0.04) || 0;
   last = t;
   clock += dt;
