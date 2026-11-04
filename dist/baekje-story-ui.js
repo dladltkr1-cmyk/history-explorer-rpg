@@ -1,5 +1,5 @@
-import {CARGO,CARGO_ROUNDS,EXCHANGES,STORY_RECORDS,takeStoryParcel,deliverStoryParcel,observeStory,cargoBalance,placeCargo,departCargo,exchangeStory,chooseStoryRoute,seeStoryCourt,storyActive} from './baekje-story.js?v=55';
-const sprite=(id,alt='',cls='')=>`<img class="${cls}" src="/assets/story/${id}.svg?v=55" alt="${alt}">`;
+import {CARGO,CARGO_ROUNDS,EXCHANGES,STORY_RECORDS,takeStoryParcel,deliverStoryParcel,observeStory,cargoBalance,placeCargo,departCargo,exchangeStory,chooseStoryRoute,seeStoryCourt,storyActive} from './baekje-story.js?v=56';
+const sprite=(id,alt='',cls='')=>`<img class="${cls}" src="/assets/story/${id}.svg?v=56" alt="${alt}">`;
 const cargoName=id=>CARGO[id]?.name||'천';
 export function createBaekjeStoryUI(api){
  const {$,panel,close,save,hud,toast,finishEvent,imageTag}=api,s=()=>api.state(),b=()=>s().ancient.baekje4c;

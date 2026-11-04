@@ -1,4 +1,4 @@
-import {TRAIL,ESCAPE,TRAIL_WALLS,ESCAPE_WALLS,TRAIL_TREES,ESCAPE_TREES} from '../war-story.js?v=55';
+import {TRAIL,ESCAPE,TRAIL_WALLS,ESCAPE_WALLS,TRAIL_TREES,ESCAPE_TREES} from '../war-story.js?v=56';
 const obj=(id,type,x,y,name,art,extra={})=>({id,type,x,y,name,art,...extra});
 function field(id,name,w,h,walls,entities){
  const obstacles=[];for(let x=0;x<w;x++)obstacles.push({x,y:0,art:'pine'},{x,y:h-1,art:'pine'});for(let y=1;y<h-1;y++)obstacles.push({x:0,y,art:'pine'},{x:w-1,y,art:'pine'});

@@ -1,13 +1,14 @@
-import {WAR_MAPS} from './war-fields.js?v=55';
-import {warMap,TRAIL,ESCAPE,WAR_RECORDS} from '../war-story.js?v=55';
-import {storyPeriod,STORY_POINTS} from '../baekje-story.js?v=55';
-import {makeLifeDistricts} from './life-districts.js?v=55';
-import {marketMap,forestMap} from '../life-access.js?v=55';
-import {DECOR_VISUALS} from '../decor-spec.js?v=55';
-import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=55';
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=55';
+import {VOYAGE_QA,ENVOY} from '../voyage.js?v=56';
+import {WAR_MAPS} from './war-fields.js?v=56';
+import {warMap,TRAIL,ESCAPE,WAR_RECORDS} from '../war-story.js?v=56';
+import {storyPeriod,STORY_POINTS} from '../baekje-story.js?v=56';
+import {makeLifeDistricts} from './life-districts.js?v=56';
+import {marketMap,forestMap} from '../life-access.js?v=56';
+import {DECOR_VISUALS} from '../decor-spec.js?v=56';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=56';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=56';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=55';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=56';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},
@@ -17,7 +18,7 @@ export const ANCIENT_COUNTRIES={
 export const ANCIENT_CHAPTERS=[
   {id:'origins',name:'0장 · 나라가 세워지다',ready:true,quests:[],next:'settlement'},
   {id:'settlement',name:'정착 · 내 거처',ready:true,quests:[],next:'4c'},
-  {id:'4c',name:'1장 · 4세기',century:4,theme:'한강에서 바다까지 · 1~5번 이야기',ready:false,next:'5c',questSlots:['한강으로 가는 첫 거래','나루터에 쌓인 짐','남쪽에서 온 상인','치양의 급한 소식','평양성 탈출 작전','바다를 건너는 사신단','근초고왕의 시대'],finalQuizCount:2},
+  {id:'4c',name:'1장 · 4세기',century:4,theme:'한강에서 바다까지 · 7개 이야기',ready:true,next:'5c',questSlots:['한강으로 가는 첫 거래','나루터에 쌓인 짐','남쪽에서 온 상인','치양의 급한 소식','평양성 탈출 작전','바다를 건너는 사신단','근초고왕의 시대'],finalQuizCount:2},
   {id:'5c',name:'2장 · 5세기',century:5,theme:'고구려의 성장과 전성기',ready:false,next:'6c',questSlots:['광개토대왕','만주 지역으로 성장','신라를 도와 왜 격퇴','장수왕과 평양 천도','남진과 한강 유역'],finalQuizCount:2},
   {id:'6c',name:'3장 · 6세기',century:6,theme:'신라의 성장과 전성기',ready:false,next:'gaya',questSlots:['국가 정비','진흥왕','한강 유역','가야 지역의 변화'],finalQuizCount:2},
   ...[['gaya','가야와 철'],['life','고대 사람들의 생활'],['culture','삼국·가야의 문화'],['exchange','주변 나라와의 교류'],['7c','7세기 삼국의 큰 변화'],['unification','신라의 통일 과정'],['later','통일신라와 발해']].map(([id,name])=>({id,name,ready:false,questSlots:[],finalQuizCount:2})),
@@ -72,7 +73,9 @@ export const ANCIENT_QUESTS=[
   q('ancient-4c-south','남쪽에서 온 상인','ancient-han','story-south','ancient:4c-south',{coins:30,reputation:2,detail:'남쪽 상인에게 가서 물물교환과 물길·육로 선택을 돕자.'}),
   q('ancient-4c-chiyang','치양의 급한 소식','ancient-han','war-messenger','ancient:4c-chiyang',{coins:30,reputation:3,detail:'한강의 전령에게 가자. 369년, 위험한 길을 살펴 주민들에게 소식을 전하자.'}),
   q('ancient-4c-pyongyang','평양성 탈출 작전','ancient-han','war-messenger','ancient:4c-pyongyang',{coins:35,reputation:3,detail:'371년, 전령을 만나 백성 두 명과 피란길을 탈출하자. 최소 한 명을 기습해야 해.'}),
-  q('ancient-4c-next','다음 이야기 · 바다를 건너는 사신단','ancient-home-baekje','ancient-chapters','ancient:4c-full',{location:'home',available:false,xp:0,detail:'1~5번 이야기를 마쳤다. 372년 동진과의 외교는 다음 업데이트에서 이어진다.'}),
+  q('ancient-4c-voyage','바다를 건너는 사신단','ancient-han','voyage-envoy','ancient:4c-voyage',{coins:40,reputation:3,detail:'372년, 한강의 사신단 담당자와 출항 준비를 하고 목선을 조종해 세 구간을 항해하자.'}),
+  q('ancient-4c-finale','근초고왕의 시대','ancient-han','voyage-envoy','ancient:4c-finale',{coins:45,reputation:5,detail:'네 역사 기록과 확인 문제 두 개로 4세기 백제편을 마무리하자.'}),
+  q('ancient-4c-next','다음 이야기 · 5세기 고구려편 준비 중','ancient-home-baekje','ancient-chapters','ancient:4c-full',{location:'home',available:false,xp:0,detail:'4세기 백제편을 마쳤다. 다음 이야기가 열릴 때까지 마을과 집에서 자유롭게 지내자.'}),
 ];
 export const ANCIENT_QA=[
   ['opening','고대 국가 시작',0],['jumong','주몽 바로 만나기',2],['onjo','온조 바로 만나기',6],['hyeokgeose','박혁거세 바로 만나기',8],['suro','김수로 바로 만나기',11],['goguryeo','고구려 건국 이야기',1],['baekje','백제 건국 이야기',4],['silla','신라 건국 이야기',7],['gaya','가야 건국 이야기',10],['quiz','건국편 퀴즈 직전',14],['choice','나라 선택 직전',16],['chosen','나라 선택 완료',17],['helper','내 거처 안내 직전',17],['home','내 거처 획득',18],['4c','4세기 시작',19],['4c-trade','QUEST 1 시작',21],['4c-deliver','QUEST 1 전달 직전',21,{parcel:true},'ancient-han','story-keeper'],['4c-cargostart','QUEST 2 시작',22],['4c-cargo','QUEST 2 · 1라운드',22],['4c-cargo2','QUEST 2 · 2라운드',22,{round:1}],['4c-cargo3','QUEST 2 · 3라운드',22,{round:2}],['4c-south','QUEST 3 시작',23],['4c-exchange','QUEST 3 거래 완료 직전',23,{exchanges:2}],['4c-complete','QUEST 3 완료 직전 · 궁정',23,{exchanges:3,routes:2}],['4c-done','QUEST 3 완료',24],['4c-wait','QUEST 4 시작',24],
@@ -84,6 +87,8 @@ ANCIENT_QA.push(...[
  ...[['escort-start','백성 2명 합류',0,[]],['escort-ambush','첫 기습 직전',0,[]],['escort-down','첫 적군 제압',0,[0]],['escort-cp1','첫 안전 지점',1,[0]],['escort-patrol','두 번째 구역 순찰',1,[0]],['escort-cover','엄폐 뒤 대기',1,[0]],['escort-caught','발각·재도전',1,[0]],['escort-cp2','두 번째 안전 지점',2,[0]],['escort-wait','백성 기다려/따라와',1,[0]],['escort-lag','뒤처진 백성 경로 복구',1,[0]],['escort-exit','마지막 탈출구',2,[0]],['escort-zero','제압 0명 탈출 거부',2,[]],['escort-one','백성 1명 도착 거부',2,[0]],['escort-both','백성 2명 도착',2,[0]]].map(([id,name,checkpoint,down])=>({id,name:'QUEST 5 · '+name,index:25,war:{escape:{started:true,checkpoint,down:[0,1,2].map(i=>down.includes(i)),waiting:id==='escort-wait',failures:id==='escort-caught'?2:0}},storyMap:ESCAPE,storyTarget:'war-escape'})),
  {id:'war5-done',name:'QUEST 5 완료 · QUEST 6 대기',index:26}
 ].map(f=>({...f,quest:ANCIENT_QUESTS[f.index].id,map:f.storyMap||ANCIENT_QUESTS[f.index].map,target:f.storyTarget||ANCIENT_QUESTS[f.index].target})));
+ANCIENT_QA.push(...VOYAGE_QA.map(f=>({...f,quest:ANCIENT_QUESTS[f.index].id,map:ANCIENT_QUESTS[f.index].map,target:ANCIENT_QUESTS[f.index].target})));
+ANCIENT_CHAPTERS[2].quests=ANCIENT_QUESTS.slice(21,28).map(q=>q.id);
 const qa={name:'고대 국가 건국과 정착',stages:ANCIENT_QA,items:[]};
 for(const [index,quest]of ANCIENT_QUESTS.entries())quest.qa={...qa,stages:[{id:'current',name:'선택 퀘스트 직전',index,quest:quest.id,map:quest.map,target:quest.target},...ANCIENT_QA]};
 ANCIENT_CHAPTERS[0].quests=ANCIENT_QUESTS.slice(0,16).map(v=>v.id);
@@ -204,7 +209,7 @@ export function ancientWorld(base,s) {
   const homeArt='life-home-'+a?.country+'-'+(h?.level||1);
   if(base.id===c?.home){
     const layout=roomLayout(h.level),props=base.entities.filter(e=>!(e.id==='ancient-bed'&&(Object.values(h.placements).includes('fineBedding')||(DECOR_VISUALS[h.placements['room-1']]?.large||h.placements['room-1']==='lowTable')))&&!(e.id==='ancient-jars'&&Object.keys(h.placements).some(k=>k.startsWith('room-')))).map(e=>({...e,x:layout.points[e.id][0],y:layout.points[e.id][1],...(e.id==='ancient-home-fire'&&h.commerce.tools.hearth?{art:'life-hearth'}:{})}));
-    return {...base,...layout,name:'내 거처 · '+c.name+' · '+h.level+'단계',entities:[...props,...lifeDecor(h,'room')],obstacles:[]};
+    return {...base,...layout,name:'내 거처 · '+c.name+' · '+h.level+'단계',entities:[...props,...(h.exhibits||[]).map((id,i)=>({id:'exhibit-view-'+i,type:'scenery',x:layout.points['ancient-display'][0]+(i-1)*.42,y:layout.points['ancient-display'][1]-.22,art:id==='han-trade-plaque'?'voyagePlaque':{'origin-goguryeo':'kingJumong','origin-baekje':'kingOnjo','origin-silla':'kingHyeokgeose'}[id],name:'전시 기록',worldWidth:28,worldHeight:24})),...lifeDecor(h,'room')],obstacles:[]};
   }
   if(base.id==='ancient-yard-'+a?.country){
     return {...base,lifeYard:true,name:'내 마당 · '+c.name+' · '+h.level+'단계',entities:[...base.entities.map(e=>e.type==='ancientHome'?{...e,art:homeArt,lifeStage:h.level}:e),
@@ -252,4 +257,4 @@ export function ancientCanEnter(s,m) {
   return true;
 }
 
-function hanStoryEntities(s){const common=[{id:'story-dock',type:'scenery',x:20,y:3.5,name:'나무 나루',art:'storyDock',worldWidth:150,worldHeight:105},{id:'story-boat',type:'scenery',x:21.5,y:3.3,name:'정박한 목선',art:'storyBoat',worldWidth:100,worldHeight:70},{id:'story-sacks',type:'scenery',x:18,y:3,name:'나루의 짐',art:'storyCargo',worldWidth:85,worldHeight:68}];if(!storyPeriod(s)||(s.progress.ancient||0)<21)return common;return [...common,...((s.progress.ancient||0)>=24?[{id:'war-messenger',type:'warStory',x:12,y:5,name:'북쪽에서 온 전령',art:'ancientHelperNorth',actor:true}]:[]),{id:'story-keeper',type:'baekjeStory',...STORY_POINTS.keeper,name:'나루지기',art:'shop-merchant-wood',actor:true},{id:'story-south',type:'baekjeStory',...STORY_POINTS.south,name:'남쪽에서 온 상인',art:'shop-merchant-seed',actor:true}];}
+function hanStoryEntities(s){const common=[{id:'story-dock',type:'scenery',x:20,y:3.5,name:'나무 나루',art:'storyDock',worldWidth:150,worldHeight:105},{id:'story-boat',type:'scenery',x:21.5,y:3.3,name:'정박한 목선',art:'storyBoat',worldWidth:100,worldHeight:70},{id:'story-sacks',type:'scenery',x:18,y:3,name:'나루의 짐',art:'storyCargo',worldWidth:85,worldHeight:68}];if(!storyPeriod(s)||(s.progress.ancient||0)<21)return common;return [...common,...((s.progress.ancient||0)>=26?[{id:'voyage-envoy',type:'voyageStory',...ENVOY,name:'사신단 담당자',art:'ancientHelperRiver',actor:true}]:[]),...((s.progress.ancient||0)>=24?[{id:'war-messenger',type:'warStory',x:12,y:5,name:'북쪽에서 온 전령',art:'ancientHelperNorth',actor:true}]:[]),{id:'story-keeper',type:'baekjeStory',...STORY_POINTS.keeper,name:'나루지기',art:'shop-merchant-wood',actor:true},{id:'story-south',type:'baekjeStory',...STORY_POINTS.south,name:'남쪽에서 온 상인',art:'shop-merchant-seed',actor:true}];}

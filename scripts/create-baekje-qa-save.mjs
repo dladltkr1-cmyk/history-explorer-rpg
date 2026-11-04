@@ -1,7 +1,7 @@
 globalThis.Image=class{set src(v){} get complete(){return false;}};
-const {fresh,validate}=await import('../dist/state.js?v=55');
-const {prepareAncientQA}=await import('../dist/ancient-state.js?v=55');
-const {roomLayout}=await import('../dist/homestead.js?v=55');
+const {fresh,validate}=await import('../dist/state.js?v=56');
+const {prepareAncientQA}=await import('../dist/ancient-state.js?v=56');
+const {roomLayout}=await import('../dist/homestead.js?v=56');
 const {mkdirSync,writeFileSync}=await import('node:fs');
 mkdirSync('qa/v54',{recursive:true});
 for(const country of ['baekje','goguryeo','silla']){

@@ -1,4 +1,4 @@
-import {TRAIL,ESCAPE,warMap,warBlocked,TRAIL_CHECKS,CHECKS,guardSide} from './war-story.js?v=55';
+import {TRAIL,ESCAPE,warMap,warBlocked,TRAIL_CHECKS,CHECKS,guardSide} from './war-story.js?v=56';
 const APPEARANCES=[{hair:2,eyes:3,skin:1,hairColor:0,outfit:2},{hair:3,eyes:1,skin:2,hairColor:1,outfit:0}];
 export function drawWarTerrain(ctx,m,T,s,rt){if(!warMap(m.id))return;
  const path=points=>{ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x*T,y*T):ctx.moveTo(x*T,y*T));ctx.stroke();};

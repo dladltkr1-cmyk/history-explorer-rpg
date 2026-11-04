@@ -1,17 +1,25 @@
-import {freshWar,validateWar,warEventAllowed,restoreWar,warMap} from './war-story.js?v=55';
-import {freshBaekjeStory,validateBaekjeStory,storyEventAllowed} from './baekje-story.js?v=55';
-import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=55';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=55';
-import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=55';
+import {freshVoyage,validateVoyage,voyageEventAllowed,EXHIBIT_ID} from './voyage.js?v=56';
+import {freshWar,validateWar,warEventAllowed,restoreWar,warMap} from './war-story.js?v=56';
+import {freshBaekjeStory,validateBaekjeStory,storyEventAllowed} from './baekje-story.js?v=56';
+import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=56';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=56';
+import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=56';
 
-export const ANCIENT_EXHIBITS={}; // Register sourced culture records here with their content update.
+export const ANCIENT_EXHIBITS={
+ 'han-trade-plaque':{name:'한강 교역 기록판',art:'voyagePlaque',text:'4세기 백제편을 마친 기념 전시물. 실제 출토 유물이 아닌 게임 속 나무 기록판이다.'},
+ ...Object.fromEntries([['goguryeo','주몽','kingJumong'],['baekje','온조','kingOnjo'],['silla','박혁거세','kingHyeokgeose']].map(([id,name,art])=>['origin-'+id,{name:name+' 건국 이야기 기록',art,text:'이미 살펴본 건국 이야기의 그림 기록. 실제 유물은 아니다.'}]))
+};
 export const ANCIENT_EXTENSIONS=['field','workbench','storage','culture','horse'];
-export function freshAncient(){return {revision:1,war:freshWar(),baekje4c:freshBaekjeStory(),history:freshHanHistory(),country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],extensions:[],...freshLife()}};}
+export function freshAncient(){return {revision:1,voyage:freshVoyage(),war:freshWar(),baekje4c:freshBaekjeStory(),history:freshHanHistory(),country:null,century:null,chapter:'origins',quest:'ancient-opening',records:[],carry:[],completedChapters:[],maps:{4:[],5:[],6:[]},home:{owned:false,storage:{},exhibits:[],ownedExhibits:[],extensions:[],...freshLife()}};}
 export function syncAncient(s) {
   s.ancient??=freshAncient();const a=s.ancient,p=s.progress.ancient||0;
   ensureLife(a.home);
   a.records=ANCIENT_QUESTS.slice(0,p).map(q=>q.record).filter(Boolean);
   a.quest=ANCIENT_QUESTS[p]?.id||null;
+  a.home.ownedExhibits??=[...a.home.exhibits];
+  for(const id of ['goguryeo','baekje','silla'])if(a.records.includes(id)&&!a.home.ownedExhibits.includes('origin-'+id))a.home.ownedExhibits.push('origin-'+id);
+  if(s.completedQuests.includes('ancient-4c-finale')&&!a.home.ownedExhibits.includes(EXHIBIT_ID))a.home.ownedExhibits.push(EXHIBIT_ID);
+  completeAncientChapter(s,'4c');
   if(p>=16&&!a.completedChapters.includes('origins'))a.completedChapters.push('origins');
   if(p>=18)a.home.owned=true;
   grantLifeStarter(s);
@@ -26,10 +34,10 @@ export function validateAncient(s,items,maps) {
   if(raw===undefined||raw===null)s.ancient=freshAncient();
   else {
     if(!plain(raw)||raw.revision!==1)throw Error('고대 국가 기록을 읽을 수 없다.');
-    const a={...freshAncient(),...raw,home:{owned:false,storage:{},exhibits:[],extensions:[],...raw.home},maps:{...freshAncient().maps,...raw.maps}};
+    const a={...freshAncient(),...raw,home:{owned:false,storage:{},exhibits:[],ownedExhibits:[],extensions:[],...raw.home},maps:{...freshAncient().maps,...raw.maps}};
     if((a.country!==null&&!Object.hasOwn(ANCIENT_COUNTRIES,a.country))||!([null,4,5,6].includes(a.century))||!ANCIENT_CHAPTERS.some(c=>c.id===a.chapter)||
       !list(a.records,['goguryeo','baekje','silla','gaya'])||!list(a.carry,['trail','branch','cord'])||!list(a.completedChapters,ANCIENT_CHAPTERS.map(c=>c.id))||!plain(a.home)||typeof a.home.owned!=='boolean'||!plain(a.home.storage)||
-      !list(a.home.exhibits,Object.keys(ANCIENT_EXHIBITS))||!list(a.home.extensions,ANCIENT_EXTENSIONS)||!plain(a.maps))throw Error('고대 국가의 거처나 진행 기록이 올바르지 않다.');
+      !list(a.home.exhibits,Object.keys(ANCIENT_EXHIBITS))||a.home.exhibits.length>3||!list(a.home.ownedExhibits??a.home.exhibits,Object.keys(ANCIENT_EXHIBITS))||a.home.exhibits.some(id=>!(a.home.ownedExhibits??a.home.exhibits).includes(id))||!list(a.home.extensions,ANCIENT_EXTENSIONS)||!plain(a.maps))throw Error('고대 국가의 거처나 진행 기록이 올바르지 않다.');
     for(const [id,n]of Object.entries(a.home.storage))if(!Object.hasOwn(items,id)||!['food','material'].includes(items[id].kind)||items[id].questOnly||items[id].sellable===false||!Number.isInteger(n)||n<0||n>99999)throw Error('거처 보관 기록이 올바르지 않다.');
     for(const century of [4,5,6])if(!list(a.maps[century],Object.keys(maps).filter(id=>id.startsWith('ancient-'))))throw Error('고대 국가 지도 기록이 올바르지 않다.');
     s.ancient=a;
@@ -38,6 +46,7 @@ export function validateAncient(s,items,maps) {
   validateHanHistory(s.ancient);
   validateBaekjeStory(s.ancient);
   validateWar(s.ancient);
+  validateVoyage(s.ancient);
   const p=s.progress.ancient||0;
   if(p>=17&&!s.ancient.country)throw Error('머무는 나라 기록이 없다.');
   if(p<16&&s.ancient.country)throw Error('건국 이야기를 먼저 완료해야 한다.');
@@ -54,6 +63,7 @@ function ancientCanRestore(s,m){const a=s.ancient;return m&&(s.progress.ancient|
 export function ancientEventAllowed(s,q,event) {
   if(!q||q.available===false)return false;
   const a=s.ancient;
+  if(['ancient-4c-voyage','ancient-4c-finale'].includes(q.id))return voyageEventAllowed(s,q,event);
   if(['ancient-4c-chiyang','ancient-4c-pyongyang'].includes(q.id))return warEventAllowed(s,q,event);
   if(['ancient-4c-trade','ancient-4c-cargo','ancient-4c-south'].includes(q.id))return storyEventAllowed(s,q,event);
   if(q.id==='ancient-country')return Boolean(a.country)&&a.records.length===4;
@@ -88,7 +98,7 @@ export function completeAncientChapter(s,id) {
   if(!c?.ready||!c.quests?.length||!c.quests.every(q=>s.completedQuests.includes(q)))return false;
   if(!s.ancient.completedChapters.includes(id))s.ancient.completedChapters.push(id);
   const next=ANCIENT_CHAPTERS.find(v=>v.id===c.next);
-  if(next?.century){s.ancient.century=next.century;s.ancient.chapter=next.id;}
+  if(next?.ready&&next?.century){s.ancient.century=next.century;s.ancient.chapter=next.id;}
   return true;
 }
 export function transferAncientStorage(s,items,id,count,toStorage) {
@@ -120,7 +130,15 @@ export function prepareAncientQA(s,stage,{country=s.ancient?.country||'baekje'}=
   if(fixture.index>=25){s.ancient.war.trail={started:true,stage:3,clues:['fork','fallen','watch'],failures:0,delivered:true,history:true};}
   if(fixture.index>=26){Object.assign(s.ancient.war.escape,{started:true,checkpoint:2,down:[true,false,false],escaped:true,history:true});}
   if(fixture.war) {for(const [key,val]of Object.entries(fixture.war))Object.assign(s.ancient.war[key],structuredClone(val));}
+  if(fixture.index>=27)Object.assign(s.ancient.voyage,{prepared:true,boarded:true,started:true,stage:3,success:true,history:true});
+  if(fixture.voyage)Object.assign(s.ancient.voyage,structuredClone(fixture.voyage));
+  if(fixture.id==='finale-full')s.ancient.home.exhibits=['origin-goguryeo','origin-baekje','origin-silla'];
+  if(fixture.index>=28)syncAncient(s);
   if(fixture.story)Object.assign(s.ancient.baekje4c,structuredClone(fixture.story));
   const q=ancientQuest(ANCIENT_QUESTS[fixture.index],s);
   return {...fixture,map:fixture.storyMap||q.map,target:fixture.storyTarget||q.target};
 }
+
+export function atAncientDisplay(s){const h=s.ancient?.home,c=ANCIENT_COUNTRIES[s.ancient?.country];if(!h?.owned||s.map!==c?.home)return false;const [x,y]=roomLayout(h.level).points['ancient-display'];return Math.hypot(s.x-x,s.y-y)<1.65;}
+export function equipAncientExhibit(s,id,slot){const h=s.ancient?.home;if(!atAncientDisplay(s)||!Number.isInteger(slot)||slot<0||slot>2||slot>h.exhibits.length||!h.ownedExhibits.includes(id)||h.exhibits.includes(id))return false;h.exhibits[slot]=id;return true;}
+export function removeAncientExhibit(s,slot){const h=s.ancient?.home;if(!atAncientDisplay(s)||!Number.isInteger(slot)||slot<0||slot>=h.exhibits.length)return false;h.exhibits.splice(slot,1);return true;}

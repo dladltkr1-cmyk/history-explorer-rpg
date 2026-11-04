@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class{set src(v){}get complete(){return false}};
-const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=55');
-const {prepareAncientQA}=await import('../dist/ancient-state.js?v=55');
-const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=55');
-const {MAPS}=await import('../dist/regions/index.js?v=55');
-import * as w from '../dist/war-story.js?v=55';
+const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=56');
+const {prepareAncientQA}=await import('../dist/ancient-state.js?v=56');
+const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=56');
+const {MAPS}=await import('../dist/regions/index.js?v=56');
+import * as w from '../dist/war-story.js?v=56';
 const blocks=(x,y)=>x<1||y<1||x>22||y>34||w.warBlocked(w.ESCAPE,x,y);
 for(const country of ['baekje','goguryeo','silla']){
  let s=fresh('v55 호환 검수','boy');prepareAncientQA(s,'4c-done',{country});delete s.ancient.war;s.map='ancient-han';s.x=12;s.y=6;s.coins=100;s.ancient.home.reputation=0;s.xp=0;
@@ -23,7 +23,7 @@ for(const country of ['baekje','goguryeo','silla']){
  // Save validator restores the checkpoint and all parties; no economic penalty.
  s.ancient.war.escape.checkpoint=1;s.ancient.war.escape.waiting=true;s.x=20;s.y=15;s=validate(JSON.parse(JSON.stringify(s)));assert.deepEqual([s.x,s.y],w.CHECKS[1]);rt=w.createEscapeRuntime(s);assert.equal(rt.followers.length,2);
  Object.assign(rt.guards[1],{x:s.x+.1,y:s.y,direction:'left',mode:'chase',alert:2,lastTarget:{x:s.x,y:s.y}});assert.equal(w.stepEscape(s,rt,.04,blocks),'caught');assert.equal(s.coins,130);assert.equal(s.ancient.home.reputation,3);assert.equal(s.ancient.war.escape.waiting,false);
- s.x=12;s.y=2;s.ancient.war.escape.down=[false,false,false];assert.equal(w.tryEscape(s,rt),'guard');s.ancient.war.escape.down[0]=true;rt.followers=[{x:12,y:3},{x:12,y:8}];assert.equal(w.tryEscape(s,rt),'people');rt.followers[1].y=4;assert.equal(w.tryEscape(s,rt),'success');for(let i=0;i<70;i++)w.stepEscape(s,rt,.04,blocks);assert.ok(s.ancient.war.escape.escaped);s.ancient.war.escape.history=true;s.map='ancient-han';assert.equal(advance(s,'ancient:4c-pyongyang').length,0);s.map=w.ESCAPE;s.x=12;s.y=2;assert.equal(advance(s,'ancient:4c-pyongyang').length,1);assert.equal(advance(s,'ancient:4c-pyongyang').length,0);assert.equal(s.coins,165);assert.equal(s.ancient.home.reputation,6);assert.equal(s.xp,24);assert.equal(s.progress.ancient,26);assert.equal(activeQuest(s),null);assert.equal(JSON.stringify(s.inventory),inventory);assert.equal(JSON.stringify(s.appearance),appearance);assert.ok(!s.completedRegions.includes('ancient'));validate(JSON.parse(JSON.stringify(s)));
+ s.x=12;s.y=2;s.ancient.war.escape.down=[false,false,false];assert.equal(w.tryEscape(s,rt),'guard');s.ancient.war.escape.down[0]=true;rt.followers=[{x:12,y:3},{x:12,y:8}];assert.equal(w.tryEscape(s,rt),'people');rt.followers[1].y=4;assert.equal(w.tryEscape(s,rt),'success');for(let i=0;i<70;i++)w.stepEscape(s,rt,.04,blocks);assert.ok(s.ancient.war.escape.escaped);s.ancient.war.escape.history=true;s.map='ancient-han';assert.equal(advance(s,'ancient:4c-pyongyang').length,0);s.map=w.ESCAPE;s.x=12;s.y=2;assert.equal(advance(s,'ancient:4c-pyongyang').length,1);assert.equal(advance(s,'ancient:4c-pyongyang').length,0);assert.equal(s.coins,165);assert.equal(s.ancient.home.reputation,6);assert.equal(s.xp,24);assert.equal(s.progress.ancient,26);assert.equal(activeQuest(s).id,'ancient-4c-voyage');assert.equal(JSON.stringify(s.inventory),inventory);assert.equal(JSON.stringify(s.appearance),appearance);assert.ok(!s.completedRegions.includes('ancient'));validate(JSON.parse(JSON.stringify(s)));
 }
 // Every terrain gap is reachable with a player-sized body; all stage hints and goal can be walked to.
 for(const map of [MAPS[w.TRAIL],MAPS[w.ESCAPE]]){const step=.4,q=[[map.start.x,map.start.y]],seen=new Set();const hit=(x,y)=>x<1||y<1||x>map.w-2||y>map.h-2||w.warBlocked(map.id,x,y);for(let i=0;i<q.length;i++){const [x,y]=q[i];for(const [dx,dy]of [[step,0],[-step,0],[0,step],[0,-step]]){const nx=Math.round((x+dx)*10)/10,ny=Math.round((y+dy)*10)/10,k=nx+','+ny;if(!hit(nx,ny)&&!seen.has(k)){seen.add(k);q.push([nx,ny]);}}}for(const e of map.entities.filter(e=>e.type==='warStory'))assert.ok(q.some(([x,y])=>Math.hypot(x-e.x,y-e.y)<1.5),'unreachable '+e.id);}

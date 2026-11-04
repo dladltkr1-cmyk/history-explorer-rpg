@@ -1,7 +1,7 @@
 import {entity,person,exit} from './common.js';
 import {inFishingRiver,pathDistance} from '../waterside.js?v=44.2';
 import {FISHING_MATERIALS} from '../fishing.js?v=44.2';
-import {prepareAncientQA} from '../ancient-state.js?v=55';
+import {prepareAncientQA} from '../ancient-state.js?v=56';
 
 // New content registers its QA stages alongside its quest data.
 export const FISHING_QA = [
@@ -29,6 +29,7 @@ export const FISHING_TEST_MODES = [
   {id:'failure-rest',name:'낚시 실패 후 재도전',rest:false},
 ];
 export const INTERACTION_QA = [
+  {id:'voyage-finale',name:'v56 · 항해/4세기 엔딩 시험',map:'ancient-han',target:'voyage-envoy',action:'voyage-story'},
   {id:'war-fields',name:'v55 · 치양 전령길/평양성 잠입·호위 시험',map:'ancient-han',target:'war-messenger',action:'war-story'},
   {id:'baekje-cargo',name:'4세기 백제 · 화물/교역/나라별 QUEST 1~3 시험',map:'ancient-han',target:'story-keeper',action:'baekje-story'},
   {id:'decor',name:'집 꾸미기 · 18종/배치/휴식/등잔 시험',map:'ancient-home-baekje',target:'ancient-chapters',action:'decor'},
