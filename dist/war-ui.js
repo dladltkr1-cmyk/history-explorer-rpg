@@ -1,4 +1,4 @@
-import {TRAIL,ESCAPE,warMap,beginTrail,beginEscape,restoreWar,inspectWar,deliverWarNews,createEscapeRuntime,canAmbush,ambush,trailStep,stepEscape,tryEscape,resetEscape,restoreStraggler,guardSide,CHECKS,warPeriod} from './war-story.js?v=56';
+import {TRAIL,ESCAPE,warMap,beginTrail,beginEscape,restoreWar,inspectWar,deliverWarNews,createEscapeRuntime,canAmbush,ambush,trailStep,stepEscape,tryEscape,resetEscape,restoreStraggler,guardSide,CHECKS,warPeriod} from './war-story.js?v=56.3';
 export function createWarUI(api){
  const {$,state,panel,close,save,hud,toast,travel,finishEvent,imageTag}=api;let runtime=null,identity=null,exiting=false;
  const s=()=>state(),w=()=>s().ancient.war;

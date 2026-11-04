@@ -1,10 +1,10 @@
-import {VOYAGE_RECORDS} from './voyage.js?v=56';
-import {WAR_RECORDS} from './war-story.js?v=56';
-import {STORY_RECORDS} from './baekje-story.js?v=56';
-import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=56';
-import {parkHorse,retrieveHorse} from './horse-state.js?v=56';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest,ancientWorld} from './regions/ancient.js?v=56';
-import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS,equipAncientExhibit,removeAncientExhibit} from './ancient-state.js?v=56';
+import {VOYAGE_RECORDS} from './voyage.js?v=56.3';
+import {WAR_RECORDS} from './war-story.js?v=56.3';
+import {STORY_RECORDS} from './baekje-story.js?v=56.3';
+import {HAN_PHASES,hanPhase,VILLAGE_GEOGRAPHY,previewHanHistory,nearHanJourney} from './ancient-history.js?v=56.3';
+import {parkHorse,retrieveHorse} from './horse-state.js?v=56.3';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientDestination,ancientQuest,ancientWorld} from './regions/ancient.js?v=56.3';
+import {chooseAncientCountry,setAncientCentury,transferAncientStorage,noteAncientVisit,syncAncient,ANCIENT_EXHIBITS,equipAncientExhibit,removeAncientExhibit} from './ancient-state.js?v=56.3';
 
 const names={...Object.fromEntries(Object.entries(ANCIENT_COUNTRIES).map(([id,c])=>[id,c.name])),gaya:'가야'};
 // The untouched JPG is viewed through its exact printed map frame.

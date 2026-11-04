@@ -1,6 +1,6 @@
-import {ENVOY,VOYAGE_STAGES,REVIEW,FINAL_QUIZ,activeVoyage,activeFinale,prepareVoyage,boardVoyage,createVoyageRuntime,stepVoyage,retryVoyage,confirmDiplomacy,reviewRecord,answerFinal,completeEnding} from './voyage.js?v=56.2';
-import {drawVoyage,voyageImage} from './voyage-render.js?v=56.2';
-const art=(id,alt,cls='')=>`<img class="${cls}" src="${new URL('./assets/voyage/'+id+'.svg?v=56',import.meta.url).href}" alt="${alt}">`;
+import {ENVOY,VOYAGE_STAGES,REVIEW,FINAL_QUIZ,activeVoyage,activeFinale,prepareVoyage,boardVoyage,createVoyageRuntime,stepVoyage,retryVoyage,confirmDiplomacy,reviewRecord,answerFinal,completeEnding} from './voyage.js?v=56.3';
+import {drawVoyage,voyageImage} from './voyage-render.js?v=56.3';
+const art=(id,alt,cls='')=>`<img class="${cls}" src="${new URL('./assets/voyage/'+id+'.svg?v=56.3',import.meta.url).href}" alt="${alt}">`;
 export function createVoyageUI(api){
  const {$,state,panel,close,save,hud,toast,finishEvent,avatarSource,imageTag}=api;let rt=null,identity=null,serial=0,axis=new Set(),cutDone=null,inputClock=0,inputChanges=[],heldAxis=0;
  const s=()=>state(),v=()=>s().ancient.voyage,commit=()=>{save();hud();};
@@ -9,8 +9,8 @@ export function createVoyageUI(api){
  function simulate(dt){const now=performance.now(),span=Math.max(0,(now-inputClock)/1000),scale=span?Math.min(dt,span,5)/span:0;let at=inputClock,result='';for(const change of inputChanges){result=stepVoyage(s(),rt,Math.max(0,(change.at-at)/1000)*scale,heldAxis)||result;at=change.at;heldAxis=change.value;}result=stepVoyage(s(),rt,Math.max(0,(now-at)/1000)*scale,heldAxis)||result;inputClock=now;inputChanges=[];return result;}
  function show(title,html,options={}){panel(title,html,options);const stamp=serial;return fn=>(...args)=>{if(stamp===serial)fn(...args);};}
  function permitted(){return activeVoyage(s())||activeFinale(s());}
- function entry(){if(!permitted()){panel('한강의 사신단','<p>지금의 이야기 임무를 먼저 이어가 보자.</p>');return;}
- if(s().ancient.home.commerce.cart.active){panel('먼저 운송을 마치자','<p>수레 운송 중이야. 지금의 짐을 납품한 뒤 다시 찾아오렴. 운송 기록은 그대로 있어.</p>');return;}
+ function entry(){ if(s().ancient.home.commerce.cart.active){panel('먼저 운송을 마치자','<p>수레 운송 중이야. 지금의 짐을 납품한 뒤 다시 찾아오렴. 운송 기록은 그대로 있어.</p>');return;}
+if(!permitted()){panel('한강의 사신단','<p>지금의 이야기 임무를 먼저 이어가 보자.</p>');return;}
  if(s().progress.ancient===27){records();return;}
  if(v().success){arrival();return;}
  if(v().boarded){sail();return;}

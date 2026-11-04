@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class{set src(v){}get complete(){return false}};
-const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=56');
-const {prepareAncientQA}=await import('../dist/ancient-state.js?v=56');
-const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=56');
-const {MAPS}=await import('../dist/regions/index.js?v=56');
-import * as w from '../dist/war-story.js?v=56';
+const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=56.3');
+const {prepareAncientQA}=await import('../dist/ancient-state.js?v=56.3');
+const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=56.3');
+const {MAPS}=await import('../dist/regions/index.js?v=56.3');
+import * as w from '../dist/war-story.js?v=56.3';
 const blocks=(x,y)=>x<1||y<1||x>22||y>34||w.warBlocked(w.ESCAPE,x,y);
 for(const country of ['baekje','goguryeo','silla']){
  let s=fresh('v55 호환 검수','boy');prepareAncientQA(s,'4c-done',{country});delete s.ancient.war;s.map='ancient-han';s.x=12;s.y=6;s.coins=100;s.ancient.home.reputation=0;s.xp=0;

@@ -1,12 +1,12 @@
-import {freshVoyage,validateVoyage,voyageEventAllowed,EXHIBIT_ID} from './voyage.js?v=56';
-import {freshWar,validateWar,warEventAllowed,restoreWar,warMap} from './war-story.js?v=56';
-import {freshBaekjeStory,validateBaekjeStory,storyEventAllowed} from './baekje-story.js?v=56';
-import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=56';
-import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=56';
-import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=56';
+import {freshVoyage,validateVoyage,voyageEventAllowed,EXHIBIT_ID} from './voyage.js?v=56.3';
+import {freshWar,validateWar,warEventAllowed,restoreWar,warMap} from './war-story.js?v=56.3';
+import {freshBaekjeStory,validateBaekjeStory,storyEventAllowed} from './baekje-story.js?v=56.3';
+import {freshHanHistory,validateHanHistory,completeHanHistoricalEvent,HAN_EVENT_QUESTS} from './ancient-history.js?v=56.3';
+import {ANCIENT_COUNTRIES,ANCIENT_CHAPTERS,ANCIENT_MAPS,ANCIENT_QUESTS,ANCIENT_QA,ancientQuest} from './regions/ancient.js?v=56.3';
+import {freshLife,ensureLife,validateLife,grantLifeStarter,roomLayout} from './homestead.js?v=56.3';
 
 export const ANCIENT_EXHIBITS={
- 'han-trade-plaque':{name:'한강 교역 기록판',art:'voyagePlaque',text:'4세기 백제편을 마친 기념 전시물. 실제 출토 유물이 아닌 게임 속 나무 기록판이다.'},
+ 'han-trade-plaque':{name:'한강 교역 기록판',art:'voyagePlaque',text:'한강의 농경과 물자 운송을 바탕으로 성장한 백제는 남쪽으로 영향력을 넓혔다. 369년 치양·371년 평양성에서 고구려와 경쟁하고, 372년 동진과 외교 관계를 맺었다. 실제 출토 유물이 아닌 게임 속 기념 기록판이다.'},
  ...Object.fromEntries([['goguryeo','주몽','kingJumong'],['baekje','온조','kingOnjo'],['silla','박혁거세','kingHyeokgeose']].map(([id,name,art])=>['origin-'+id,{name:name+' 건국 이야기 기록',art,text:'이미 살펴본 건국 이야기의 그림 기록. 실제 유물은 아니다.'}]))
 };
 export const ANCIENT_EXTENSIONS=['field','workbench','storage','culture','horse'];

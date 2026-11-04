@@ -15,12 +15,12 @@ export const FINAL_QUIZ=[
 ];
 export const freshVoyage=()=>({revision:1,prepared:false,boarded:false,started:false,stage:0,hull:3,failures:[0,0,0],seed:372,success:false,history:false,review:[],quiz:0,ending:false});
 export function validateVoyage(a){a.voyage??=freshVoyage();const v=a.voyage,int=(n,max)=>Number.isInteger(n)&&n>=0&&n<=max;
- if(!v||v.revision!==1||!['prepared','boarded','started','success','history','ending'].every(k=>typeof v[k]==='boolean')||!int(v.stage,3)||!int(v.hull,3)||!int(v.seed,2147483646)||!Array.isArray(v.failures)||v.failures.length!==3||v.failures.some(n=>!int(n,99999))||!Array.isArray(v.review)||v.review.some(id=>!REVIEW.some(r=>r.id===id))||new Set(v.review).size!==v.review.length||!int(v.quiz,2)||v.success!==(v.stage===3)||v.boarded&&!v.prepared||v.started&&!v.boarded||v.history&&!v.success||v.ending&&v.quiz!==2||v.quiz>0&&v.review.length!==4)throw Error('항해·마지막 역사 기록을 읽을 수 없다.');
+ if(!v||v.revision!==1||!['prepared','boarded','started','success','history','ending'].every(k=>typeof v[k]==='boolean')||!int(v.stage,3)||!int(v.hull,3)||!int(v.seed,2147483646)||!Array.isArray(v.failures)||v.failures.length!==3||v.failures.some(n=>!int(n,99999))||!Array.isArray(v.review)||v.review.some(id=>!REVIEW.some(r=>r.id===id))||new Set(v.review).size!==v.review.length||!int(v.quiz,2)||v.success!==(v.stage===3)||v.boarded&&!v.prepared||v.started&&!v.boarded||v.stage>0&&!v.started||v.review.length>0&&!v.history||v.history&&!v.success||v.ending&&v.quiz!==2||v.quiz>0&&v.review.length!==4)throw Error('항해·마지막 역사 기록을 읽을 수 없다.');
  a.voyage=structuredClone(v);
 }
 export const atEnvoy=s=>Boolean(s.ancient?.country&&s.ancient.home.owned&&s.map==='ancient-han'&&s.ancient.century===4&&s.ancient.history.phase==='baekje-4'&&Number.isFinite(s.x)&&Number.isFinite(s.y)&&Math.hypot(s.x-ENVOY.x,s.y-ENVOY.y)<1.65);
 export const activeVoyage=s=>atEnvoy(s)&&s.progress.ancient===26&&!s.ancient.home.commerce.cart.active;
-export const activeFinale=s=>atEnvoy(s)&&s.progress.ancient===27;
+export const activeFinale=s=>atEnvoy(s)&&s.progress.ancient===27&&!s.ancient.home.commerce.cart.active;
 export function prepareVoyage(s){if(!activeVoyage(s))return false;s.ancient.voyage.prepared=true;return true;}
 export function boardVoyage(s){if(!activeVoyage(s)||!s.ancient.voyage.prepared)return false;s.ancient.voyage.boarded=true;s.ancient.voyage.started=true;return true;}
 export function voyagePattern(stage,seed=372,failures=0){const profile=VOYAGE_STAGES[stage];if(!profile)return [];let n=(seed+stage*997)>>>0,previous=1;const rnd=()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;};const rows=[];

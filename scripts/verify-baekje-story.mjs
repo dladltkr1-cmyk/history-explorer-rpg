@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class{set src(v){} get complete(){return false;}};
-const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=56');
-const {prepareAncientQA}=await import('../dist/ancient-state.js?v=56');
-const {MAPS}=await import('../dist/regions/index.js?v=56');
-const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=56');
-import * as st from '../dist/baekje-story.js?v=56';
+const {fresh,validate,advance,activeQuest,gain}=await import('../dist/state.js?v=56.3');
+const {prepareAncientQA}=await import('../dist/ancient-state.js?v=56.3');
+const {MAPS}=await import('../dist/regions/index.js?v=56.3');
+const {ANCIENT_QA,ancientWorld}=await import('../dist/regions/ancient.js?v=56.3');
+import * as st from '../dist/baekje-story.js?v=56.3';
 const go=(s,key)=>{s.map=key==='sender'?'ancient-village-'+s.ancient.country:'ancient-han';Object.assign(s,st.STORY_POINTS[key]);s.x+=1;};
 for(const country of ['goguryeo','baekje','silla'])for(const farm of [false,true]){
  let s=fresh('이야기 검수','boy');prepareAncientQA(s,'4c-trade',{country});s.map='ancient-home-'+country;s.x=5;s.y=5;s.coins=100;s.ancient.home.reputation=0;

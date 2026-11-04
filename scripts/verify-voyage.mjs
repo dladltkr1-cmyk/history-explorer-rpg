@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 globalThis.Image=class{set src(v){}get complete(){return false}};
-const {fresh,validate,advance,activeQuest}=await import('../dist/state.js?v=56');
-const {prepareAncientQA,equipAncientExhibit,removeAncientExhibit,completeAncientChapter}=await import('../dist/ancient-state.js?v=56');
-const {ANCIENT_QA,ANCIENT_CHAPTERS,ANCIENT_QUESTS,ancientWorld}=await import('../dist/regions/ancient.js?v=56');
-const {MAPS}=await import('../dist/regions/index.js?v=56');
-const {roomLayout}=await import('../dist/homestead.js?v=56');
-import * as v from '../dist/voyage.js?v=56';
+const {fresh,validate,advance,activeQuest}=await import('../dist/state.js?v=56.3');
+const {prepareAncientQA,equipAncientExhibit,removeAncientExhibit,completeAncientChapter}=await import('../dist/ancient-state.js?v=56.3');
+const {ANCIENT_QA,ANCIENT_CHAPTERS,ANCIENT_QUESTS,ancientWorld}=await import('../dist/regions/ancient.js?v=56.3');
+const {MAPS}=await import('../dist/regions/index.js?v=56.3');
+const {roomLayout}=await import('../dist/homestead.js?v=56.3');
+import * as v from '../dist/voyage.js?v=56.3';
 export function setup(country='baekje',stage='voyage-start'){const s=fresh('v56 검수','boy');prepareAncientQA(s,stage,{country});Object.assign(s,{map:'ancient-han',x:18,y:6.4,coins:100,xp:0});s.ancient.home.reputation=0;return s;}
 export function steer(s,rt){const speed=v.VOYAGE_STAGES[rt.stage].speed*(s.ancient.voyage.failures[rt.stage]>=3?.84:1),times=[...new Set(rt.rows.map(o=>o.at))],time=times.find(t=>-150+(rt.elapsed-t)*speed<674);if(time===undefined)return 0;const blocked=rt.rows.filter(o=>o.at===time).map(o=>o.x),target=[205,500,795].find(x=>!blocked.includes(x));return Math.abs(target-rt.x)<4?0:Math.sign(target-rt.x);}
 let frames=0;

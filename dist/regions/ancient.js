@@ -1,14 +1,14 @@
-import {VOYAGE_QA,ENVOY} from '../voyage.js?v=56';
-import {WAR_MAPS} from './war-fields.js?v=56';
-import {warMap,TRAIL,ESCAPE,WAR_RECORDS} from '../war-story.js?v=56';
-import {storyPeriod,STORY_POINTS} from '../baekje-story.js?v=56';
-import {makeLifeDistricts} from './life-districts.js?v=56';
-import {marketMap,forestMap} from '../life-access.js?v=56';
-import {DECOR_VISUALS} from '../decor-spec.js?v=56';
-import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=56';
-import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=56';
+import {VOYAGE_QA,ENVOY} from '../voyage.js?v=56.3';
+import {WAR_MAPS} from './war-fields.js?v=56.3';
+import {warMap,TRAIL,ESCAPE,WAR_RECORDS} from '../war-story.js?v=56.3';
+import {storyPeriod,STORY_POINTS} from '../baekje-story.js?v=56.3';
+import {makeLifeDistricts} from './life-districts.js?v=56.3';
+import {marketMap,forestMap} from '../life-access.js?v=56.3';
+import {DECOR_VISUALS} from '../decor-spec.js?v=56.3';
+import {hanPhase,VILLAGE_GEOGRAPHY} from '../ancient-history.js?v=56.3';
+import {LIFE_SHOPS,SHOP_MERCHANT,shopMap,shopDoor,WOOD_SPOTS,woodId,woodReady} from '../life-shops.js?v=56.3';
 import {map,entity,person,exit,foe} from './common.js';
-import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=56';
+import {HOME_LEVELS,HOME_PALETTES,DECOR,DECOR_SLOTS,activePlots,roomLayout,plotPosition,decorPosition,plotState} from '../homestead.js?v=56.3';
 
 export const ANCIENT_COUNTRIES={
   goguryeo:{name:'고구려',village:'ancient-village-goguryeo',home:'ancient-home-goguryeo',art:'ancientHomeNorth',helperArt:'ancientHelperNorth',color:'#657f82',ground:'#8c9c7e',welcome:'산길을 지나 이곳에 왔구나. 작은 집을 준비해 두었어.'},

@@ -1,6 +1,6 @@
-import {VOYAGE_STAGES,obstaclePosition} from './voyage.js?v=56.2';
+import {VOYAGE_STAGES,obstaclePosition} from './voyage.js?v=56.3';
 const cache=new Map();
-export function voyageImage(id){if(!cache.has(id)){const im=new Image();im.src=new URL('./assets/voyage/'+id+'.svg?v=56',import.meta.url).href;cache.set(id,im);}return cache.get(id);}
+export function voyageImage(id){if(!cache.has(id)){const im=new Image();im.src=new URL('./assets/voyage/'+id+'.svg?v=56.3',import.meta.url).href;cache.set(id,im);}return cache.get(id);}
 const ready=im=>im?.complete&&im.naturalWidth>0;
 function picture(ctx,id,x,y,w,h){const im=voyageImage(id);if(ready(im))ctx.drawImage(im,x,y,w,h);}
 export function drawPassenger(ctx,avatarSource,appearance,x,y,clock,moving=false){const im=avatarSource(appearance,'back',moving?'walk-'+(1+Math.floor(clock*7)%2):'idle');if(ready(im))ctx.drawImage(im,x-23,y-59,46,59);}

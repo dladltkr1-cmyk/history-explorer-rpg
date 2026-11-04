@@ -1,17 +1,17 @@
-import {createWarUI} from './war-ui.js?v=56';
-import {createVoyageUI} from './voyage-ui.js?v=56.2';
-import {warMap,TRAIL,ESCAPE,warBlocked,restoreWar} from './war-story.js?v=56';
-import {drawWarTerrain,drawWarActor} from './war-render.js?v=56';
-import {createBaekjeStoryUI} from './baekje-story-ui.js?v=56';
-import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=56';
-import {drawLifeDistrict} from './life-terrain.js?v=56';
-import {createDecorUI} from './decor-ui.js?v=56';
-import {DECOR_VISUALS} from './decor-spec.js?v=56';
-import {reputationDetails} from './ancient-history.js?v=56';
-import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=56';
-import {createFieldCamera} from './field-camera.js?v=56.2';
-import {parkHorse} from './horse-state.js?v=56';
-import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=56";
+import {createWarUI} from './war-ui.js?v=56.3';
+import {createVoyageUI} from './voyage-ui.js?v=56.3';
+import {warMap,TRAIL,ESCAPE,warBlocked,restoreWar} from './war-story.js?v=56.3';
+import {drawWarTerrain,drawWarActor} from './war-render.js?v=56.3';
+import {createBaekjeStoryUI} from './baekje-story-ui.js?v=56.3';
+import {atTrader,canTrade,atYard,marketMap,forestMap,atBoard,BOARD,TRADER} from './life-access.js?v=56.3';
+import {drawLifeDistrict} from './life-terrain.js?v=56.3';
+import {createDecorUI} from './decor-ui.js?v=56.3';
+import {DECOR_VISUALS} from './decor-spec.js?v=56.3';
+import {reputationDetails} from './ancient-history.js?v=56.3';
+import {LIFE_SHOPS,shopMap,shopDoor} from './life-shops.js?v=56.3';
+import {createFieldCamera} from './field-camera.js?v=56.3';
+import {parkHorse} from './horse-state.js?v=56.3';
+import { REGIONS, MAPS, ARTIFACTS, regionOf } from "./regions/index.js?v=56.3";
 import {
   MAX_LEVEL,
   ITEMS,
@@ -28,16 +28,16 @@ import {
   writeAppearanceOnly,
   readSave,
   validate,
-} from "./state.js?v=56";
-import { ASSETS } from "./assets.js?v=56";
+} from "./state.js?v=56.3";
+import { ASSETS } from "./assets.js?v=56.3";
 import {FIELD_SPRITES,fieldSpriteSize} from './field-sprites.js?v=44.2';
-import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=56';
-import {noteAncientVisit} from './ancient-state.js?v=56';
-import {createAncientUI} from './ancient-ui.js?v=56';
-import {createHomesteadUI} from './homestead-ui.js?v=56';
-import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=56';
+import {ANCIENT_COUNTRIES,ANCIENT_QUIZZES,ANCIENT_QUESTS,ancientWorld,ancientDestination,ancientCanEnter} from './regions/ancient.js?v=56.3';
+import {noteAncientVisit} from './ancient-state.js?v=56.3';
+import {createAncientUI} from './ancient-ui.js?v=56.3';
+import {createHomesteadUI} from './homestead-ui.js?v=56.3';
+import {HOME_LEVELS,HOME_PALETTES,roomLayout,plotState,applyHomeRest} from './homestead.js?v=56.3';
 import { hasRod, fishingStarted, rodReady, fishingObjective, ROD_RECIPE, makeThread, pickBranch, makeNeedle, makeRod, fishingBoneDrop, createFishing, fishingPosition, pullFishing, nextFishingRound, fishingCooldown, fishingSiteKey, restFishingSite } from './fishing.js?v=44.2';
-import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=56';
+import { INTERACTION_QA, prepareContentQA } from './regions/fishing-content.js?v=56.3';
 import {inFishingRiver,drawFishingRiver} from './waterside.js?v=44.2';
 import { QUIZZES } from "./regions/expansion.js";
 import { NATIONS, NATION_RECORDS, NATION_MARKS, NATION_STORY, NATION_ITEM_NAMES, NATION_FINAL_QUIZZES, crossedDongyeBoundary, dongyeBoundaryX } from './regions/nations.js?v=37.1';
@@ -55,7 +55,7 @@ import {
   COOKING,
   RESPAWN_MS,
   ENCOUNTER_PROTECTION_MS,
-} from "./economy.js?v=56";
+} from "./economy.js?v=56.3";
 import { resourceReady, harvestResource, refreshResources } from "./resources.js";
 import {
   HABITATS,
